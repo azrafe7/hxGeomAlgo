@@ -6,7 +6,7 @@
  * 
  * @see http://www.box2d.org/forum/viewtopic.php?f=8&t=463&start=0										(JSFL - by mayobutter)
  * @see http://www.ewjordan.com/earClip/																(Processing - by Eric Jordan)
- * @see http://blog.touchmypixel.com/2008/06/making-convex-polygons-from-concave-ones-ear-clipping/		(AS3 - by touchmypixel)
+ * @see http://blog.touchmypixel.com/2008/06/making-convex-polygons-from-concave-ones-ear-clipping/		(AS3 - by Tarwin Stroh-Spijer)
  * @see http://headsoft.com.au/																			(C# - by Ben Baker)
  * 
  * @author azrafe7
@@ -104,12 +104,12 @@ class EarClipper
 				}
 				else
 				{
-					poly = new Polygon(triangulation[currTri].pointList);
+					poly = new Polygon(triangulation[currTri].points);
 					covered[currTri] = true;
 					for (i in 0...triangulation.length)
 					{
 						if (covered[i]) continue;
-						var newP:Polygon = poly.add(triangulation[i]);
+						var newP:Polygon = poly.addTriangle(triangulation[i]);
 						if (newP == null) continue;
 						if (newP.isConvex())
 						{
@@ -183,7 +183,7 @@ class EarClipper
 
 class Triangle
 {
-	public var pointList:Array<Point> = null;
+	public var points:Array<Point> = null;
 
 	public function new(point1:Point, point2:Point, point3:Point)
 	{
@@ -195,31 +195,31 @@ class Triangle
 
 		var ccw:Bool = (cross > 0);
 
-		pointList = new Array<Point>();
+		points = new Array<Point>();
 
 		if (ccw)
 		{
-			pointList.push(new Point(point1.x, point1.y));
-			pointList.push(new Point(point2.x, point2.y));
-			pointList.push(new Point(point3.x, point3.y));
+			points.push(new Point(point1.x, point1.y));
+			points.push(new Point(point2.x, point2.y));
+			points.push(new Point(point3.x, point3.y));
 		}
 		else
 		{
-			pointList.push(new Point(point1.x, point1.y));
-			pointList.push(new Point(point3.x, point3.y));
-			pointList.push(new Point(point2.x, point2.y));
+			points.push(new Point(point1.x, point1.y));
+			points.push(new Point(point3.x, point3.y));
+			points.push(new Point(point2.x, point2.y));
 		}
 	}
 
 	/** Checks if `point` is inside the triangle. */
 	public function isPointInside(point:Point):Bool
 	{
-		var vx2:Float = point.x - pointList[0].x;
-		var vy2:Float = point.y - pointList[0].y;
-		var vx1:Float = pointList[1].x - pointList[0].x;
-		var vy1:Float = pointList[1].y - pointList[0].y;
-		var vx0:Float = pointList[2].x - pointList[0].x;
-		var vy0:Float = pointList[2].y - pointList[0].y;
+		var vx2:Float = point.x - points[0].x;
+		var vy2:Float = point.y - points[0].y;
+		var vx1:Float = points[1].x - points[0].x;
+		var vy1:Float = points[1].y - points[0].y;
+		var vx0:Float = points[2].x - points[0].x;
+		var vy0:Float = points[2].y - points[0].y;
 
 		var dot00:Float = vx0 * vx0 + vy0 * vy0;
 		var dot01:Float = vx0 * vx1 + vy0 * vy1;
@@ -237,11 +237,11 @@ class Triangle
 
 class Polygon
 {
-	public var pointList:Array<Point> = null;
+	public var points:Array<Point> = null;
 
 	public function new(?points:Array<Point> = null)
 	{
-		this.pointList = points != null ? points : new Array<Point>();
+		this.points = points != null ? points : new Array<Point>();
 	}
 
 	/** Assuming the polygon is simple, checks if it is convex. */
@@ -249,15 +249,15 @@ class Polygon
 	{
 		var isPositive:Bool = false;
 
-		for (i in 0...pointList.length)
+		for (i in 0...points.length)
 		{
-			var lower:Int = (i == 0 ? pointList.length - 1 : i - 1);
+			var lower:Int = (i == 0 ? points.length - 1 : i - 1);
 			var middle:Int = i;
-			var upper:Int = (i == pointList.length - 1 ? 0 : i + 1);
-			var dx0:Float = pointList[middle].x - pointList[lower].x;
-			var dy0:Float = pointList[middle].y - pointList[lower].y;
-			var dx1:Float = pointList[upper].x - pointList[middle].x;
-			var dy1:Float = pointList[upper].y - pointList[middle].y;
+			var upper:Int = (i == points.length - 1 ? 0 : i + 1);
+			var dx0:Float = points[middle].x - points[lower].x;
+			var dy0:Float = points[middle].y - points[lower].y;
+			var dx1:Float = points[upper].x - points[middle].x;
+			var dy1:Float = points[upper].y - points[middle].y;
 			var cross:Float = dx0 * dy1 - dx1 * dy0;
 			
 			// cross product should have same sign
@@ -279,7 +279,7 @@ class Polygon
 	 * 
 	 * @return null if it can't connect properly.
 	 */
-	public function add(t:Triangle):Polygon
+	public function addTriangle(t:Triangle):Polygon
 	{
 		// first, find vertices that connect
 		var firstP:Int = -1;
@@ -287,9 +287,9 @@ class Polygon
 		var secondP:Int = -1;
 		var secondT:Int = -1;
 
-		for (i in 0...pointList.length)
+		for (i in 0...points.length)
 		{
-			if (t.pointList[0].x == this.pointList[i].x && t.pointList[0].y == this.pointList[i].y)
+			if (t.points[0].x == this.points[i].x && t.points[0].y == this.points[i].y)
 			{
 				if (firstP == -1)
 				{
@@ -300,7 +300,7 @@ class Polygon
 					secondP = i; secondT = 0;
 				}
 			}
-			else if (t.pointList[1].x == this.pointList[i].x && t.pointList[1].y == this.pointList[i].y)
+			else if (t.points[1].x == this.points[i].x && t.points[1].y == this.points[i].y)
 			{
 				if (firstP == -1)
 				{
@@ -311,7 +311,7 @@ class Polygon
 					secondP = i; secondT = 1;
 				}
 			}
-			else if (t.pointList[2].x == this.pointList[i].x && t.pointList[2].y == this.pointList[i].y)
+			else if (t.points[2].x == this.points[i].x && t.points[2].y == this.points[i].y)
 			{
 				if (firstP == -1)
 				{
@@ -330,9 +330,9 @@ class Polygon
 		}
 
 		// fix ordering if first should be last vertex of poly
-		if (firstP == 0 && secondP == pointList.length - 1)
+		if (firstP == 0 && secondP == points.length - 1)
 		{
-			firstP = pointList.length - 1;
+			firstP = points.length - 1;
 			secondP = 0;
 		}
 
@@ -345,16 +345,16 @@ class Polygon
 		if (tipT == firstT || tipT == secondT) tipT = 1;
 		if (tipT == firstT || tipT == secondT) tipT = 2;
 
-		var newPointList:Array<Point> = new Array<Point>();
+		var newPoints:Array<Point> = new Array<Point>();
 
-		for (i in 0...pointList.length)
+		for (i in 0...points.length)
 		{
-			newPointList.push(pointList[i]);
+			newPoints.push(points[i]);
 
 			if (i == firstP)
-				newPointList.push(t.pointList[tipT]);
+				newPoints.push(t.points[tipT]);
 		}
 
-		return new Polygon(newPointList);
+		return new Polygon(newPoints);
 	}
 }

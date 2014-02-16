@@ -9,6 +9,7 @@ import flash.display.Stage;
 import flash.events.KeyboardEvent;
 import flash.filters.GlowFilter;
 import flash.geom.Point;
+import flash.geom.Rectangle;
 import flash.Lib;
 import flash.system.System;
 import flash.text.TextField;
@@ -44,6 +45,7 @@ class Test extends Sprite {
 	private var originalText:TextField;
 	
 	private var marchingSquares:MarchingSquares;
+	private var clipRect:Rectangle;
 	private var perimeter:Array<Point>;
 	private var marchingText:TextField;
 	
@@ -76,27 +78,29 @@ class Test extends Sprite {
 		
 		// MARCHING SQUARES
 		x += width + X_GAP;
-		marchingSquares = new MarchingSquares(originalBMD);
+		//clipRect = new Rectangle(10, 20, 90, 65);
+		clipRect = originalBMD.rect;
+		marchingSquares = new MarchingSquares(originalBMD, 1, clipRect);
 		perimeter = marchingSquares.march();
-		drawPerimeter(perimeter, x, y);
+		drawPerimeter(perimeter, x + clipRect.x, y + clipRect.y);
 		addChild(marchingText = getTextField("MarchSqrs\n" + perimeter.length + " pts", x, y));
 		
 		// RAMER-DOUGLAS-PEUCKER
 		x += width + X_GAP;
 		simplifiedPoly = RamerDouglasPeucker.simplify(perimeter, 1.5);
-		drawSimplifiedPoly(simplifiedPoly, x, y);
+		drawSimplifiedPoly(simplifiedPoly, x + clipRect.x, y + clipRect.y);
 		addChild(simplifiedText = getTextField("Doug-Peuck\n" + simplifiedPoly.length + " pts", x, y));
 		
 		// EARCLIPPER TRIANGULATION
 		x += width + X_GAP;
 		triangulation = EarClipper.triangulate(simplifiedPoly);
-		drawTriangulation(triangulation, x, y);
+		drawTriangulation(triangulation, x + clipRect.x, y + clipRect.y);
 		addChild(triangulationText = getTextField("EC-Triang\n" + triangulation.length + " pts", x, y));
 		
 		// EARCLIPPER DECOMPOSITION
 		x += width + X_GAP;
 		decomposition = EarClipper.polygonizeTriangles(triangulation);
-		drawDecomposition(decomposition, x, y);
+		drawDecomposition(decomposition, x + clipRect.x, y + clipRect.y);
 		addChild(decompositionText = getTextField("EC-Decomp\n" + decomposition.length + " pts", x, y));
 		
 		//stage.addChild(new FPS(5, 5, 0xFFFFFF));
@@ -106,6 +110,9 @@ class Test extends Sprite {
 	
 	public function drawPerimeter(points:Array<Point>, x:Float, y:Float):Void 
 	{
+		// draw clipRect
+		g.drawRect(originalBitmap.x + clipRect.x, originalBitmap.y + clipRect.y, clipRect.width, clipRect.height);
+		
 		g.moveTo(x + points[0].x, y + points[0].y);
 		for (i in 1...points.length) {
 			var p = points[i];
@@ -131,7 +138,7 @@ class Test extends Sprite {
 	public function drawTriangulation(tris:Array<Triangle>, x:Float, y:Float):Void 
 	{
 		for (tri in tris) {
-			var points = tri.pointList;
+			var points = tri.points;
 			g.moveTo(x + points[0].x, y + points[0].y);
 			
 			for (i in 1...points.length + 1) {
@@ -144,7 +151,7 @@ class Test extends Sprite {
 	public function drawDecomposition(polys:Array<Polygon>, x:Float, y:Float):Void 
 	{
 		for (poly in polys) {
-			var points = poly.pointList;
+			var points = poly.points;
 			g.moveTo(x + points[0].x, y + points[0].y);
 			
 			for (i in 1...points.length + 1) {

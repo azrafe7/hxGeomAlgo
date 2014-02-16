@@ -3,7 +3,7 @@
  * 
  * Adapted/modified from:
  * 
- * @see http://devblog.phillipspiess.com/2010/02/23/better-know-an-algorithm-1-marching-squares/	(AS3 - by Phil Spiess)
+ * @see http://devblog.phillipspiess.com/2010/02/23/better-know-an-algorithm-1-marching-squares/	(C# - by Phil Spiess)
  * @see http://www.tomgibara.com/computer-vision/marching-squares									(Java - by Tom Gibara)
  * 
  * @author azrafe7
@@ -34,7 +34,8 @@ class MarchingSquares
 	private var prevStep:StepDirection = StepDirection.NONE;
 	private var nextStep:StepDirection = StepDirection.NONE;
 	
-	private var bmd:BitmapData = null;
+	private var bmd:BitmapData;
+	private var clipRect:Rectangle;
 	private var width:Int;
 	private var height:Int;
 	private var byteArray:ByteArray;
@@ -47,56 +48,67 @@ class MarchingSquares
 	 * 
 	 * @param	bmd				BitmapData to use as source.
 	 * @param	alphaThreshold  Minimum alpha value to consider a pixel opaque.
+	 * @param	clipRect		The region of bmd to process (defaults to the entire image)
 	 */
-	public function new(bmd:BitmapData, alphaThreshold:Int = 1)
+	public function new(bmd:BitmapData, alphaThreshold:Int = 1, clipRect:Rectangle = null)
 	{
-		source = bmd;
+		setSource(bmd, clipRect);
 		
 		this.alphaThreshold = alphaThreshold;
 	}
 	
-	/** BitmapData to use as source. */
-	public var source(default, set):BitmapData;
-	private function set_source(value:BitmapData):BitmapData 
+	/** 
+	 * Updates the BitmapData to use as source and its clipRect. 
+	 * 
+	 * NOTE: If you modifiy your bitmapData between calls to march()/walkPerimeter you may 
+	 * also want to re-set the source so that the byteArray gets updated too.
+	 */
+	public function setSource(bmd:BitmapData, clipRect:Rectangle = null)
 	{
-		if (bmd != value) {
-			bmd = value;
-			byteArray = bmd.getPixels(bmd.rect);
-			width = bmd.width;
-			height = bmd.height;
-		}
-		return bmd;
+		this.bmd = bmd;
+		this.clipRect = clipRect != null ? clipRect : bmd.rect;
+		byteArray = bmd.getPixels(this.clipRect);
+		width = Std.int(this.clipRect.width);
+		height = Std.int(this.clipRect.height);
 	}
 	
 	/** 
 	 * Finds the perimeter.
 	 * 
 	 * @param	startPoint	Start from this point (if null it will be calculated automatically).
-	 * @return	An array containing the points on the perimeter.
+	 * @return	An array containing the points on the perimeter, or an empty array if no perimeter is found.
 	 */
 	public function march(?startPoint:Point = null):Array<Point> 
 	{
-		if (startPoint == null) findStartPoint();
+		if (startPoint == null) {
+			if (findStartPoint() == null) return [];
+		}
 		else point.setTo(startPoint.x, startPoint.y);
 		
 		return walkPerimeter(Std.int(point.x), Std.int(point.y));
 	}
 	
-	/** Finds the first opaque pixel location (starting from top-left corner). */
-	public function findStartPoint():Point {
+	/** 
+	 * Finds the first opaque pixel location (starting from top-left corner, or from the specified line). 
+	 * 
+	 * @return The first opaque pixel location, or null if not found.
+	 */
+	public function findStartPoint(line:Int = 0):Point {
 		byteArray.position = 0;
-		point.setTo(0, 0);
+		point.setTo(-1, -1);
 		
-		for (idx in byteArray.position...byteArray.length >> 2)
-		{
-			var alphaIdx:Int = idx << 2;
+		var alphaIdx:Int = line * width << 2;
+		var len:Int = byteArray.length;
+		var i:Int = 0;
+		while (alphaIdx < len) {
 			if (byteArray[alphaIdx] >= alphaThreshold) {
-				point.setTo(idx % width, idx / height);
+				point.setTo((alphaIdx >> 2) % width, Std.int((alphaIdx >> 2) / width));
 				break;
 			}
+			alphaIdx += 4;
 		}
 		
-		return point;
+		return point.x != -1 ? point.clone() : null;
  	}
 	
 	/** Finds points belonging to the perimeter starting from `startX`, `startY`. */
