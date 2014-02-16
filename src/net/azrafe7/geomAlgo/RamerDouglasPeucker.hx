@@ -1,17 +1,18 @@
-package net.azrafe7.algo;
-
-import flash.geom.Point;
-
 /**
  * Ramer-Douglas-Peucker implementation.
  * 
  * Adapted/modified from:
  * 
- * @see http://karthaus.nl/rdp/		(JS)
- * @see http://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment		(JS)
+ * @see http://karthaus.nl/rdp/																				(JS - by Marius Karthaus)
+ * @see http://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment		(JS - Grumdrig)
  * 
  * @author azrafe7
  */
+
+package net.azrafe7.geomAlgo;
+
+import flash.geom.Point;
+
 class RamerDouglasPeucker
 {
 	static private var point:Point = new Point();

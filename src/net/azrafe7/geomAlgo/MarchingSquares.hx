@@ -1,4 +1,15 @@
-package net.azrafe7.algo;
+/**
+ * Marching Squares implementation (Counterclockwise).
+ * 
+ * Adapted/modified from:
+ * 
+ * @see http://devblog.phillipspiess.com/2010/02/23/better-know-an-algorithm-1-marching-squares/	(AS3 - by Phil Spiess)
+ * @see http://www.tomgibara.com/computer-vision/marching-squares									(Java - by Tom Gibara)
+ * 
+ * @author azrafe7
+ */
+
+package net.azrafe7.geomAlgo;
 
 import flash.display.BitmapData;
 import flash.geom.Point;
@@ -15,16 +26,6 @@ enum StepDirection {
 }
 
 
-/**
- * Marching Squares implementation (Counterclockwise).
- * 
- * Adapted/modified from:
- * 
- * @see http://devblog.phillipspiess.com/2010/02/23/better-know-an-algorithm-1-marching-squares/	(AS3)
- * @see http://www.tomgibara.com/computer-vision/marching-squares	(Java)
- * 
- * @author azrafe7
- */
 class MarchingSquares
 {
 	/** Minimum alpha value to consider a pixel opaque. */
@@ -86,7 +87,7 @@ class MarchingSquares
 		byteArray.position = 0;
 		point.setTo(0, 0);
 		
-		for (idx in 0...byteArray.length >> 2)
+		for (idx in byteArray.position...byteArray.length >> 2)
 		{
 			var alphaIdx:Int = idx << 2;
 			if (byteArray[alphaIdx] >= alphaThreshold) {
