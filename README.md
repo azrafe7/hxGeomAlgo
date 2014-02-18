@@ -47,3 +47,8 @@ Relevant changes:
 
  - Support array of points instead of flat arrays
 
+### [Bayazit PolyDecomp](http://mnbayazit.com/406/overview) ###
+
+Adapted/modified from:
+
+ - [http://mnbayazit.com/406/bayazit](http://mnbayazit.com/406/bayazit)	(C - by Mark Bayazit)

@@ -18,6 +18,7 @@ import flash.text.TextFormatAlign;
 import net.azrafe7.geomAlgo.EarClipper;
 import net.azrafe7.geomAlgo.MarchingSquares;
 import net.azrafe7.geomAlgo.RamerDouglasPeucker;
+import net.azrafe7.geomAlgo.Bayazit;
 import openfl.Assets;
 import openfl.display.FPS;
 
@@ -58,6 +59,9 @@ class Test extends Sprite {
 	private var decomposition:Array<Polygon>;
 	private var decompositionText:TextField;
 	
+	private var decompositionBayazit:Array<net.azrafe7.geomAlgo.Bayazit.Poly>;
+	private var decompositionBayazitText:TextField;
+	
 	
 	public function new () {
 		super ();
@@ -95,13 +99,19 @@ class Test extends Sprite {
 		x += width + X_GAP;
 		triangulation = EarClipper.triangulate(simplifiedPoly);
 		drawTriangulation(triangulation, x + clipRect.x, y + clipRect.y);
-		addChild(triangulationText = getTextField("EC-Triang\n" + triangulation.length + " pts", x, y));
+		addChild(triangulationText = getTextField("EC-Triang\n" + triangulation.length + " tris", x, y));
 		
 		// EARCLIPPER DECOMPOSITION
 		x += width + X_GAP;
 		decomposition = EarClipper.polygonizeTriangles(triangulation);
 		drawDecomposition(decomposition, x + clipRect.x, y + clipRect.y);
-		addChild(decompositionText = getTextField("EC-Decomp\n" + decomposition.length + " pts", x, y));
+		addChild(decompositionText = getTextField("EC-Decomp\n" + decomposition.length + " polys", x, y));
+		
+		// BAYAZIT DECOMPOSITION
+		x += width + X_GAP;
+		decompositionBayazit = Bayazit.decomposePoly(simplifiedPoly);
+		drawDecompositionBayazit(decompositionBayazit, x + clipRect.x, y + clipRect.y);
+		addChild(decompositionBayazitText = getTextField("Bayaz-Decomp\n" + decompositionBayazit.length + " polys", x, y));
 		
 		//stage.addChild(new FPS(5, 5, 0xFFFFFF));
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
@@ -159,6 +169,27 @@ class Test extends Sprite {
 				g.lineTo(x + p.x, y + p.y);
 			}
 		}
+	}
+	
+	public function drawDecompositionBayazit(polys:Array<net.azrafe7.geomAlgo.Bayazit.Poly>, x:Float, y:Float):Void 
+	{
+		for (poly in polys) {
+			var points = poly;
+			g.moveTo(x + points[0].x, y + points[0].y);
+			
+			for (i in 1...points.length + 1) {
+				var p = points[i % points.length];
+				g.lineTo(x + p.x, y + p.y);
+			}
+		}
+		// draw Reflex and Steiner points
+		/*
+		g.lineStyle(1, (COLOR >> 1) | COLOR, ALPHA);
+		for (p in Bayazit.reflexVertices) g.drawCircle(x + p.x, y + p.y, 2);
+		g.lineStyle(1, (COLOR >> 2) | COLOR, ALPHA);
+		for (p in Bayazit.steinerPoints) g.drawCircle(x + p.x, y + p.y, 2);
+		g.lineStyle(1, COLOR, ALPHA);
+		*/
 	}
 	
 	public function getTextField(text:String = "", x:Float, y:Float):TextField

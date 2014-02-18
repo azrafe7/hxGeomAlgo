@@ -5,26 +5,28 @@
     <movie outputType="Application" />
     <movie input="" />
     <movie path="project.xml" />
-    <movie fps="30" />
+    <movie fps="60" />
     <movie width="800" />
-    <movie height="600" />
+    <movie height="340" />
     <movie version="3" />
     <movie minorVersion="0" />
     <movie platform="NME" />
-    <movie background="#FFFFFF" />
+    <movie background="222222" />
     <movie preferredSDK=";3;" />
   </output>
   <!-- Other classes to be compiled into your SWF -->
   <classpaths>
-    <class path="Source" />
+    <class path="src" />
+    <class path="bin\flash\haxe" />
   </classpaths>
   <!-- Build options -->
   <build>
-    <option directives="" />
+    <option directives="tools=1.2.9&#xA;display&#xA;web" />
     <option flashStrict="False" />
-    <option mainClass="com.example.oflproject" />
-    <option enabledebug="False" />
-    <option additional="" />
+    <option noInlineOnDebug="False" />
+    <option mainClass="ApplicationMain" />
+    <option enabledebug="True" />
+    <option additional="--no-output&#xA;-swf-version 11.2&#xA;#--remap nme:flash" />
   </build>
   <!-- haxelib libraries -->
   <haxelib>
@@ -40,7 +42,7 @@
   </library>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>
-    <!-- example: <hidden path="..." /> -->
+    <hidden path="obj" />
   </hiddenPaths>
   <!-- Executed before build -->
   <preBuildCommand />
