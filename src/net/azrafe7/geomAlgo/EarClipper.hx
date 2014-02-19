@@ -324,8 +324,8 @@ class Polygon
 			}
 			else
 			{
-				//println(t.PointList[0].X+" "+t.PointList[0].y+" "+t.PointList[1].X+" "+t.PointList[1].y+" "+t.PointList[2].X+" "+t.PointList[2].y);
-				//println(x[0]+" "+y[0]+" "+x[1]+" "+y[1]);
+				//trace(t.points);
+				//trace(firstP, firstT, secondP, secondT);
 			}
 		}
 

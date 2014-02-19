@@ -1,5 +1,6 @@
 /**
  * Bayazit polygon decomposition implementation.
+ * NOTE: Should work only for SIMPLE polygons (not self-intersecting, without holes).
  * 
  * Adapted/modified from:
  * 
@@ -28,6 +29,7 @@ class Bayazit
 	static public var reflexVertices:Array<Point> = new Array<Point>();
 	static public var steinerPoints:Array<Point> = new Array<Point>();
 
+	/** Decomposes `poly` into a near-minimum number of convex polygons. */
 	static public function decomposePoly(poly:Poly):Array<Poly> {
 		var res = new Array<Poly>();
 		
@@ -41,6 +43,7 @@ class Bayazit
 		return res;
 	}
 	
+	/** Used internally by decomposePoly(). */
 	static private function _decomposePoly(poly:Poly, polys:Array<Poly>) {
 		var upperInt:Point = new Point(), lowerInt:Point = new Point(), 
 			p:Point = new Point(), closestVert:Point = new Point();
@@ -84,13 +87,13 @@ class Bayazit
 				
 				// if there are no vertices to connect to, choose a point in the middle
 				if (lowerIdx == (upperIdx + 1) % poly.length) {
-					trace('Case 1: Vertex($i), lowerIdx($lowerIdx), upperIdx($upperIdx), poly.length(${poly.length})');
+
+					//trace('Case 1: Vertex($i), lowerIdx($lowerIdx), upperIdx($upperIdx), poly.length(${poly.length})');
+					
 					p.x = (lowerInt.x + upperInt.x) / 2;
 					p.y = (lowerInt.y + upperInt.y) / 2;
 					steinerPoints.push(p);
-
 					
-					// TODO: Review indices && Maybe insert needs a cloned Point() ?
 					if (i < upperIdx) {
 						for (k in i...upperIdx + 1) lowerPoly.push(poly[k]);
 						lowerPoly.push(p);
@@ -108,7 +111,7 @@ class Bayazit
 				} else {
 					
 					// connect to the closest point within the triangle
-					trace('Case 2: Vertex($i), closestIdx($closestIdx), poly.length(${poly.length})');
+					//trace('Case 2: Vertex($i), closestIdx($closestIdx), poly.length(${poly.length})');
 
 					if (lowerIdx > upperIdx) {
 						upperIdx += poly.length;
@@ -152,6 +155,7 @@ class Bayazit
 		polys.push(poly);
 	}
 	
+	/** Makes `poly` counterclockwise (in place). */
 	static public function makeCCW(poly:Poly):Void {
 		var br:Int = 0;
 
@@ -168,9 +172,10 @@ class Bayazit
 		}
 	}
 	
+	/** Finds the intersection point between lines extending the segments `p1`-`p2` and `q1`-`q2`. Returns null if they're parallel. */
 	static public function intersection(p1:Point, p2:Point, q1:Point, q2:Point):Point 
 	{
-		var res:Point = new Point();
+		var res:Point = null;
 		var a1 = p2.y - p1.y;
 		var b1 = p1.x - p2.x;
 		var c1 = a1 * p1.x + b1 * p1.y;
@@ -179,71 +184,74 @@ class Bayazit
 		var c2 = a2 * q1.x + b2 * q1.y;
 		var det = a1 * b2 - a2 * b1;
 		if (!eq(det, 0)) { // lines are not parallel
+			res = new Point();
 			res.x = (b2 * c1 - b1 * c2) / det;
 			res.y = (a1 * c2 - a2 * c1) / det;
 		}
 		return res;
 	}
 	
+	/** Returns true if `poly` vertex at idx is a reflex vertex. */
 	static public function isReflex(poly:Poly, idx:Int):Bool 
 	{
 		return right(at(poly, idx - 1), at(poly, idx), at(poly, idx + 1));
 	}
 	
-	static inline function at(poly:Poly, idx:Int):Point 
+	/** Gets `poly` vertex at `idx` (wrapping around if needed). */
+	static inline public function at(poly:Poly, idx:Int):Point 
 	{
 		var len:Int = poly.length;
 		while (idx < 0) idx += len;
 		return poly[idx % len];
 	}
 	
-	static inline function area(a:Point, b:Point, c:Point):Float
+	static inline public function area(a:Point, b:Point, c:Point):Float
 	{
 		return (((b.x - a.x) * (c.y - a.y)) - ((c.x - a.x) * (b.y - a.y)));
 	}
 	
-	static inline function left(a:Point, b:Point, c:Point):Bool
+	static inline public function left(a:Point, b:Point, c:Point):Bool
 	{
 		return area(a, b, c) > 0;
 	}
 	
-	static inline function leftOn(a:Point, b:Point, c:Point):Bool
+	static inline public function leftOn(a:Point, b:Point, c:Point):Bool
 	{
 		return area(a, b, c) >= 0;
 	}
 	
-	static inline function right(a:Point, b:Point, c:Point):Bool
+	static inline public function right(a:Point, b:Point, c:Point):Bool
 	{
 		return area(a, b, c) < 0;
 	}
 	
-	static inline function rightOn(a:Point, b:Point, c:Point):Bool
+	static inline public function rightOn(a:Point, b:Point, c:Point):Bool
 	{
 		return area(a, b, c) <= 0;
 	}
 	
-	static inline function collinear(a:Point, b:Point, c:Point):Bool
+	/** Returns true if the specified triangle is degenerate (collinear points). */
+	static inline public function collinear(a:Point, b:Point, c:Point):Bool
 	{
 		return area(a, b, c) == 0;
 	}
 	
-	static inline function distanceSquared(a:Point, b:Point):Float
+	/** Returns the square of distance between `a` and `b`. */
+	static inline public function distanceSquared(a:Point, b:Point):Float
 	{
 		var dx:Float = b.x - a.x;
 		var dy:Float = b.y - a.y;
 		return dx * dx + dy * dy;
 	}
 	
-	static inline function eq(a:Float, b:Float):Bool 
+	/** Returns true a ~= b (i.e. a is within EPSILON distance from `b`). */
+	static inline public function eq(a:Float, b:Float):Bool 
 	{
 		return Math.abs(a - b) <= EPSILON;
 	}
 	
-	/**
-	 * Empties an array of its contents.
-	 * @param array 	Filled array
-	 */
-	public static inline function clear<T>(array:Array<T>)
+	/** Empties an array of its contents. */
+	static inline public function clear<T>(array:Array<T>)
 	{
 #if (cpp || php)
 		array.splice(0, array.length);
