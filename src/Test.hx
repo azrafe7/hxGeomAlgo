@@ -19,6 +19,7 @@ import net.azrafe7.geomAlgo.EarClipper;
 import net.azrafe7.geomAlgo.MarchingSquares;
 import net.azrafe7.geomAlgo.RamerDouglasPeucker;
 import net.azrafe7.geomAlgo.Bayazit;
+import net.azrafe7.geomAlgo.PolyTools.Poly;
 import openfl.Assets;
 import openfl.display.FPS;
 
@@ -53,13 +54,13 @@ class Test extends Sprite {
 	private var simplifiedPoly:Array<Point>;
 	private var simplifiedText:TextField;
 
-	private var triangulation:Array<Triangle>;
+	private var triangulation:Array<Tri>;
 	private var triangulationText:TextField;
 
-	private var decomposition:Array<Polygon>;
+	private var decomposition:Array<Poly>;
 	private var decompositionText:TextField;
 
-	private var decompositionBayazit:Array<net.azrafe7.geomAlgo.Bayazit.Poly>;
+	private var decompositionBayazit:Array<net.azrafe7.geomAlgo.PolyTools.Poly>;
 	private var decompositionBayazitText:TextField;
 
 
@@ -145,10 +146,10 @@ class Test extends Sprite {
 		}
 	}
 
-	public function drawTriangulation(tris:Array<Triangle>, x:Float, y:Float):Void 
+	public function drawTriangulation(tris:Array<Tri>, x:Float, y:Float):Void 
 	{
 		for (tri in tris) {
-			var points = tri.points;
+			var points = tri;
 			g.moveTo(x + points[0].x, y + points[0].y);
 
 			for (i in 1...points.length + 1) {
@@ -158,10 +159,10 @@ class Test extends Sprite {
 		}
 	}
 
-	public function drawDecomposition(polys:Array<Polygon>, x:Float, y:Float):Void 
+	public function drawDecomposition(polys:Array<Poly>, x:Float, y:Float):Void 
 	{
 		for (poly in polys) {
-			var points = poly.points;
+			var points = poly;
 			g.moveTo(x + points[0].x, y + points[0].y);
 
 			for (i in 1...points.length + 1) {
@@ -171,7 +172,7 @@ class Test extends Sprite {
 		}
 	}
 
-	public function drawDecompositionBayazit(polys:Array<net.azrafe7.geomAlgo.Bayazit.Poly>, x:Float, y:Float):Void 
+	public function drawDecompositionBayazit(polys:Array<net.azrafe7.geomAlgo.PolyTools.Poly>, x:Float, y:Float):Void 
 	{
 		for (poly in polys) {
 			var points = poly;

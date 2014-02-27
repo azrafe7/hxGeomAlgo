@@ -15,24 +15,28 @@
 package net.azrafe7.geomAlgo;
 
 import flash.geom.Point;
+import net.azrafe7.geomAlgo.PolyTools;
+
+
+typedef Tri = Poly;	// assumes Array<Point> of length 3
+
 
 class EarClipper
 {
-
 	/**
 	 * Triangulates a polygon.
 	 * 
 	 * @param	v	Array of points defining the polygon.
 	 * @return	An array of Triangle resulting from the triangulation.
 	 */
-	public static function triangulate(v:Array<Point>):Array<Triangle> 
+	public static function triangulate(v:Poly):Array<Tri> 
 	{
 		if (v.length < 3)
 			return null;
 
 		var remList:Array<Point> = new Array<Point>().concat(v);
 		
-		var retList:Array<Triangle> = new Array<Triangle>();
+		var resultList:Array<Tri> = new Array<Tri>();
 
 		while (remList.length > 3)
 		{
@@ -40,7 +44,7 @@ class EarClipper
 
 			for (i in 0...remList.length)
 			{
-				if (isEar(i, remList))
+				if (isEar(remList, i))
 				{
 					earIndex = i;
 					break;
@@ -57,14 +61,14 @@ class EarClipper
 			var under:Int = (earIndex == 0 ? remList.length - 1 : earIndex - 1);
 			var over:Int = (earIndex == remList.length - 1 ? 0 : earIndex + 1);
 
-			retList.push(new Triangle(remList[earIndex], remList[over], remList[under]));
+			resultList.push(createCCWTri(remList[earIndex], remList[over], remList[under]));
 
 			remList = newList;
 		}
 
-		retList.push(new Triangle(remList[1], remList[2], remList[0]));
+		resultList.push(createCCWTri(remList[1], remList[2], remList[0]));
 
-		return retList;
+		return resultList;
 	}
 
 	/**
@@ -73,9 +77,9 @@ class EarClipper
 	 * @param	triangulation	An array of triangles defining the concave polygon.
 	 * @return	An array of convex polygons being a decomposition of the original concave polygon.
 	 */
-	public static function polygonizeTriangles(triangulation:Array<Triangle>):Array<Polygon> 
+	public static function polygonizeTriangles(triangulation:Array<Tri>):Array<Poly> 
 	{
-		var polys:Array<Polygon> = new Array<Polygon>();
+		var polys = new Array<Poly>();
 
 		if (triangulation == null)
 		{
@@ -83,13 +87,13 @@ class EarClipper
 		}
 		else
 		{
-			var covered:Array<Bool> = new Array<Bool>();
+			var covered = new Array<Bool>();
 			for (i in 0...triangulation.length) covered[i] = false;
 
 			var notDone:Bool = true;
 			while (notDone)
 			{
-				var poly:Polygon = null;
+				var poly:Poly = null;
 
 				var currTri:Int = -1;
 				for (i in 0...triangulation.length)
@@ -104,16 +108,17 @@ class EarClipper
 				}
 				else
 				{
-					poly = new Polygon(triangulation[currTri].points);
+					/* mmh */
+					poly = triangulation[currTri];
 					covered[currTri] = true;
 					for (i in 0...triangulation.length)
 					{
 						if (covered[i]) continue;
-						var newP:Polygon = poly.addTriangle(triangulation[i]);
-						if (newP == null) continue;
-						if (newP.isConvex())
+						var newPoly:Poly = addTriangle(poly, triangulation[i]);
+						if (newPoly == null) continue;
+						if (isConvex(newPoly))
 						{
-							poly = newP;
+							poly = newPoly;
 							covered[i] = true;
 						}
 					}
@@ -127,7 +132,7 @@ class EarClipper
 	}
 
 	/** Checks if vertex `i` is the tip of an ear. */
-	public static function isEar(i:Int, v:Array<Point>):Bool
+	private static function isEar(v:Poly, i:Int):Bool
 	{
 		var dx0 = 0., dy0 = 0., dx1 = 0., dy1 = 0.;
 
@@ -165,61 +170,29 @@ class EarClipper
 
 		if (cross > 0) return false;
 
-		var tri:Triangle = new Triangle(v[i], v[upper], v[lower]);
+		var tri:Tri = createCCWTri(v[i], v[upper], v[lower]);
 
 		for (j in 0...v.length)
 		{
 			if (!(j == i || j == lower || j == upper))
 			{
-				if (tri.isPointInside(v[j]))
+				if (isPointInsideTri(v[j], tri))
 					return false;
 			}
 		}
 		
 		return true;
 	}
-}
-
-
-class Triangle
-{
-	public var points:Array<Point> = null;
-
-	public function new(point1:Point, point2:Point, point3:Point)
-	{
-		var dx1:Float = point2.x - point1.x;
-		var dx2:Float = point3.x - point1.x;
-		var dy1:Float = point2.y - point1.y;
-		var dy2:Float = point3.y - point1.y;
-		var cross:Float = (dx1 * dy2) - (dx2 * dy1);
-
-		var ccw:Bool = (cross > 0);
-
-		points = new Array<Point>();
-
-		if (ccw)
-		{
-			points.push(new Point(point1.x, point1.y));
-			points.push(new Point(point2.x, point2.y));
-			points.push(new Point(point3.x, point3.y));
-		}
-		else
-		{
-			points.push(new Point(point1.x, point1.y));
-			points.push(new Point(point3.x, point3.y));
-			points.push(new Point(point2.x, point2.y));
-		}
-	}
-
+	
 	/** Checks if `point` is inside the triangle. */
-	public function isPointInside(point:Point):Bool
+	static public function isPointInsideTri(point:Point, tri:Tri):Bool
 	{
-		var vx2:Float = point.x - points[0].x;
-		var vy2:Float = point.y - points[0].y;
-		var vx1:Float = points[1].x - points[0].x;
-		var vy1:Float = points[1].y - points[0].y;
-		var vx0:Float = points[2].x - points[0].x;
-		var vy0:Float = points[2].y - points[0].y;
+		var vx2:Float = point.x - tri[0].x;
+		var vy2:Float = point.y - tri[0].y;
+		var vx1:Float = tri[1].x - tri[0].x;
+		var vy1:Float = tri[1].y - tri[0].y;
+		var vx0:Float = tri[2].x - tri[0].x;
+		var vy0:Float = tri[2].y - tri[0].y;
 
 		var dot00:Float = vx0 * vx0 + vy0 * vy0;
 		var dot01:Float = vx0 * vx1 + vy0 * vy1;
@@ -232,32 +205,28 @@ class Triangle
 
 		return ((u > 0) && (v > 0) && (u + v < 1));
 	}
-}
-
-
-class Polygon
-{
-	public var points:Array<Point> = null;
-
-	public function new(?points:Array<Point> = null)
+	
+	static public function createCCWTri(point1:Point, point2:Point, point3:Point):Tri
 	{
-		this.points = points != null ? points : new Array<Point>();
+		var points:Tri = [point1, point2, point3];
+		PolyTools.makeCCW(points);
+		return points;
 	}
-
+	
 	/** Assuming the polygon is simple, checks if it is convex. */
-	public function isConvex():Bool
+	static public function isConvex(poly:Poly):Bool
 	{
 		var isPositive:Bool = false;
 
-		for (i in 0...points.length)
+		for (i in 0...poly.length)
 		{
-			var lower:Int = (i == 0 ? points.length - 1 : i - 1);
+			var lower:Int = (i == 0 ? poly.length - 1 : i - 1);
 			var middle:Int = i;
-			var upper:Int = (i == points.length - 1 ? 0 : i + 1);
-			var dx0:Float = points[middle].x - points[lower].x;
-			var dy0:Float = points[middle].y - points[lower].y;
-			var dx1:Float = points[upper].x - points[middle].x;
-			var dy1:Float = points[upper].y - points[middle].y;
+			var upper:Int = (i == poly.length - 1 ? 0 : i + 1);
+			var dx0:Float = poly[middle].x - poly[lower].x;
+			var dy0:Float = poly[middle].y - poly[lower].y;
+			var dx1:Float = poly[upper].x - poly[middle].x;
+			var dy1:Float = poly[upper].y - poly[middle].y;
 			var cross:Float = dx0 * dy1 - dx1 * dy0;
 			
 			// cross product should have same sign
@@ -279,7 +248,7 @@ class Polygon
 	 * 
 	 * @return null if it can't connect properly.
 	 */
-	public function addTriangle(t:Triangle):Polygon
+	static public function addTriangle(poly:Poly, t:Tri):Poly
 	{
 		// first, find vertices that connect
 		var firstP:Int = -1;
@@ -287,9 +256,9 @@ class Polygon
 		var secondP:Int = -1;
 		var secondT:Int = -1;
 
-		for (i in 0...points.length)
+		for (i in 0...poly.length)
 		{
-			if (t.points[0].x == this.points[i].x && t.points[0].y == this.points[i].y)
+			if (t[0].x == poly[i].x && t[0].y == poly[i].y)
 			{
 				if (firstP == -1)
 				{
@@ -300,7 +269,7 @@ class Polygon
 					secondP = i; secondT = 0;
 				}
 			}
-			else if (t.points[1].x == this.points[i].x && t.points[1].y == this.points[i].y)
+			else if (t[1].x == poly[i].x && t[1].y == poly[i].y)
 			{
 				if (firstP == -1)
 				{
@@ -311,7 +280,7 @@ class Polygon
 					secondP = i; secondT = 1;
 				}
 			}
-			else if (t.points[2].x == this.points[i].x && t.points[2].y == this.points[i].y)
+			else if (t[2].x == poly[i].x && t[2].y == poly[i].y)
 			{
 				if (firstP == -1)
 				{
@@ -324,15 +293,15 @@ class Polygon
 			}
 			else
 			{
-				//trace(t.points);
+				//trace(t);
 				//trace(firstP, firstT, secondP, secondT);
 			}
 		}
 
 		// fix ordering if first should be last vertex of poly
-		if (firstP == 0 && secondP == points.length - 1)
+		if (firstP == 0 && secondP == poly.length - 1)
 		{
-			firstP = points.length - 1;
+			firstP = poly.length - 1;
 			secondP = 0;
 		}
 
@@ -347,14 +316,14 @@ class Polygon
 
 		var newPoints:Array<Point> = new Array<Point>();
 
-		for (i in 0...points.length)
+		for (i in 0...poly.length)
 		{
-			newPoints.push(points[i]);
+			newPoints.push(poly[i]);
 
 			if (i == firstP)
-				newPoints.push(t.points[tipT]);
+				newPoints.push(t[tipT]);
 		}
 
-		return new Polygon(newPoints);
+		return newPoints;
 	}
 }

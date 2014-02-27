@@ -12,11 +12,10 @@
 package net.azrafe7.geomAlgo;
 
 import flash.geom.Point;
+import net.azrafe7.geomAlgo.PolyTools;
 
 class RamerDouglasPeucker
 {
-	static private var point:Point = new Point();
-	
 	/**
 	 * Simplify polyline.
 	 * 
@@ -36,7 +35,7 @@ class RamerDouglasPeucker
 		var index = -1;
 		var dist = 0.;
 		for (i in 1...points.length - 1) {
-			var currDist = distanceToSegment(points[i], firstPoint, lastPoint);
+			var currDist = PolyTools.distanceToSegment(points[i], firstPoint, lastPoint);
 			if (currDist > dist){
 				dist = currDist;
 				index = i;
@@ -55,25 +54,5 @@ class RamerDouglasPeucker
 		} else {
 			return [firstPoint, lastPoint];
 		}
-	}
-
-	/** Perpendicular distance from `p` to segment `v`-`w`. */
-	inline static public function distanceToSegment(p:Point, v:Point, w:Point) { return Math.sqrt(distanceToSegmentSquared(p, v, w)); }
-	
-	/** Returns `x` squared. */
-	inline static public function sqr(x:Float):Float { return x * x; }
-	
-	/** Squared distance from `v` to `w`. */
-	inline static public function distanceSquared(v:Point, w:Point):Float { return sqr(v.x - w.x) + sqr(v.y - w.y); }
-
-	/** Squared perpendicular distance from `p` to segment `v`-`w`. */
-	static public function distanceToSegmentSquared(p:Point, v:Point, w:Point):Float {
-		var l2:Float = distanceSquared(v, w);
-		if (l2 == 0) return distanceSquared(p, v);
-		var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
-		if (t < 0) return distanceSquared(p, v);
-		if (t > 1) return distanceSquared(p, w);
-		point.setTo(v.x + t * (w.x - v.x), v.y + t * (w.y - v.y));
-		return distanceSquared(p, point);
 	}
 }
