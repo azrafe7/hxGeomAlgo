@@ -5,7 +5,7 @@
 	<app main="Test" path="bin" file="Test" />
 	
 	<window background="#222222" fps="60" />
-	<window width="800" height="340" unless="mobile" />
+	<window width="900" height="340" unless="mobile" />
 	<window orientation="landscape" vsync="false" antialiasing="0" if="cpp" />
 	
 	<set name="SWF_VERSION" value="11.2" />

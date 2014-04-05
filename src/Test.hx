@@ -16,6 +16,7 @@ import flash.text.TextField;
 import flash.text.TextFormat;
 import flash.text.TextFormatAlign;
 import net.azrafe7.geomAlgo.EarClipper;
+import net.azrafe7.geomAlgo.Keil;
 import net.azrafe7.geomAlgo.MarchingSquares;
 import net.azrafe7.geomAlgo.RamerDouglasPeucker;
 import net.azrafe7.geomAlgo.Bayazit;
@@ -30,6 +31,8 @@ class Test extends Sprite {
 
 	//private var ASSET:String = "assets/super_mario.png";	// from here http://www.newgrounds.com/art/view/petelavadigger/super-mario-pixel
 	private var ASSET:String = "assets/pirate_small.png";
+	//private var ASSET:String = "assets/custom.png";
+	
 	private var COLOR:Int = 0xFF0000;
 	private var ALPHA:Float = 1.;
 	private var X_GAP:Int = 10;
@@ -62,6 +65,9 @@ class Test extends Sprite {
 
 	private var decompositionBayazit:Array<net.azrafe7.geomAlgo.PolyTools.Poly>;
 	private var decompositionBayazitText:TextField;
+
+	private var decompositionKeil:net.azrafe7.geomAlgo.Keil.EdgeList;
+	private var decompositionKeilText:TextField;
 
 
 	public function new () {
@@ -113,6 +119,12 @@ class Test extends Sprite {
 		decompositionBayazit = Bayazit.decomposePoly(simplifiedPoly);
 		drawDecompositionBayazit(decompositionBayazit, x + clipRect.x, y + clipRect.y);
 		addChild(decompositionBayazitText = getTextField("Bayaz-Decomp\n" + decompositionBayazit.length + " polys", x, y));
+
+		// KEIL DECOMPOSITION
+		/*x += width + X_GAP;
+		decompositionKeil = Keil.decomposePoly(simplifiedPoly);
+		drawDecompositionKeil(decompositionKeil, x + clipRect.x, y + clipRect.y);
+		addChild(decompositionKeilText = getTextField("Keil-Decomp\n" + decompositionKeil.length + " edges", x, y));*/
 
 		//stage.addChild(new FPS(5, 5, 0xFFFFFF));
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
@@ -174,15 +186,19 @@ class Test extends Sprite {
 
 	public function drawDecompositionBayazit(polys:Array<net.azrafe7.geomAlgo.PolyTools.Poly>, x:Float, y:Float):Void 
 	{
+		var str:String = "";
 		for (poly in polys) {
 			var points = poly;
 			g.moveTo(x + points[0].x, y + points[0].y);
-
+			str += "[";
 			for (i in 1...points.length + 1) {
 				var p = points[i % points.length];
 				g.lineTo(x + p.x, y + p.y);
+				str += p.x + "," + p.y + ",";
 			}
+			str += points[0].x + "," + points[0].y + "],\n";
 		}
+		//trace(str);
 		// draw Reflex and Steiner points
 		/*
 		g.lineStyle(1, (COLOR >> 1) | COLOR, ALPHA);
@@ -191,6 +207,14 @@ class Test extends Sprite {
 		for (p in Bayazit.steinerPoints) g.drawCircle(x + p.x, y + p.y, 2);
 		g.lineStyle(1, COLOR, ALPHA);
 		*/
+	}
+
+	public function drawDecompositionKeil(edges:net.azrafe7.geomAlgo.Keil.EdgeList, x:Float, y:Float):Void 
+	{
+		for (edge in edges) {
+			g.moveTo(x + edge.first.x, y + edge.first.y);
+			g.lineTo(x + edge.second.x, y + edge.second.y);
+		}
 	}
 
 	public function getTextField(text:String = "", x:Float, y:Float):TextField
