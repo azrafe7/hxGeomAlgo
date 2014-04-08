@@ -18,8 +18,10 @@ import flash.text.TextFormatAlign;
 import net.azrafe7.geomAlgo.EarClipper;
 import net.azrafe7.geomAlgo.Keil;
 import net.azrafe7.geomAlgo.MarchingSquares;
+import net.azrafe7.geomAlgo.PolyTools;
 import net.azrafe7.geomAlgo.RamerDouglasPeucker;
 import net.azrafe7.geomAlgo.Bayazit;
+import net.azrafe7.geomAlgo.Visibility;
 import net.azrafe7.geomAlgo.PolyTools.Poly;
 import openfl.Assets;
 import openfl.display.FPS;
@@ -128,6 +130,38 @@ class Test extends Sprite {
 
 		//stage.addChild(new FPS(5, 5, 0xFFFFFF));
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		
+		var sp:Poly = new Poly();
+		sp.push(new Point(30, 30));
+		sp.push(new Point(65, 60));
+		sp.push(new Point(85, 120));
+		sp.push(new Point(95, 50));
+		sp.push(new Point(125, 40));
+		sp.push(new Point(120, 25));
+		sp = simplifiedPoly;
+		
+		//PolyTools.makeCCW(sp);
+		trace(sp);
+		
+		drawSimplifiedPoly(sp, x + X_GAP + originalBMD.width, y);
+		var origIdx = Std.int(Math.random() * sp.length);
+		var visIndices = new Array<Int>();
+		visIndices.push(origIdx);
+		for (i in 0...sp.length) {
+			if (Keil.canSee(sp, origIdx, i)) visIndices.push(i);
+		}
+		
+		/*
+		visIndices =  Visibility.getVisibleIndicesFrom(sp, 0);
+		*/
+		var visPoints = [for (i in 0...visIndices.length) sp[visIndices[i]]];
+		g.lineStyle(1, 0x00FF00);
+		drawSimplifiedPoly(visPoints, x + X_GAP + originalBMD.width, y);
+		trace(visIndices);
+		
+		// draw origPoint
+		g.lineStyle(1, 0x0000FF);
+		g.drawCircle(x + X_GAP + originalBMD.width + sp[origIdx].x, y + sp[origIdx].y, 2);
 	}
 
 
@@ -217,12 +251,12 @@ class Test extends Sprite {
 		}
 	}
 
-	public function getTextField(text:String = "", x:Float, y:Float):TextField
+	public function getTextField(text:String = "", x:Float, y:Float, ?size:Float):TextField
 	{
 		var tf:TextField = new TextField();
 		var fmt:TextFormat = new TextFormat(TEXT_FONT, null, TEXT_COLOR);
 		fmt.align = TextFormatAlign.CENTER;
-		fmt.size = TEXT_SIZE;
+		fmt.size = size == null ? TEXT_SIZE : size;
 		tf.defaultTextFormat = fmt;
 		tf.selectable = false;
 		tf.x = x;

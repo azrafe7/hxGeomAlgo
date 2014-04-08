@@ -21,8 +21,11 @@ class PolyTools
 {
 	static private var point:Point = new Point();	// used internally
 	
+	static public var zero:Point = new Point(0, 0);
+	
 	static public var EPSILON:Float = .00000001;
 
+	
 	/** Makes `poly` counterclockwise (in place). */
 	static public function makeCCW(poly:Poly):Void {
 		var br:Int = 0;
@@ -55,6 +58,9 @@ class PolyTools
 			res = new Point();
 			res.x = (b2 * c1 - b1 * c2) / det;
 			res.y = (a1 * c2 - a2 * c1) / det;
+		}
+		if (res == null) {
+			trace("parallel");
 		}
 		return res;
 	}
@@ -124,6 +130,17 @@ class PolyTools
 		if (t > 1) return distanceSquared(p, w);
 		point.setTo(v.x + t * (w.x - v.x), v.y + t * (w.y - v.y));
 		return distanceSquared(p, point);
+	}
+	
+	
+	static public function meet(p:Point, q:Point):HomogCoord 
+	{
+		return new HomogCoord(p.y - q.y, p.x - q.x, p.x * q.y - p.y * q.x);
+	}
+	
+	static public function dot(p:Point, q:Point):Float 
+	{
+		return p.x * q.x + p.y * q.y;
 	}
 	
 	/** Returns `x` squared. */
