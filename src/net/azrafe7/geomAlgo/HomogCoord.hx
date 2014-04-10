@@ -39,7 +39,7 @@ class HomogCoord
 
 	public function perp():HomogCoord { var tmp:Float = -y; y = x; x = tmp; return this; }
 	
-	public function dot(p:Point) { return w + x * p.x + y * p.y;}
+	public function dotPoint(p:Point) { return w + x * p.x + y * p.y;}
 	
 	//public function dot(p:HomogCoord) { return w * p.w + x * p.x + y * p.y; }
 	
@@ -49,9 +49,9 @@ class HomogCoord
 	
 	public function equals(p:HomogCoord) { return (p.w * x == w * p.x) && (p.w * y == w * p.y); }
 	
-	public function left(p:Point) { return dot(p) > 0; }
+	public function left(p:Point) { return dotPoint(p) > 0; }
 	
-	public function right(p:Point) { return dot(p) < 0; }
+	public function right(p:Point) { return dotPoint(p) < 0; }
 
 	static public function det(p:HomogCoord, q:HomogCoord, r:HomogCoord) { 
 		return p.w * q.perpdot(r) - q.w * p.perpdot(r) + r.w * p.perpdot(q);
@@ -65,11 +65,10 @@ class HomogCoord
 		return det(p, q, r) < 0; 
 	}
 
-	/*
-	public java.awt.Point toScreen() { 
-		return new java.awt.Point((int) (x/w), (int) (-y/w));
+	public function toScreen():Point { 
+		return new Point(x/w, -y/w);
 	}
-	*/
+
 	public function toPoint():Point { return new Point(x/w, y/w); }
 	
 	public function meet(p:HomogCoord):HomogCoord {

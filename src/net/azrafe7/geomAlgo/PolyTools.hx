@@ -26,21 +26,30 @@ class PolyTools
 	static public var EPSILON:Float = .00000001;
 
 	
-	/** Makes `poly` counterclockwise (in place). */
-	static public function makeCCW(poly:Poly):Void {
+	/** Return true if `poly` is counterclockwise. */
+	static inline public function isCCW(poly:Poly):Bool {
 		var br:Int = 0;
 
 		// find bottom right point
+		var signedArea = .0;
 		for (i in 1...poly.length) {
-			if (poly[i].y < poly[br].y || (poly[i].y == poly[br].y && poly[i].x > poly[br].x)) {
-				br = i;
-			}
+			signedArea += winding(at(poly, i - 1), at(poly, i), at(poly, i + 1));
 		}
 
-		// reverse poly if clockwise
-		if (!isLeft(at(poly, br - 1), at(poly, br), at(poly, br + 1))) {
+		return (signedArea > 0);
+	}
+	
+	/** Makes `poly` counterclockwise (in place). Returns true if reversed. */
+	static public function makeCCW(poly:Poly):Bool {
+		var reversed = false;
+		
+		// reverse poly if not counterlockwise
+		if (!isCCW(poly)) {
 			poly.reverse();
+			reversed = true;
 		}
+		
+		return reversed;
 	}
 	
 	/** Finds the intersection point between lines extending the segments `p1`-`p2` and `q1`-`q2`. Returns null if they're parallel. */
@@ -82,7 +91,7 @@ class PolyTools
 	/** Gets the winding of `p` relative to the directed line `a`-`b` (< 0 -> left, > 0 -> right, == 0 -> collinear). */
 	static inline public function winding(p:Point, a:Point, b:Point):Float
 	{
-		return (((b.x - a.x) * (p.y - a.y)) - ((p.x - a.x) * (b.y - a.y)));
+		return (((a.x - p.x) * (b.y - p.y)) - ((b.x - p.x) * (a.y - p.y)));
 	}
 	
 	/** Returns true if `p` is on the left of the directed line `a`-`b`. */
@@ -135,7 +144,7 @@ class PolyTools
 	
 	static public function meet(p:Point, q:Point):HomogCoord 
 	{
-		return new HomogCoord(p.y - q.y, p.x - q.x, p.x * q.y - p.y * q.x);
+		return new HomogCoord(p.y - q.y, q.x - p.x, p.x * q.y - p.y * q.x);
 	}
 	
 	static public function dot(p:Point, q:Point):Float 

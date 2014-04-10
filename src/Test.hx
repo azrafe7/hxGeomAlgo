@@ -23,6 +23,7 @@ import net.azrafe7.geomAlgo.RamerDouglasPeucker;
 import net.azrafe7.geomAlgo.Bayazit;
 import net.azrafe7.geomAlgo.Visibility;
 import net.azrafe7.geomAlgo.PolyTools.Poly;
+import net.azrafe7.geomAlgo.Keil.EdgeList;
 import openfl.Assets;
 import openfl.display.FPS;
 
@@ -42,34 +43,23 @@ class Test extends Sprite {
 	private var TEXT_COLOR:Int = 0xFFFFFFFF;
 	private var TEXT_FONT:String = "_typewriter";
 	private var TEXT_SIZE:Float = 12;
-	private var TEXT_OFFSET:Float = -50;
-	private var TEXT_OUTLINE:GlowFilter = new GlowFilter(0xFF000000, 1, 4, 4, 6);
+	private var TEXT_OFFSET:Float = -60;
+	private var TEXT_OUTLINE:GlowFilter = new GlowFilter(0xFF000000, 1, 2, 2, 6);
 
 	private var START_POINT:Point = new Point(30, 80);
 
 	private var originalBMD:BitmapData;
 	private var originalBitmap:Bitmap;
-	private var originalText:TextField;
 
 	private var marchingSquares:MarchingSquares;
 	private var clipRect:Rectangle;
 	private var perimeter:Array<Point>;
-	private var marchingText:TextField;
 
 	private var simplifiedPoly:Array<Point>;
-	private var simplifiedText:TextField;
-
 	private var triangulation:Array<Tri>;
-	private var triangulationText:TextField;
-
 	private var decomposition:Array<Poly>;
-	private var decompositionText:TextField;
-
-	private var decompositionBayazit:Array<net.azrafe7.geomAlgo.PolyTools.Poly>;
-	private var decompositionBayazitText:TextField;
-
-	private var decompositionKeil:net.azrafe7.geomAlgo.Keil.EdgeList;
-	private var decompositionKeilText:TextField;
+	private var decompositionBayazit:Array<Poly>;
+	private var decompositionKeil:EdgeList;
 
 
 	public function new () {
@@ -87,7 +77,7 @@ class Test extends Sprite {
 		addChild(originalBitmap = new Bitmap(originalBMD));
 		originalBitmap.x = x;
 		originalBitmap.y = y;
-		addChild(originalText = getTextField("Original\n" + originalBMD.width + "x" + originalBMD.height, x, y));
+		addChild(getTextField("Original\n" + originalBMD.width + "x" + originalBMD.height, x, y));
 
 		// MARCHING SQUARES
 		x += width + X_GAP;
@@ -96,32 +86,57 @@ class Test extends Sprite {
 		marchingSquares = new MarchingSquares(originalBMD, 1, clipRect);
 		perimeter = marchingSquares.march();
 		drawPerimeter(perimeter, x + clipRect.x, y + clipRect.y);
-		addChild(marchingText = getTextField("MarchSqrs\n" + perimeter.length + " pts", x, y));
+		addChild(getTextField("MarchSqrs\n" + perimeter.length + " pts", x, y));
 
 		// RAMER-DOUGLAS-PEUCKER
 		x += width + X_GAP;
 		simplifiedPoly = RamerDouglasPeucker.simplify(perimeter, 1.5);
-		drawSimplifiedPoly(simplifiedPoly, x + clipRect.x, y + clipRect.y);
-		addChild(simplifiedText = getTextField("Doug-Peuck\n" + simplifiedPoly.length + " pts", x, y));
+		drawPoly(simplifiedPoly, x + clipRect.x, y + clipRect.y);
+		addChild(getTextField("Doug-Peuck\n" + simplifiedPoly.length + " pts", x, y));
 
 		// EARCLIPPER TRIANGULATION
 		x += width + X_GAP;
 		triangulation = EarClipper.triangulate(simplifiedPoly);
 		drawTriangulation(triangulation, x + clipRect.x, y + clipRect.y);
-		addChild(triangulationText = getTextField("EC-Triang\n" + triangulation.length + " tris", x, y));
+		addChild(getTextField("EC-Triang\n" + triangulation.length + " tris", x, y));
 
 		// EARCLIPPER DECOMPOSITION
 		x += width + X_GAP;
 		decomposition = EarClipper.polygonizeTriangles(triangulation);
 		drawDecomposition(decomposition, x + clipRect.x, y + clipRect.y);
-		addChild(decompositionText = getTextField("EC-Decomp\n" + decomposition.length + " polys", x, y));
+		addChild(getTextField("EC-Decomp\n" + decomposition.length + " polys", x, y));
 
 		// BAYAZIT DECOMPOSITION
 		x += width + X_GAP;
 		decompositionBayazit = Bayazit.decomposePoly(simplifiedPoly);
 		drawDecompositionBayazit(decompositionBayazit, x + clipRect.x, y + clipRect.y);
-		addChild(decompositionBayazitText = getTextField("Bayaz-Decomp\n" + decompositionBayazit.length + " polys", x, y));
+		addChild(getTextField("Bayaz-Decomp\n" + decompositionBayazit.length + " polys", x, y));
 
+		// VISIBILITY
+		x += width + X_GAP;
+		
+		//trace(PolyTools.isCCW(simplifiedPoly));
+		drawPoly(simplifiedPoly, x, y);
+		//var origIdx = 28;
+		var origIdx = Std.int(Math.random()*simplifiedPoly.length);
+		var origPoint = simplifiedPoly[origIdx];
+		trace(origPoint);
+		// visible points
+		var visPoints = Visibility.getVisiblePolyFrom(simplifiedPoly, origIdx);
+		g.lineStyle(1, 0xFFFF00);
+		drawPoly(visPoints, x, y);	
+		// visible vertices
+		var visIndices = Visibility.getVisibleIndicesFrom(simplifiedPoly, origIdx);
+		var visVertices = [for (i in 0...visIndices.length) simplifiedPoly[visIndices[i]]];
+		g.lineStyle(1, 0x00FF00);
+		drawPoints(visVertices, x, y);
+		// draw origPoint
+		g.lineStyle(1, 0x0000FF);
+		g.drawCircle(x + origPoint.x, y + origPoint.y, 3);
+		g.lineStyle(1, 0xFF00FF);
+		g.drawCircle(x + simplifiedPoly[origIdx].x, y + simplifiedPoly[origIdx].y, 3);
+		addChild(getTextField("Visibility\n" + visVertices.length + " vts\n" + visPoints.length + " pts", x, y));
+		
 		// KEIL DECOMPOSITION
 		/*x += width + X_GAP;
 		decompositionKeil = Keil.decomposePoly(simplifiedPoly);
@@ -131,39 +146,18 @@ class Test extends Sprite {
 		//stage.addChild(new FPS(5, 5, 0xFFFFFF));
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		
-		var sp:Poly = new Poly();
-		sp.push(new Point(30, 30));
-		sp.push(new Point(65, 60));
-		sp.push(new Point(85, 120));
-		sp.push(new Point(95, 50));
-		sp.push(new Point(125, 40));
-		sp.push(new Point(120, 25));
-		sp = simplifiedPoly;
-		
-		//PolyTools.makeCCW(sp);
-		trace(sp);
-		
-		drawSimplifiedPoly(sp, x + X_GAP + originalBMD.width, y);
-		var origIdx = Std.int(Math.random() * sp.length);
-		var visIndices = new Array<Int>();
-		visIndices.push(origIdx);
-		for (i in 0...sp.length) {
-			if (Keil.canSee(sp, origIdx, i)) visIndices.push(i);
-		}
-		
-		/*
-		visIndices =  Visibility.getVisibleIndicesFrom(sp, 0);
-		*/
-		var visPoints = [for (i in 0...visIndices.length) sp[visIndices[i]]];
-		g.lineStyle(1, 0x00FF00);
-		drawSimplifiedPoly(visPoints, x + X_GAP + originalBMD.width, y);
-		trace(visIndices);
-		
-		// draw origPoint
-		g.lineStyle(1, 0x0000FF);
-		g.drawCircle(x + X_GAP + originalBMD.width + sp[origIdx].x, y + sp[origIdx].y, 2);
+		//dumpPoly(simplifiedPoly, true);
 	}
 
+	public function dumpPoly(poly:Array<Point>, reverse:Bool = false):Void {
+		var len = poly.length;
+		var str = "";
+		for (i in 0...len) {
+			var p = poly[reverse ? len - i - 1 : i];
+			str += p.x + "," + p.y + ",";
+		}
+		trace(str);
+	}
 
 	public function drawPerimeter(points:Array<Point>, x:Float, y:Float):Void 
 	{
@@ -177,19 +171,46 @@ class Test extends Sprite {
 		}
 	}
 
-	public function drawSimplifiedPoly(points:Array<Point>, x:Float, y:Float):Void 
+	public function drawPoints(points:Array<Point>, x:Float, y:Float, radius:Float = 2):Void 
+	{
+		for (i in 0...points.length) {
+			var p = points[i];
+			g.drawCircle(x + p.x, y + p.y, radius);
+		}
+	}
+	
+	public function drawPointsLabels(points:Array<Point>, x:Float, y:Float):Void 
+	{
+		var len = points.length;
+		var i = len - 1;
+		while (i >= 0) {
+			var p = points[i];
+			var label = getTextField("" + i, 0, 0, TEXT_SIZE * .75);
+			var fmt = label.getTextFormat();
+			fmt.align = TextFormatAlign.LEFT;
+			label.setTextFormat(fmt);
+			label.x = x + p.x - 15;
+			label.y = y + p.y - 15;
+			addChild(label);
+			i--;
+		}
+	}
+	
+	public function drawPoly(points:Array<Point>, x:Float, y:Float, showPoints:Bool = true, showLabels:Bool = false):Void 
 	{
 		// points
-		for (i in 1...points.length) {
-			var p = points[i];
-			g.drawCircle(x + p.x, y + p.y, 2);
-		}
+		if (showPoints) drawPoints(points, x, y);
+		
 		// lines
 		g.moveTo(x + points[0].x, y + points[0].y);
 		for (i in 1...points.length) {
 			var p = points[i];
 			g.lineTo(x + p.x, y + p.y);
 		}
+		g.lineTo(x + points[0].x, y + points[0].y);
+		
+		// labels
+		if (showLabels) drawPointsLabels(points, x, y);
 	}
 
 	public function drawTriangulation(tris:Array<Tri>, x:Float, y:Float):Void 
@@ -218,7 +239,7 @@ class Test extends Sprite {
 		}
 	}
 
-	public function drawDecompositionBayazit(polys:Array<net.azrafe7.geomAlgo.PolyTools.Poly>, x:Float, y:Float):Void 
+	public function drawDecompositionBayazit(polys:Array<Poly>, x:Float, y:Float):Void 
 	{
 		var str:String = "";
 		for (poly in polys) {
@@ -243,7 +264,7 @@ class Test extends Sprite {
 		*/
 	}
 
-	public function drawDecompositionKeil(edges:net.azrafe7.geomAlgo.Keil.EdgeList, x:Float, y:Float):Void 
+	public function drawDecompositionKeil(edges:EdgeList, x:Float, y:Float):Void 
 	{
 		for (edge in edges) {
 			g.moveTo(x + edge.first.x, y + edge.first.y);

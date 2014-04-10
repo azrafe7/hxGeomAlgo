@@ -113,7 +113,7 @@ class Keil
 				continue;
 			if (poly.at(a).isLeftOrOn(poly.at(b), poly.at(i + 1)) && poly.at(a).isRightOrOn(poly.at(b), poly.at(i))) { // if diag intersects an edge
 				var p = PolyTools.intersection(poly.at(a), poly.at(b), poly.at(i), poly.at(i + 1));
-				if (poly.at(a).distanceSquared(p) < dist) { // if edge is blocking visibility to b
+				if (p != null && poly.at(a).distanceSquared(p) < dist) { // if edge is blocking visibility to b
 					return false;
 				}
 			}

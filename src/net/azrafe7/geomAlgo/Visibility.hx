@@ -36,141 +36,184 @@ class Visibility
 	static private var stack:Array<Int> = new Array<Int>();						// stack holds indices of visibility polygon
 	static private var vertexType:Array<VertexType> = new Array<VertexType>();	// types of vertices
 	static private var stackTop:Int;											// stack pointer to top element
-
+	static private var poly:Poly;												// cartesian version of simplePoly - used internally
+	
 	static private var leftLidIdx:Int;
 	static private var rightLidIdx:Int;
+	static private var reversed:Bool;
 	
 	/** . */
 	static public function getVisibleIndicesFrom(simplePoly:Poly, origIdx:Int = 0):Array<Int> {
 		var res = new Array<Int>();
 		
-		//poly.makeCCW();	// in place
-		
 		// init
-		var poly = new Poly();
+		poly = new Poly();
 		stack.clear();
 		vertexType.clear();
 		stackTop = -1;
 		for (i in 0...simplePoly.length) {
-			poly.push(new Point(simplePoly[i].x, -simplePoly[i].y));
+			poly.push(new Point(simplePoly[i].x, simplePoly[i].y));	// invert y (convert screen coord to cartesian)
 			stack.push(-1);
 			vertexType.push(VertexType.UNKNOWN);
 		}
-		
+		reversed = poly.makeCCW() && !simplePoly.isCCW();	// make poly ccw (in place)
+		trace("rev: " + reversed);
+
 		// build
-		var edgeJ:HomogCoord;					// during the loops, this is the line p[j-1]->p[j]
+		var edgeJ:HomogCoord;	// during the loops, this is the line p[j-1]->p[j]
 		origPoint = poly[origIdx];
 		var j:Int = origIdx;
 		push(j++, VertexType.RIGHT_WALL);	// origPoint & p[1] on Visible Poly
-		do {			// loop always pushes p[j] and increments j.
+		do {	// loop always pushes p[j] and increments j.
 			push(j++, VertexType.RIGHT_WALL);
-			if (j >= poly.length + origIdx) break; // we are done.
+			if (j >= poly.length + origIdx) break; 	// we are done.
 			edgeJ = poly.at(j - 1).meet(poly.at(j));
-			trace(j, edgeJ, poly.at(j), poly.at(j-1));
 			if (edgeJ.left(origPoint)) {
-				trace("left org");
-				continue; // easiest case: add edge to Visible Poly.
+				continue; 	// easiest case: add edge to Visible Poly.
 			}
 			// else p[j] backtracks, we must determine where
 			if (!(edgeJ.left(poly.at(j - 2)))) {	// p[j] is above last Visible Poly edge
-				trace("!left j-2");
 				j = exitRightBay(poly, j, poly.at(stack[stackTop]), HomogCoord.INFINITY);
 				push(j++, VertexType.RIGHT_LID); 
-				continue;  // exits bay; push next two
+				continue; 	 // exits bay; push next two
 			}
 			
-			saveLid();		// else p[j] below top edge; becomes lid or pops
-			do {		// p[j] hides some of Visible Poly; break loop when can push p[j].
-				//System.out.print("do j:"+j+" lid:"+LLidIdx+" "+RLidIdx+toString());
-				if (origPoint.isLeft(poly.at(stack[stackTop]), poly.at(j))) {// saved lid ok so far...
-					if (poly.at(j).isRight(poly.at(j + 1), origPoint)) j++; // continue to hide
-					else if (edgeJ.left(poly.at(j + 1))) { // or turns up into bay
+			saveLid();	// else p[j] below top edge; becomes lid or pops
+			do {	// p[j] hides some of Visible Poly; break loop when can push p[j].
+				//trace("do j: " + j + " lid: " + leftLidIdx + " " + rightLidIdx);
+				if (origPoint.isLeft(poly.at(stack[stackTop]), poly.at(j))) {	// saved lid ok so far...
+					if (poly.at(j).isRight(poly.at(j + 1), origPoint)) j++; 	// continue to hide
+					else if (edgeJ.left(poly.at(j + 1))) { 	// or turns up into bay
 						j = exitLeftBay(poly, j, poly.at(j), poly.at(leftLidIdx).meet(poly.at(leftLidIdx - 1))) + 1; 
 					} else {	// or turns down; put saved lid back & add new Visible Poly edge 
 						restoreLid(); 
 						push(j++, VertexType.LEFT_WALL); 
 						break; 
 					}
-					edgeJ = poly.at(j - 1).meet(poly.at(j)); // loop continues with new j; update edgeJ
-				} else	{		// lid is no longer visible
-					if (!(edgeJ.left(poly.at(stack[stackTop])))) { // entered RBay, must get out
-						if (rightLidIdx != NOT_SAVED) throw "no RLid saved " + leftLidIdx + rightLidIdx;
-						j = exitRightBay(poly, j, poly.at(stack[stackTop]), edgeJ.neg()); // exits bay;
+					edgeJ = poly.at(j - 1).meet(poly.at(j)); 	// loop continues with new j; update edgeJ
+				} else	{	// lid is no longer visible
+					if (!(edgeJ.left(poly.at(stack[stackTop])))) { 	// entered RBay, must get out
+						//if (rightLidIdx != NOT_SAVED) throw "no RLid saved " + leftLidIdx + " " + rightLidIdx;
+						j = exitRightBay(poly, j, poly.at(stack[stackTop]), edgeJ.neg()); 	// exits bay;
 						push(j++, VertexType.RIGHT_LID); 
-						break; // found new visible lid to add to Visible Poly.
+						break; 	// found new visible lid to add to Visible Poly.
 					} 
-					else saveLid(); // save new lid from Visible Poly; continue to hide Visible Poly.
+					else saveLid(); 	// save new lid from Visible Poly; continue to hide Visible Poly.
 				}
 			} while (true);
-			//System.out.print("exit j:"+j+" lid:"+LLidIdx+" "+RLidIdx+toString());
-		} while (j < poly.length + origIdx); // don't push origin again.
+			//trace("exit j: " + j + " lid: " + leftLidIdx + " " + rightLidIdx);
+		} while (j < poly.length + origIdx); 	// don't push origin again.
 		
-		var s:String = "";
-		for (i in 0...stackTop+1) {
-			/*if (i >= 0) res.push(i % poly.length);
-			else break;*/
-			s += i + Std.string(vertexType[i]) + " ";
-			if (vertexType[i] == VertexType.LEFT_WALL || vertexType[i] == VertexType.RIGHT_WALL) res.push(i);
+		//var s:String = "";
+		for (i in 0...stackTop + 1) {
+			//s += (stack[i] % poly.length) + Std.string(vertexType[i]) + " ";
+			if (vertexType[i] == VertexType.LEFT_WALL || vertexType[i] == VertexType.RIGHT_WALL) {
+				var idx = stack[i] % poly.length;
+				//if (reversed) idx = poly.length - idx - 1;	// reverse indices
+				res.push(idx);
+			}
 		}
-		trace(s);
+		//trace(s);
+		
 		return res;
 	}
 	
-	
-	/** exit a bay: proceed from j, j++, .. until exiting the bay defined
-	to the right (or left for exitLBay) of the line from org through
-	point bot to line lid.  Return j such that (j,j+1) forms new lid
-	of this bay.  Assumes that pl.p(j) is not left (right) of the line
-	org->bot.  
-	*/
+	static public function getVisiblePolyFrom(simplePoly:Poly, origIdx:Int = 0):Poly {
+		var indices = getVisibleIndicesFrom(simplePoly, origIdx);
+		var res = new Poly();
+		
+		if (indices.length <= 0) return res;
+		
+		var q:HomogCoord;
+		var last:Point = poly.at(stack[stackTop]);
+		var lastPushed:Point = null;
+		var lastType:VertexType = VertexType.UNKNOWN;
+		var vType:VertexType = UNKNOWN;
+		for (i in 0...stackTop + 1) {
+			vType = vertexType[i];
+			//lastPushed = res.length > 0 ? res[res.length - 1] : null;
+			if (vType == VertexType.RIGHT_LID) {
+				q = origPoint.meet(last).meet(poly.at(stack[i]).meet(poly.at(stack[i + 1])));
+				//res.push(new Point(last.x, -last.y));
+				res.push(q.toPoint());
+			} else if (vType == VertexType.LEFT_WALL) {
+				q = origPoint.meet(poly.at(stack[i])).meet(poly.at(stack[i - 2]).meet(poly.at(stack[i - 1])));
+				res.push(q.toPoint());
+				//res.push(new Point(poly.at(stack[i]).x, -poly.at(stack[i]).y));
+			} else {
+				if (vType == VertexType.RIGHT_WALL && lastType == VertexType.RIGHT_LID) {
+					res.push(res[res.length-1].clone());
+				} else {
+					res.push(new Point(last.x, last.y));
+				}
+				//res.push(new Point(poly.at(stack[i]).x, -poly.at(stack[i]).y));
+			}
+			last = poly.at(stack[i]);
+			lastType = vType;
+		}
+		
+		return res;
+	}
+
+	/** 
+	 * Exits from a right bay: proceeds from j, j++, ... until exiting
+	 * the bay defined to the right of the line from origPoint through
+	 * point bot to line lid.  Returns j such that (j, j+1) forms a new lid
+	 * of this bay.  Assumes that poly.at(j) is not left of the line
+	 * origPoint->bot.  
+	 */
 	static private function exitRightBay(poly:Poly, j:Int, bot:Point, lid:HomogCoord):Int {
 		var windingNum:Int = 0;		// winding number
 		var mouth:HomogCoord = origPoint.meet(bot);
 		var lastLeft:Bool, currLeft:Bool = false;
-		trace("rbay");
+
 		while (++j < 3 * poly.length) {
 			lastLeft = currLeft; 
 			currLeft = mouth.left(poly.at(j));
-			trace(j, currLeft, lastLeft);
-			if ((currLeft != lastLeft) // if cross ray origPoint->bot, update winding num
-					&& (poly.at(j - 1).isLeft(poly.at(j), origPoint) == currLeft)) { 
-				trace(j, "curr != last");
+			
+			// if cross ray origPoint->bot, update winding num
+			if ((currLeft != lastLeft) && (poly.at(j - 1).isLeft(poly.at(j), origPoint) == currLeft)) { 
 				if (!currLeft) windingNum--;
-				else if (windingNum++ == 0) { // on 0->1 transitions, check window
+				else if (windingNum++ == 0) { 	// on 0->1 transitions, check window
 					var edge:HomogCoord = poly.at(j - 1).meet(poly.at(j));
-					trace(j, edge.left(bot), (HomogCoord.cw(mouth, edge, lid)));
-					if (edge.left(bot) && (HomogCoord.cw(mouth, edge, lid)))
-					return j - 1; // j exits window!
+					if (edge.left(bot) && (!HomogCoord.cw(mouth, edge, lid)))
+					return j - 1; 	// j exits window!
 				}
 			}
 		}
 		
-		trace("ERROR: We never exited RBay " + bot + lid + windingNum + "\n");// +toString());
+		trace("ERROR: We never exited RBay " + bot + " " + lid + " " + windingNum + "\n");
 		return j;
 	} 
 
+	/** 
+	 * Exits from a left bay: proceeds from j, j++, ... until exiting
+	 * the bay defined to the right of the line from origPoint through
+	 * point bot to line lid.  Returns j such that (j, j+1) forms a new lid
+	 * of this bay.  Assumes that poly.at(j) is not right of the line
+	 * origPoint->bot.  
+	 */
 	static private function exitLeftBay(poly:Poly, j:Int, bot:Point, lid:HomogCoord):Int {
 		var windingNum:Int = 0;		// winding number
 		var mouth:HomogCoord = origPoint.meet(bot);
-		var lastRight:Bool, currRight:Bool = false;	// called with !right(org,bot,pj)
+		var lastRight:Bool, currRight:Bool = false;		// called with !right(org,bot,pj)
+		
 		while (++j < 3 * poly.length) {
 			lastRight = currRight; 
 			currRight = mouth.right(poly.at(j));
-			trace(j, currRight, lastRight);
-			if ((currRight != lastRight) // if cross ray origPoint->bot, update winding num
-					&& (poly.at(j - 1).isRight(poly.at(j), origPoint) == currRight)) { 
-				trace(j, "curr != last");
+			
+			// if cross ray origPoint->bot, update winding num
+			if ((currRight != lastRight) && (poly.at(j - 1).isRight(poly.at(j), origPoint) == currRight)) { 
 				if (!currRight) windingNum++;
-				else if (windingNum-- == 0) { // on 0->-1 transitions, check window
+				else if (windingNum-- == 0) { 	// on 0->-1 transitions, check window
 					var edge:HomogCoord = poly.at(j - 1).meet(poly.at(j));
-					trace(j, edge.right(bot), (HomogCoord.cw(mouth, edge, lid)));
-					if (edge.right(bot) && (HomogCoord.cw(mouth, edge, lid)))
-					return j - 1; // j exits window!
+					if (edge.right(bot) && (!HomogCoord.cw(mouth, edge, lid)))
+					return j - 1; 	// j exits window!
 				}
 			}
 		}
 		
-		trace("ERROR: We never exited LBay " + bot + lid + windingNum + "\n");// +toString());
+		trace("ERROR: We never exited LBay " + bot + lid + windingNum + "\n");
 		return j;
 	} 
 
@@ -182,16 +225,16 @@ class Visibility
 	
 	static private function saveLid():Void 
 	{
-		//System.out.print("saveLid " + toString());
-		if (vertexType[stackTop] == VertexType.LEFT_WALL) stackTop--; // for LEFT_WALL, lid is previous two
+		//trace("saveLid " + stackTop);
+		if (vertexType[stackTop] == VertexType.LEFT_WALL) stackTop--; 	// for LEFT_WALL, lid is previous two
 		leftLidIdx = stack[stackTop--];
-		if (vertexType[stackTop] == VertexType.RIGHT_LID) rightLidIdx = stack[stackTop--]; // if not RIGHT_LID, just leave on top().
+		if (vertexType[stackTop] == VertexType.RIGHT_LID) rightLidIdx = stack[stackTop--]; 	// if not RIGHT_LID, just leave on top().
 		else rightLidIdx = NOT_SAVED;
 	}
 
 	static private function restoreLid():Void 
 	{
-		//System.out.print("restoreLid "+LLidIdx+","+RLidIdx+ toString());
+		//trace("restoreLid " + leflLidIdx + " " + rightLidIdx);
 		if (rightLidIdx != NOT_SAVED) push(rightLidIdx, VertexType.RIGHT_LID); 
 		push(leftLidIdx, VertexType.LEFT_LID);
 	}
