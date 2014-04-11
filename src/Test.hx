@@ -114,13 +114,9 @@ class Test extends Sprite {
 
 		// VISIBILITY
 		x += width + X_GAP;
-		
-		//trace(PolyTools.isCCW(simplifiedPoly));
 		drawPoly(simplifiedPoly, x, y);
-		//var origIdx = 28;
-		var origIdx = Std.int(Math.random()*simplifiedPoly.length);
+		var origIdx = Std.int(Math.random() * simplifiedPoly.length);
 		var origPoint = simplifiedPoly[origIdx];
-		trace(origPoint);
 		// visible points
 		var visPoints = Visibility.getVisiblePolyFrom(simplifiedPoly, origIdx);
 		g.lineStyle(1, 0xFFFF00);
@@ -133,8 +129,6 @@ class Test extends Sprite {
 		// draw origPoint
 		g.lineStyle(1, 0x0000FF);
 		g.drawCircle(x + origPoint.x, y + origPoint.y, 3);
-		g.lineStyle(1, 0xFF00FF);
-		g.drawCircle(x + simplifiedPoly[origIdx].x, y + simplifiedPoly[origIdx].y, 3);
 		addChild(getTextField("Visibility\n" + visVertices.length + " vts\n" + visPoints.length + " pts", x, y));
 		
 		// KEIL DECOMPOSITION

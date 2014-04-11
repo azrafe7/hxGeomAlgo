@@ -1,4 +1,14 @@
 /**
+ * Visibility polygon implementation.
+ * NOTE: Should work only for SIMPLE polygons (not self-intersecting, without holes).
+ * 
+ * Adapted/modified from:
+ * 
+ * @see http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/VPDemo.html	(Java - by Jack Snoeyink)
+ * 
+ * Other credits should go to papers/work of: 
+ * 
+ * @see http://www.stanford.edu/~tunococ/papers/avis81optimal.pdf	(Avis & Toussaint)
  * 
  * @author azrafe7
  */
@@ -14,10 +24,12 @@ import net.azrafe7.geomAlgo.Visibility.VertexType;
 using net.azrafe7.geomAlgo.PolyTools;
 
 
-/**    polygon vertex types:    LLID-------------------RLID
-									|            	|
-									|            	|
-							--------LWALL        	RWALL---------
+/** polygon vertex types:    
+
+  		LLID-------------------RLID
+			|            	|
+			|            	|
+	--------LWALL        	RWALL---------
 */
 enum VertexType {
 	UNKNOWN;
@@ -42,7 +54,7 @@ class Visibility
 	static private var rightLidIdx:Int;
 	static private var reversed:Bool;
 	
-	/** . */
+	/** Returns an array of indices representing the vertices of `simplePoly` visible from `origIdx`. */
 	static public function getVisibleIndicesFrom(simplePoly:Poly, origIdx:Int = 0):Array<Int> {
 		var res = new Array<Int>();
 		
@@ -56,9 +68,9 @@ class Visibility
 			stack.push(-1);
 			vertexType.push(VertexType.UNKNOWN);
 		}
-		reversed = poly.makeCCW() && !simplePoly.isCCW();	// make poly ccw (in place)
-		trace("rev: " + reversed);
-
+		reversed = poly.makeCCW();	// make poly ccw (in place)
+		if (reversed) origIdx = poly.length - origIdx - 1;
+		
 		// build
 		var edgeJ:HomogCoord;	// during the loops, this is the line p[j-1]->p[j]
 		origPoint = poly[origIdx];
@@ -109,7 +121,7 @@ class Visibility
 			//s += (stack[i] % poly.length) + Std.string(vertexType[i]) + " ";
 			if (vertexType[i] == VertexType.LEFT_WALL || vertexType[i] == VertexType.RIGHT_WALL) {
 				var idx = stack[i] % poly.length;
-				//if (reversed) idx = poly.length - idx - 1;	// reverse indices
+				if (reversed) idx = poly.length - idx - 1;	// reverse indices
 				res.push(idx);
 			}
 		}
@@ -118,6 +130,7 @@ class Visibility
 		return res;
 	}
 	
+	/** Returns an array of all the points of `simplePoly` visible from `origIdx`. */
 	static public function getVisiblePolyFrom(simplePoly:Poly, origIdx:Int = 0):Poly {
 		var indices = getVisibleIndicesFrom(simplePoly, origIdx);
 		var res = new Poly();
@@ -131,25 +144,29 @@ class Visibility
 		var vType:VertexType = UNKNOWN;
 		for (i in 0...stackTop + 1) {
 			vType = vertexType[i];
-			//lastPushed = res.length > 0 ? res[res.length - 1] : null;
+			
 			if (vType == VertexType.RIGHT_LID) {
 				q = origPoint.meet(last).meet(poly.at(stack[i]).meet(poly.at(stack[i + 1])));
-				//res.push(new Point(last.x, -last.y));
+				if (lastPushed != null && !lastPushed.equals(last)) {
+					res.push(last.clone());
+				}
 				res.push(q.toPoint());
 			} else if (vType == VertexType.LEFT_WALL) {
 				q = origPoint.meet(poly.at(stack[i])).meet(poly.at(stack[i - 2]).meet(poly.at(stack[i - 1])));
 				res.push(q.toPoint());
-				//res.push(new Point(poly.at(stack[i]).x, -poly.at(stack[i]).y));
 			} else {
-				if (vType == VertexType.RIGHT_WALL && lastType == VertexType.RIGHT_LID) {
-					res.push(res[res.length-1].clone());
+				if ((vType == VertexType.RIGHT_WALL && lastType == VertexType.RIGHT_LID)
+					|| (vType == VertexType.LEFT_LID && lastType == VertexType.RIGHT_LID)) {
+					// skip this one
 				} else {
-					res.push(new Point(last.x, last.y));
+					res.push(last.clone());
 				}
-				//res.push(new Point(poly.at(stack[i]).x, -poly.at(stack[i]).y));
 			}
+			lastPushed = res[res.length - 1];
 			last = poly.at(stack[i]);
 			lastType = vType;
+			
+			//if (lastPushed.equals(last)) trace("duplicate " + last);
 		}
 		
 		return res;
@@ -238,6 +255,4 @@ class Visibility
 		if (rightLidIdx != NOT_SAVED) push(rightLidIdx, VertexType.RIGHT_LID); 
 		push(leftLidIdx, VertexType.LEFT_LID);
 	}
-	
-
 }

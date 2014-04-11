@@ -27,7 +27,7 @@ class PolyTools
 
 	
 	/** Return true if `poly` is counterclockwise. */
-	static inline public function isCCW(poly:Poly):Bool {
+	static public function isCCW(poly:Poly):Bool {
 		var br:Int = 0;
 
 		// find bottom right point

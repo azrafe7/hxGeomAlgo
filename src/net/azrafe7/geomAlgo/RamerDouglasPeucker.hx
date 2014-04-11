@@ -36,7 +36,7 @@ class RamerDouglasPeucker
 		var dist = 0.;
 		for (i in 1...points.length - 1) {
 			var currDist = PolyTools.distanceToSegment(points[i], firstPoint, lastPoint);
-			if (currDist > dist){
+			if (currDist > dist) {
 				dist = currDist;
 				index = i;
 			}
