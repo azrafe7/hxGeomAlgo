@@ -52,3 +52,14 @@ Relevant changes:
 Adapted/modified from:
 
  - [http://mnbayazit.com/406/bayazit](http://mnbayazit.com/406/bayazit)	(C - by Mark Bayazit)
+
+### [Visibilty Polygon](http://en.wikipedia.org/wiki/Visibility_polygon) and [Homogeneous Coords (2D)](http://en.wikipedia.org/wiki/Homogeneous_coordinates) ###
+
+Adapted/modified from:
+
+ - [http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/VPDemo.html](http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/VPDemo.html)	(Java - by Jack Snoeyink)
+
+Relevant changes:
+
+ - Fixes for points discovery on polygon edges 
+ - Refactored into static class

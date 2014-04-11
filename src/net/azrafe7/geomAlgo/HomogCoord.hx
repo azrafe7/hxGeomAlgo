@@ -1,11 +1,18 @@
+/**
+ * Homogeneous Coordinates class.
+ * 
+ * Adapted/modified from:
+ * 
+ * @see http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/VPDemo.html	(Java - by Jack Snoeyink)
+ * 
+ * @author azrafe7
+ */
+
 package net.azrafe7.geomAlgo;
 
 import flash.geom.Point;
 
-/**
- * ...
- * @author azrafe7
- */
+
 class HomogCoord
 {
 	public static var INFINITY:HomogCoord = new HomogCoord();
@@ -19,7 +26,6 @@ class HomogCoord
 		this.y = y;
 		this.w = w;
 	}
-	
 	
 	public function add(p:HomogCoord):HomogCoord { x += p.x; y += p.y; return this; }
 	
@@ -41,7 +47,7 @@ class HomogCoord
 	
 	public function dotPoint(p:Point) { return w + x * p.x + y * p.y;}
 	
-	//public function dot(p:HomogCoord) { return w * p.w + x * p.x + y * p.y; }
+	public function dot(p:HomogCoord) { return w * p.w + x * p.x + y * p.y; }
 	
 	public function perpdot(p:HomogCoord) { return x * p.y - y * p.x; }
 	
