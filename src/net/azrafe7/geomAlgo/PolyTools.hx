@@ -31,12 +31,13 @@ class PolyTools
 		var br:Int = 0;
 
 		// find bottom right point
-		var signedArea = .0;
 		for (i in 1...poly.length) {
-			signedArea += winding(at(poly, i - 1), at(poly, i), at(poly, i + 1));
+			if (poly[i].y < poly[br].y || (poly[i].y == poly[br].y && poly[i].x > poly[br].x)) {
+				br = i;
+			}
 		}
 
-		return (signedArea > 0);
+		return isLeft(at(poly, br - 1), at(poly, br), at(poly, br + 1));
 	}
 	
 	/** Makes `poly` counterclockwise (in place). Returns true if reversed. */

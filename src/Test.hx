@@ -34,6 +34,7 @@ class Test extends Sprite {
 
 	//private var ASSET:String = "assets/super_mario.png";	// from here http://www.newgrounds.com/art/view/petelavadigger/super-mario-pixel
 	private var ASSET:String = "assets/pirate_small.png";
+	//private var ASSET:String = "assets/nazca_monkey.png";
 	//private var ASSET:String = "assets/custom.png";
 	
 	private var COLOR:Int = 0xFF0000;
@@ -46,7 +47,7 @@ class Test extends Sprite {
 	private var TEXT_OFFSET:Float = -60;
 	private var TEXT_OUTLINE:GlowFilter = new GlowFilter(0xFF000000, 1, 2, 2, 6);
 
-	private var START_POINT:Point = new Point(30, 80);
+	private var START_POINT:Point = new Point(20, 80);
 
 	private var originalBMD:BitmapData;
 	private var originalBitmap:Bitmap;

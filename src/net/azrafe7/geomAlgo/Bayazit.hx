@@ -35,7 +35,7 @@ class Bayazit
 		var res = new Array<Poly>();
 		
 		poly.makeCCW();	// in place
-		
+
 		reflexVertices.clear();
 		steinerPoints.clear();
 		
