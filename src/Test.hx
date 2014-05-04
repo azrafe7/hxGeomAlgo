@@ -15,15 +15,17 @@ import flash.system.System;
 import flash.text.TextField;
 import flash.text.TextFormat;
 import flash.text.TextFormatAlign;
-import net.azrafe7.geomAlgo.EarClipper;
-import net.azrafe7.geomAlgo.Keil;
-import net.azrafe7.geomAlgo.MarchingSquares;
-import net.azrafe7.geomAlgo.PolyTools;
-import net.azrafe7.geomAlgo.RamerDouglasPeucker;
-import net.azrafe7.geomAlgo.Bayazit;
-import net.azrafe7.geomAlgo.Visibility;
-import net.azrafe7.geomAlgo.PolyTools.Poly;
-import net.azrafe7.geomAlgo.Keil.EdgeList;
+import hxGeomAlgo.EarClipper;
+import hxGeomAlgo.Keil;
+import hxGeomAlgo.MarchingSquares;
+import hxGeomAlgo.PolyTools;
+import hxGeomAlgo.RamerDouglasPeucker;
+import hxGeomAlgo.Bayazit;
+import hxGeomAlgo.Visibility;
+import hxGeomAlgo.PolyTools.Poly;
+import hxGeomAlgo.Keil.EdgeList;
+import hxGeomAlgo.PairDeque;
+import hxGeomAlgo.SnoeyinkKeil;
 import openfl.Assets;
 import openfl.display.FPS;
 
@@ -132,7 +134,7 @@ class Test extends Sprite {
 		g.drawCircle(x + origPoint.x, y + origPoint.y, 3);
 		addChild(getTextField("Visibility\n" + visVertices.length + " vts\n" + visPoints.length + " pts", x, y));
 		
-		// KEIL DECOMPOSITION
+		// KEIL DECOMPOSITION (not working yet)
 		/*x += width + X_GAP;
 		decompositionKeil = Keil.decomposePoly(simplifiedPoly);
 		drawDecompositionKeil(decompositionKeil, x + clipRect.x, y + clipRect.y);
@@ -141,7 +143,23 @@ class Test extends Sprite {
 		//stage.addChild(new FPS(5, 5, 0xFFFFFF));
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		
-		//dumpPoly(simplifiedPoly, true);
+		// SNOEYINK-KEIL DECOMPOSITION (buggy)
+		/*
+		//simplifiedPoly.reverse();
+		x += width + X_GAP;
+		var minPolys:Array<Array<Int>>;
+		for (poly in minPolys = SnoeyinkKeil.decomposePoly(simplifiedPoly)) {
+			var indices = [for (i in 0...poly.length) poly[i]];
+			var vertices = [for (i in 0...poly.length) simplifiedPoly[indices[i]]];
+			g.lineStyle(1, 0x00FF00);
+			drawPoly(vertices, x, y, false);
+		}
+		g.lineStyle(1, 0xFF0000);
+		drawPointsLabels(simplifiedPoly, x, y);
+		trace(System.totalMemory/1024/1024);
+		trace("min polys:", minPolys.length);
+		*/
+		dumpPoly(simplifiedPoly, true);
 	}
 
 	public function dumpPoly(poly:Array<Point>, reverse:Bool = false):Void {

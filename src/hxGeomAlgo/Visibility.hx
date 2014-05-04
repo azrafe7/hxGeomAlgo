@@ -2,7 +2,7 @@
  * Visibility polygon implementation.
  * NOTE: Should work only for SIMPLE polygons (not self-intersecting, without holes).
  * 
- * Adapted/modified from:
+ * Based on:
  * 
  * @see http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/VPDemo.html	(Java - by Jack Snoeyink)
  * 
@@ -13,15 +13,15 @@
  * @author azrafe7
  */
 
-package net.azrafe7.geomAlgo;
+package hxGeomAlgo;
 
 import flash.geom.Point;
-import net.azrafe7.geomAlgo.HomogCoord;
-import net.azrafe7.geomAlgo.PolyTools;
-import net.azrafe7.geomAlgo.Visibility.VertexType;
+import hxGeomAlgo.HomogCoord;
+import hxGeomAlgo.PolyTools;
+import hxGeomAlgo.Visibility.VertexType;
 
 
-using net.azrafe7.geomAlgo.PolyTools;
+using hxGeomAlgo.PolyTools;
 
 
 /** polygon vertex types:    
@@ -48,11 +48,12 @@ class Visibility
 	static private var stack:Array<Int> = new Array<Int>();						// stack holds indices of visibility polygon
 	static private var vertexType:Array<VertexType> = new Array<VertexType>();	// types of vertices
 	static private var stackTop:Int;											// stack pointer to top element
-	static private var poly:Poly;												// cartesian version of simplePoly - used internally
+	static public var poly:Poly;												// cartesian version of simplePoly - used internally
 	
 	static private var leftLidIdx:Int;
 	static private var rightLidIdx:Int;
-	static private var reversed:Bool;
+	
+	static public var reversed:Bool;	// true if the _internal_ indices have been reversed
 	
 	/** Returns an array of indices representing the vertices of `simplePoly` visible from `origIdx`. */
 	static public function getVisibleIndicesFrom(simplePoly:Poly, origIdx:Int = 0):Array<Int> {
@@ -64,7 +65,7 @@ class Visibility
 		vertexType.clear();
 		stackTop = -1;
 		for (i in 0...simplePoly.length) {
-			poly.push(new Point(simplePoly[i].x, simplePoly[i].y));	// invert y (convert screen coord to cartesian)
+			poly.push(new Point(simplePoly[i].x, simplePoly[i].y));	// ??? invert y (convert screen coord to cartesian)
 			stack.push(-1);
 			vertexType.push(VertexType.UNKNOWN);
 		}

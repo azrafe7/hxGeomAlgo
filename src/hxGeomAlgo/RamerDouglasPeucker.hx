@@ -1,7 +1,7 @@
 /**
  * Ramer-Douglas-Peucker implementation.
  * 
- * Adapted/modified from:
+ * Based on:
  * 
  * @see http://karthaus.nl/rdp/																				(JS - by Marius Karthaus)
  * @see http://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment		(JS - Grumdrig)
@@ -9,10 +9,10 @@
  * @author azrafe7
  */
 
-package net.azrafe7.geomAlgo;
+package hxGeomAlgo;
 
 import flash.geom.Point;
-import net.azrafe7.geomAlgo.PolyTools;
+import hxGeomAlgo.PolyTools;
 
 class RamerDouglasPeucker
 {

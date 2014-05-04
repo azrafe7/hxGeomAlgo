@@ -1,7 +1,7 @@
 /**
  * Keil polygon decomposition implementation.
  * 
- * Adapted/modified from:
+ * Based on:
  * 
  * @see http://mnbayazit.com/406/keil								(C - by Mark Bayazit)
  * 
@@ -14,14 +14,14 @@
  * @author azrafe7
  */
 
-package net.azrafe7.geomAlgo;
+package hxGeomAlgo;
 
 import flash.geom.Point;
-import net.azrafe7.geomAlgo.PolyTools;
-import net.azrafe7.geomAlgo.Keil.EdgeList;
+import hxGeomAlgo.PolyTools;
+import hxGeomAlgo.Keil.EdgeList;
 
 
-using net.azrafe7.geomAlgo.PolyTools;
+using hxGeomAlgo.PolyTools;
 
 
 class Edge { 
