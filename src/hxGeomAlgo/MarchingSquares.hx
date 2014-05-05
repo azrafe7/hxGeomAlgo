@@ -1,7 +1,7 @@
 /**
  * Marching Squares implementation (Counterclockwise).
  * 
- * Adapted/modified from:
+ * Based on:
  * 
  * @see http://devblog.phillipspiess.com/2010/02/23/better-know-an-algorithm-1-marching-squares/	(C# - by Phil Spiess)
  * @see http://www.tomgibara.com/computer-vision/marching-squares									(Java - by Tom Gibara)
@@ -9,7 +9,7 @@
  * @author azrafe7
  */
 
-package net.azrafe7.geomAlgo;
+package hxGeomAlgo;
 
 import flash.display.BitmapData;
 import flash.geom.Point;

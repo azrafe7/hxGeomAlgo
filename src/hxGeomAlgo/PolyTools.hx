@@ -1,7 +1,7 @@
 /**
  * Collection of functions to make working with Point and Poly easier.
  * 
- * Some of these have been adapted/modified from:
+ * Some of these have been based on:
  * 
  * @see http://mnbayazit.com/406/bayazit																	(C - by Mark Bayazit)
  * @see http://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment		(JS - Grumdrig)
@@ -9,7 +9,7 @@
  * @author azrafe7
  */
 
-package net.azrafe7.geomAlgo;
+package hxGeomAlgo;
 
 import flash.geom.Point;
 
@@ -89,7 +89,7 @@ class PolyTools
 		return poly[idx % len];
 	}
 	
-	/** Gets the winding of `p` relative to the directed line `a`-`b` (< 0 -> left, > 0 -> right, == 0 -> collinear). */
+	/** Gets the winding (signed area) of `p` relative to the directed line `a`-`b` (< 0 -> left, > 0 -> right, == 0 -> collinear). */
 	static inline public function winding(p:Point, a:Point, b:Point):Float
 	{
 		return (((a.x - p.x) * (b.y - p.y)) - ((b.x - p.x) * (a.y - p.y)));

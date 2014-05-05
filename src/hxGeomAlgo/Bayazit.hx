@@ -2,9 +2,10 @@
  * Bayazit polygon decomposition implementation.
  * NOTE: Should work only for SIMPLE polygons (not self-intersecting, without holes).
  * 
- * Adapted/modified from:
+ * Based on:
  * 
  * @see http://mnbayazit.com/406/bayazit							(C - by Mark Bayazit)
+ * @see http://mnbayazit.com/406/credit
  * 
  * Other credits should go to papers/work of: 
  * 
@@ -15,13 +16,13 @@
  * @author azrafe7
  */
 
-package net.azrafe7.geomAlgo;
+package hxGeomAlgo;
 
 import flash.geom.Point;
-import net.azrafe7.geomAlgo.PolyTools;
+import hxGeomAlgo.PolyTools;
 
 
-using net.azrafe7.geomAlgo.PolyTools;
+using hxGeomAlgo.PolyTools;
 
 
 class Bayazit
@@ -30,7 +31,11 @@ class Bayazit
 	static public var reflexVertices:Array<Point> = new Array<Point>();
 	static public var steinerPoints:Array<Point> = new Array<Point>();
 
-	/** Decomposes `poly` into a near-minimum number of convex polygons. */
+	/** 
+	 * Decomposes `poly` into a near-minimum number of convex polygons. 
+	 * 
+	 * NOTE: makes `poly` CCW first, if necessary. 
+	 */
 	static public function decomposePoly(poly:Poly):Array<Poly> {
 		var res = new Array<Poly>();
 		

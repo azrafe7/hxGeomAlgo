@@ -2,20 +2,21 @@
  * Ear clipping implementation - concave to convex polygon decomposition (Counterclockwise).
  * NOTE: Should work only for SIMPLE polygons (not self-intersecting, without holes).
  * 
- * Adapted/modified from:
+ * Based on:
  * 
  * @see http://www.box2d.org/forum/viewtopic.php?f=8&t=463&start=0										(JSFL - by mayobutter)
  * @see http://www.ewjordan.com/earClip/																(Processing - by Eric Jordan)
+ * @see http://en.nicoptere.net/?p=16																	(AS3 - by Nicolas Barradeau)
  * @see http://blog.touchmypixel.com/2008/06/making-convex-polygons-from-concave-ones-ear-clipping/		(AS3 - by Tarwin Stroh-Spijer)
  * @see http://headsoft.com.au/																			(C# - by Ben Baker)
  * 
  * @author azrafe7
  */
 
-package net.azrafe7.geomAlgo;
+package hxGeomAlgo;
 
 import flash.geom.Point;
-import net.azrafe7.geomAlgo.PolyTools;
+import hxGeomAlgo.PolyTools;
 
 
 typedef Tri = Poly;	// assumes Array<Point> of length 3
@@ -23,6 +24,18 @@ typedef Tri = Poly;	// assumes Array<Point> of length 3
 
 class EarClipper
 {
+	
+	/** 
+	 * Decomposes `poly` into a number of convex polygons 
+	 * (by first triangulating and then polygonizing it). 
+	 */
+	static public function decomposePoly(poly:Poly):Array<Poly> {
+		
+		var tris:Array<Tri> = triangulate(poly);
+		
+		return polygonizeTriangles(tris);
+	}
+	
 	/**
 	 * Triangulates a polygon.
 	 * 
@@ -108,7 +121,6 @@ class EarClipper
 				}
 				else
 				{
-					/* mmh */
 					poly = triangulation[currTri];
 					covered[currTri] = true;
 					for (i in 0...triangulation.length)

@@ -1,5 +1,7 @@
 **hxGeomAlgo** is based on:
 
+ - HaxeFoundation ([http://haxe-foundation.org/](http://haxe-foundation.org/))
+ - OpenFL ([http://www.openfl.org/](http://www.openfl.org/))
  - Marching Squares
    - [http://devblog.phillipspiess.com/2010/02/23/better-know-an-algorithm-1-marching-squares/](http://devblog.phillipspiess.com/2010/02/23/better-know-an-algorithm-1-marching-squares/)	(Phil Spiess)
    - [http://www.tomgibara.com/computer-vision/marching-squares](http://www.tomgibara.com/computer-vision/marching-squares)	(Tom Gibara)
@@ -9,9 +11,14 @@
  - Ear Clipping
    - [http://www.box2d.org/forum/viewtopic.php?f=8&t=463&start=0](http://www.box2d.org/forum/viewtopic.php?f=8&t=463&start=0)	(mayobutter)
    - [http://www.ewjordan.com/earClip/](http://www.ewjordan.com/earClip/)			(Eric Jordan)
+   - [http://en.nicoptere.net/?p=16](http://en.nicoptere.net/?p=16) (Nicolas Barradeau)
    - [http://blog.touchmypixel.com/2008/06/making-convex-polygons-from-concave-ones-ear-clipping/](http://blog.touchmypixel.com/2008/06/making-convex-polygons-from-concave-ones-ear-clipping/) 	(Tarwin Stroh-Spijer)
    - [http://headsoft.com.au/](http://headsoft.com.au/)	(Ben Baker)
  - Bayazit PolyDecomp
     - [http://mnbayazit.com/406/bayazit](http://mnbayazit.com/406/bayazit)	(Mark Bayazit)
+    - [http://mnbayazit.com/406/credit](http://mnbayazit.com/406/credit)
  - Visibilty Polygon and Homogeneous Coords (2D)
    - [http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/VPDemo.html](http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/VPDemo.html)	(Jack Snoeyink)
+ - Snoeyink-Keil Minimum Convex Decomposition
+   - [http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/MCDDemo.html](http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/MCDDemo.html) (Jack Snoeyink & Mark Keil)
+   - [J. Mark Keil](http://www.informatik.uni-trier.de/~ley/pers/hd/k/Keil:J=_Mark), [Jack Snoeyink](http://www.informatik.uni-trier.de/~ley/pers/hd/s/Snoeyink:Jack.html): On the Time Bound for Convex Decomposition of Simple Polygons. [Int. J. Comput. Geometry Appl. 12](http://www.informatik.uni-trier.de/~ley/db/journals/ijcga/ijcga12.html#KeilS02)(3): 181-192 (2002)
