@@ -16,14 +16,12 @@ import flash.text.TextField;
 import flash.text.TextFormat;
 import flash.text.TextFormatAlign;
 import hxGeomAlgo.EarClipper;
-import hxGeomAlgo.Keil;
 import hxGeomAlgo.MarchingSquares;
 import hxGeomAlgo.PolyTools;
 import hxGeomAlgo.RamerDouglasPeucker;
 import hxGeomAlgo.Bayazit;
 import hxGeomAlgo.Visibility;
 import hxGeomAlgo.PolyTools.Poly;
-import hxGeomAlgo.Keil.EdgeList;
 import hxGeomAlgo.PairDeque;
 import hxGeomAlgo.SnoeyinkKeil;
 import openfl.Assets;
@@ -35,8 +33,8 @@ class Test extends Sprite {
 	private var g:Graphics;
 
 	//private var ASSET:String = "assets/super_mario.png";	// from here http://www.newgrounds.com/art/view/petelavadigger/super-mario-pixel
-	private var ASSET:String = "assets/pirate_small.png";
-	//private var ASSET:String = "assets/nazca_monkey.png";
+	//private var ASSET:String = "assets/pirate_small.png";
+	private var ASSET:String = "assets/nazca_monkey.png";
 	//private var ASSET:String = "assets/custom.png";
 	
 	private var COLOR:Int = 0xFF0000;
@@ -62,7 +60,6 @@ class Test extends Sprite {
 	private var triangulation:Array<Tri>;
 	private var decomposition:Array<Poly>;
 	private var decompositionBayazit:Array<Poly>;
-	private var decompositionKeil:EdgeList;
 
 
 	public function new () {
@@ -159,6 +156,7 @@ class Test extends Sprite {
 		trace(System.totalMemory/1024/1024);
 		trace("min polys:", minPolys.length);
 		*/
+		
 		dumpPoly(simplifiedPoly, true);
 	}
 
@@ -277,13 +275,13 @@ class Test extends Sprite {
 		*/
 	}
 
-	public function drawDecompositionKeil(edges:EdgeList, x:Float, y:Float):Void 
+	/*public function drawDecompositionKeil(edges:EdgeList, x:Float, y:Float):Void 
 	{
 		for (edge in edges) {
 			g.moveTo(x + edge.first.x, y + edge.first.y);
 			g.lineTo(x + edge.second.x, y + edge.second.y);
 		}
-	}
+	}*/
 
 	public function getTextField(text:String = "", x:Float, y:Float, ?size:Float):TextField
 	{
