@@ -33,13 +33,15 @@ class Test extends Sprite {
 	private var g:Graphics;
 
 	//private var ASSET:String = "assets/super_mario.png";	// from here http://www.newgrounds.com/art/view/petelavadigger/super-mario-pixel
-	//private var ASSET:String = "assets/pirate_small.png";
-	private var ASSET:String = "assets/nazca_monkey.png";
-	//private var ASSET:String = "assets/custom.png";
+	private var ASSET:String = "assets/pirate_small.png";
+	//private var ASSET:String = "assets/nazca_monkey.png";
+	//private var ASSET:String = "assets/star.png";
+	//private var ASSET:String = "assets/complex.png";	// Bayazit doesn't play well with this one
 	
 	private var COLOR:Int = 0xFF0000;
 	private var ALPHA:Float = 1.;
 	private var X_GAP:Int = 10;
+	private var Y_GAP:Int = 25;
 
 	private var TEXT_COLOR:Int = 0xFFFFFFFF;
 	private var TEXT_FONT:String = "_typewriter";
@@ -65,7 +67,9 @@ class Test extends Sprite {
 	public function new () {
 		super ();
 
-		g = graphics;
+		var sprite = new Sprite();
+		addChild(sprite);
+		g = sprite.graphics;
 		g.lineStyle(1, COLOR, ALPHA);
 		originalBMD = Assets.getBitmapData(ASSET);
 
@@ -74,7 +78,7 @@ class Test extends Sprite {
 		var width = originalBMD.width;
 
 		// ORIGINAL IMAGE
-		addChild(originalBitmap = new Bitmap(originalBMD));
+		addChildAt(originalBitmap = new Bitmap(originalBMD), 0);	// add it underneath sprite
 		originalBitmap.x = x;
 		originalBitmap.y = y;
 		addChild(getTextField("Original\n" + originalBMD.width + "x" + originalBMD.height, x, y));
@@ -100,18 +104,6 @@ class Test extends Sprite {
 		drawTriangulation(triangulation, x + clipRect.x, y + clipRect.y);
 		addChild(getTextField("EC-Triang\n" + triangulation.length + " tris", x, y));
 
-		// EARCLIPPER DECOMPOSITION
-		x += width + X_GAP;
-		decomposition = EarClipper.polygonizeTriangles(triangulation);
-		drawDecomposition(decomposition, x + clipRect.x, y + clipRect.y);
-		addChild(getTextField("EC-Decomp\n" + decomposition.length + " polys", x, y));
-
-		// BAYAZIT DECOMPOSITION
-		x += width + X_GAP;
-		decompositionBayazit = Bayazit.decomposePoly(simplifiedPoly);
-		drawDecompositionBayazit(decompositionBayazit, x + clipRect.x, y + clipRect.y);
-		addChild(getTextField("Bayaz-Decomp\n" + decompositionBayazit.length + " polys", x, y));
-
 		// VISIBILITY
 		x += width + X_GAP;
 		drawPoly(simplifiedPoly, x, y);
@@ -130,34 +122,31 @@ class Test extends Sprite {
 		g.lineStyle(1, 0x0000FF);
 		g.drawCircle(x + origPoint.x, y + origPoint.y, 3);
 		addChild(getTextField("Visibility\n" + visVertices.length + " vts\n" + visPoints.length + " pts", x, y));
-		
-		// KEIL DECOMPOSITION (not working yet)
-		/*x += width + X_GAP;
-		decompositionKeil = Keil.decomposePoly(simplifiedPoly);
-		drawDecompositionKeil(decompositionKeil, x + clipRect.x, y + clipRect.y);
-		addChild(decompositionKeilText = getTextField("Keil-Decomp\n" + decompositionKeil.length + " edges", x, y));*/
+		g.lineStyle(1, COLOR, ALPHA);
+
+		// EARCLIPPER DECOMPOSITION
+		x = START_POINT.x + width + X_GAP;
+		y += height + Y_GAP;
+		decomposition = EarClipper.polygonizeTriangles(triangulation);
+		drawDecomposition(decomposition, x + clipRect.x, y + clipRect.y);
+		addChild(getTextField("EarClipper\nDecomp\n" + decomposition.length + " polys", x, y));
+
+		// BAYAZIT DECOMPOSITION
+		x += width + X_GAP;
+		decomposition = Bayazit.decomposePoly(simplifiedPoly);
+		drawDecompositionBayazit(decomposition, x + clipRect.x, y + clipRect.y);
+		addChild(getTextField("Bayazit\nDecomp\n" + decomposition.length + " polys", x, y));
+
+		// SNOEYINK-KEIL DECOMPOSITION (buggy)
+		x += width + X_GAP;
+		decomposition = SnoeyinkKeil.decomposePoly(simplifiedPoly);
+		drawDecomposition(decomposition, x + clipRect.x, y + clipRect.y);
+		addChild(getTextField("Snoeyink-Keil\nMin Decomp\n" + decomposition.length + " polys", x, y));
 
 		//stage.addChild(new FPS(5, 5, 0xFFFFFF));
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-		
-		// SNOEYINK-KEIL DECOMPOSITION (buggy)
-		/*
-		//simplifiedPoly.reverse();
-		x += width + X_GAP;
-		var minPolys:Array<Array<Int>>;
-		for (poly in minPolys = SnoeyinkKeil.decomposePoly(simplifiedPoly)) {
-			var indices = [for (i in 0...poly.length) poly[i]];
-			var vertices = [for (i in 0...poly.length) simplifiedPoly[indices[i]]];
-			g.lineStyle(1, 0x00FF00);
-			drawPoly(vertices, x, y, false);
-		}
-		g.lineStyle(1, 0xFF0000);
-		drawPointsLabels(simplifiedPoly, x, y);
-		trace(System.totalMemory/1024/1024);
-		trace("min polys:", minPolys.length);
-		*/
-		
-		dumpPoly(simplifiedPoly, true);
+
+		dumpPoly(simplifiedPoly, false);
 	}
 
 	public function dumpPoly(poly:Array<Point>, reverse:Bool = false):Void {
@@ -175,11 +164,7 @@ class Test extends Sprite {
 		// draw clipRect
 		g.drawRect(originalBitmap.x + clipRect.x, originalBitmap.y + clipRect.y, clipRect.width, clipRect.height);
 
-		g.moveTo(x + points[0].x, y + points[0].y);
-		for (i in 1...points.length) {
-			var p = points[i];
-			g.lineTo(x + p.x, y + p.y);
-		}
+		drawPoly(points, x, y, false);
 	}
 
 	public function drawPoints(points:Array<Point>, x:Float, y:Float, radius:Float = 2):Void 
@@ -200,8 +185,8 @@ class Test extends Sprite {
 			var fmt = label.getTextFormat();
 			fmt.align = TextFormatAlign.LEFT;
 			label.setTextFormat(fmt);
-			label.x = x + p.x - 15;
-			label.y = y + p.y - 15;
+			label.x = x + p.x;
+			label.y = y + p.y - TEXT_SIZE;
 			addChild(label);
 			i--;
 		}
@@ -237,51 +222,29 @@ class Test extends Sprite {
 		}
 	}
 
-	public function drawDecomposition(polys:Array<Poly>, x:Float, y:Float):Void 
+	public function drawDecomposition(polys:Array<Poly>, x:Float, y:Float, showPoints:Bool = false, showLabels:Bool = false):Void 
 	{
 		for (poly in polys) {
-			var points = poly;
-			g.moveTo(x + points[0].x, y + points[0].y);
-
-			for (i in 1...points.length + 1) {
-				var p = points[i % points.length];
-				g.lineTo(x + p.x, y + p.y);
-			}
+			drawPoly(poly, x, y, showPoints, showLabels);
 		}
 	}
 
-	public function drawDecompositionBayazit(polys:Array<Poly>, x:Float, y:Float):Void 
+	public function drawDecompositionBayazit(polys:Array<Poly>, x:Float, y:Float, showPoints:Bool = false, showLabels:Bool = false, showReflex:Bool = false, showSteiner:Bool = false):Void 
 	{
-		var str:String = "";
-		for (poly in polys) {
-			var points = poly;
-			g.moveTo(x + points[0].x, y + points[0].y);
-			str += "[";
-			for (i in 1...points.length + 1) {
-				var p = points[i % points.length];
-				g.lineTo(x + p.x, y + p.y);
-				str += p.x + "," + p.y + ",";
-			}
-			str += points[0].x + "," + points[0].y + "],\n";
-		}
-		//trace(str);
+		drawDecomposition(polys, x, y, showPoints, showLabels);
+		
 		// draw Reflex and Steiner points
-		/*
-		g.lineStyle(1, (COLOR >> 1) | COLOR, ALPHA);
-		for (p in Bayazit.reflexVertices) g.drawCircle(x + p.x, y + p.y, 2);
-		g.lineStyle(1, (COLOR >> 2) | COLOR, ALPHA);
-		for (p in Bayazit.steinerPoints) g.drawCircle(x + p.x, y + p.y, 2);
-		g.lineStyle(1, COLOR, ALPHA);
-		*/
-	}
-
-	/*public function drawDecompositionKeil(edges:EdgeList, x:Float, y:Float):Void 
-	{
-		for (edge in edges) {
-			g.moveTo(x + edge.first.x, y + edge.first.y);
-			g.lineTo(x + edge.second.x, y + edge.second.y);
+		if (showReflex) {
+			g.lineStyle(1, (COLOR >> 1) | COLOR, ALPHA);
+			for (p in Bayazit.reflexVertices) g.drawCircle(x + p.x, y + p.y, 2);
 		}
-	}*/
+		
+		if (showSteiner) {
+			g.lineStyle(1, (COLOR >> 2) | COLOR, ALPHA);
+			for (p in Bayazit.steinerPoints) g.drawCircle(x + p.x, y + p.y, 2);
+		}
+		g.lineStyle(1, COLOR, ALPHA);
+	}
 
 	public function getTextField(text:String = "", x:Float, y:Float, ?size:Float):TextField
 	{
