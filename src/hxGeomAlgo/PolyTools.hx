@@ -26,7 +26,7 @@ class PolyTools
 	static public var EPSILON:Float = .00000001;
 
 	
-	/** Return true if `poly` is counterclockwise. */
+	/** Returns true if `poly` is counterclockwise. */
 	static public function isCCW(poly:Poly):Bool {
 		var br:Int = 0;
 
@@ -53,6 +53,124 @@ class PolyTools
 		return reversed;
 	}
 	
+	/** 
+	 * Assuming the polygon is simple (not self-intersecting), checks if it is convex.
+	 **/
+	static public function isConvex(poly:Poly):Bool
+	{
+		var isPositive:Bool = false;
+
+		for (i in 0...poly.length) {
+			var lower:Int = (i == 0 ? poly.length - 1 : i - 1);
+			var middle:Int = i;
+			var upper:Int = (i == poly.length - 1 ? 0 : i + 1);
+			var dx0:Float = poly[middle].x - poly[lower].x;
+			var dy0:Float = poly[middle].y - poly[lower].y;
+			var dx1:Float = poly[upper].x - poly[middle].x;
+			var dy1:Float = poly[upper].y - poly[middle].y;
+			var cross:Float = dx0 * dy1 - dx1 * dy0;
+			
+			// cross product should have same sign
+			// for each vertex if poly is convex.
+			var newIsPositive:Bool = (cross >= 0 ? true : false);
+
+			if (i == 0)
+				isPositive = newIsPositive;
+			else if (isPositive != newIsPositive)
+				return false;
+		}
+
+		return true;
+	}
+
+	/** 
+	 * Checks if the polygon is simple (not self-intersecting).
+	 **/
+	static public function isSimple(poly:Poly):Bool
+	{
+		var len:Int = poly.length;
+
+		for (i in 0...len) {
+			// first segment
+			var p0:Int = i;
+			var p1:Int = i == len - 1 ? 0 : i + 1;
+			
+			for (j in i + 1...len) {
+				// second segment
+				var q0:Int = j;
+				var q1:Int = j == len - 1 ? 0 : j + 1;
+				
+				// check for intersection between segment p and segment q.
+				// if the intersection point exists and is different from the endpoints,
+				// then the poly is not simple
+				var intersection:Point = segmentIntersect(poly[p0], poly[p1], poly[q0], poly[q1]);
+				if (intersection != null
+					&& !(intersection.equals(poly[p0]) || intersection.equals(poly[p1]))
+					&& !(intersection.equals(poly[q0]) || intersection.equals(poly[q1])))
+				{
+					return false;
+				}
+			}	
+		}
+
+		return true;
+	}
+
+	/**
+	 * Returns the intersection point between segments p0-p1 and q0-q1. Null if no intersection is found.
+	 */
+	static public function segmentIntersect(p0:Point, p1:Point, q0:Point, q1:Point):Point 
+	{
+		var intersectionPoint:Point;
+		var a1:Float, a2:Float;
+		var b1:Float, b2:Float;
+		var c1:Float, c2:Float;
+	 
+		a1 = p1.y - p0.y;
+		b1 = p0.x - p1.x;
+		c1 = p1.x * p0.y - p0.x * p1.y;
+		a2 = q1.y - q0.y;
+		b2 = q0.x - q1.x;
+		c2 = q1.x * q0.y - q0.x * q1.y;
+	 
+		var denom:Float = a1 * b2 - a2 * b1;
+		if (denom == 0){
+			return null;
+		}
+		
+		intersectionPoint = new Point();
+		intersectionPoint.x = (b1 * c2 - b2 * c1) / denom;
+		intersectionPoint.y = (a2 * c1 - a1 * c2) / denom;
+	 
+		// check to see if distance between intersection and endpoints
+		// is longer than actual segments.
+		// return null otherwise.
+		if (Point.distance(intersectionPoint, p1) > Point.distance(p0, p1)) return null;
+		if (Point.distance(intersectionPoint, p0) > Point.distance(p0, p1)) return null;
+		if (Point.distance(intersectionPoint, q1) > Point.distance(q0, q1)) return null;
+		if (Point.distance(intersectionPoint, q0) > Point.distance(q0, q1)) return null;
+		
+		return intersectionPoint;
+	}
+	
+	/**
+	 * Returns indices of duplicate points in `poly` (or null if none are found).
+	 */
+	static public function findDuplicatePoints(poly:Poly):Array<Int> 
+	{
+		var len:Int = poly.length;
+		if (len <= 1) return null;
+		var res = new Array<Int>();
+		
+		for (i in 0...len) {
+			for (j in i + 1...len) {
+				if (poly[i].equals(poly[j])) res.push(j);
+			}
+		}
+		
+		return res.length != 0 ? res : null;
+	}
+
 	/** Finds the intersection point between lines extending the segments `p1`-`p2` and `q1`-`q2`. Returns null if they're parallel. */
 	@:noUsing static public function intersection(p1:Point, p2:Point, q1:Point, q2:Point):Point 
 	{
@@ -89,40 +207,40 @@ class PolyTools
 		return poly[idx % len];
 	}
 	
-	/** Gets the winding (signed area) of `p` relative to the directed line `a`-`b` (< 0 -> left, > 0 -> right, == 0 -> collinear). */
-	static inline public function winding(p:Point, a:Point, b:Point):Float
+	/** Gets the side (signed area) of `p` relative to the line extending `a`-`b` (< 0 -> left, > 0 -> right, == 0 -> collinear). */
+	static inline public function side(p:Point, a:Point, b:Point):Float
 	{
 		return (((a.x - p.x) * (b.y - p.y)) - ((b.x - p.x) * (a.y - p.y)));
 	}
 	
-	/** Returns true if `p` is on the left of the directed line `a`-`b`. */
+	/** Returns true if `p` is on the left of the line extending `a`-`b`. */
 	static inline public function isLeft(p:Point, a:Point, b:Point):Bool
 	{
-		return winding(p, a, b) > 0;
+		return side(p, a, b) > 0;
 	}
 	
-	/** Returns true if `p` is on the left or collinear to the directed line `a`-`b`. */
+	/** Returns true if `p` is on the left or collinear to the line extending `a`-`b`. */
 	static inline public function isLeftOrOn(p:Point, a:Point, b:Point):Bool
 	{
-		return winding(p, a, b) >= 0;
+		return side(p, a, b) >= 0;
 	}
 	
-	/** Returns true if `p` is on the right of the directed line `a`-`b`. */
+	/** Returns true if `p` is on the right of the line extending `a`-`b`. */
 	static inline public function isRight(p:Point, a:Point, b:Point):Bool
 	{
-		return winding(p, a, b) < 0;
+		return side(p, a, b) < 0;
 	}
 	
-	/** Returns true if `p` is on the right or collinear to the directed line `a`-`b`. */
+	/** Returns true if `p` is on the right or collinear to the line extending `a`-`b`. */
 	static inline public function isRightOrOn(p:Point, a:Point, b:Point):Bool
 	{
-		return winding(p, a, b) <= 0;
+		return side(p, a, b) <= 0;
 	}
 	
 	/** Returns true if the specified triangle is degenerate (collinear points). */
 	static inline public function isCollinear(p:Point, a:Point, b:Point):Bool
 	{
-		return winding(p, a, b) == 0;
+		return side(p, a, b) == 0;
 	}
 	
 	/** Perpendicular distance from `p` to line segment `v`-`w`. */
@@ -148,6 +266,7 @@ class PolyTools
 		return new HomogCoord(p.y - q.y, q.x - p.x, p.x * q.y - p.y * q.x);
 	}
 	
+	/** Dot product. */
 	static public function dot(p:Point, q:Point):Float 
 	{
 		return p.x * q.x + p.y * q.y;
