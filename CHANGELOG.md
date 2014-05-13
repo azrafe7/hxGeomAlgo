@@ -17,3 +17,4 @@
  - Visibility: Fixes for points discovery on polygon edges 
  - Visibility: Refactored into static class
  - SnoeyinkKeil: first impl.
+ - SnoeyinkKeil: finished coding missing parts/fixed bugs

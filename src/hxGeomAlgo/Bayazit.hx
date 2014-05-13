@@ -62,11 +62,11 @@ class Bayazit
 				reflexVertices.push(poly[i]);
 				upperDist = lowerDist = Math.POSITIVE_INFINITY;
 				for (j in 0...poly.length) {
-					if (poly.at(j).isLeft(poly.at(i - 1), poly.at(i)) &&
-						poly.at(j - 1).isRightOrOn(poly.at(i - 1), poly.at(i))) // if line intersects with an edge
+					if (poly.at(i - 1).isLeft(poly.at(i), poly.at(j)) &&
+						poly.at(i - 1).isRightOrOn(poly.at(i), poly.at(j - 1))) // if line intersects with an edge
 					{
 						p = PolyTools.intersection(poly.at(i - 1), poly.at(i), poly.at(j), poly.at(j - 1)); // find the point of intersection
-						if (p.isRight(poly.at(i + 1), poly.at(i))) { // make sure it's inside the poly
+						if (poly.at(i + 1).isRight(poly.at(i), p)) { // make sure it's inside the poly
 							d = poly[i].distanceSquared(p);
 							if (d < lowerDist) { // keep only the closest intersection
 								lowerDist = d;
@@ -76,11 +76,11 @@ class Bayazit
 						}
 					}
 					
-					if (poly.at(j + 1).isLeft(poly.at(i + 1), poly.at(i))
-							&& poly.at(j).isRightOrOn(poly.at(i + 1), poly.at(i))) 
+					if (poly.at(i + 1).isLeft(poly.at(i), poly.at(j + 1))
+							&& poly.at(i + 1).isRightOrOn(poly.at(i), poly.at(j))) 
 					{			
 						p = PolyTools.intersection(poly.at(i + 1), poly.at(i), poly.at(j), poly.at(j + 1));
-						if (p.isLeft(poly.at(i - 1), poly.at(i))) {
+						if (poly.at(i - 1).isLeft(poly.at(i), p)) {
 							d = poly[i].distanceSquared(p);
 							if (d < upperDist) {
 								upperDist = d;
@@ -117,15 +117,15 @@ class Bayazit
 				} else {
 					
 					// connect to the closest point within the triangle
-					//trace('Case 2: Vertex($i), closestIdx($closestIdx), poly.length(${poly.length})');
+					//trace('Case 2: Vertex($i), closestIdx($closestIdx), poly.length(${poly.length}), $lowerIdx, $upperIdx');
 
 					if (lowerIdx > upperIdx) {
 						upperIdx += poly.length;
 					}
 					closestDist = Math.POSITIVE_INFINITY;
 					for (j in lowerIdx...upperIdx + 1) {
-						if (poly.at(j).isLeftOrOn(poly.at(i - 1), poly.at(i))
-								&& poly.at(j).isRightOrOn(poly.at(i + 1), poly.at(i))) 
+						if (poly.at(i - 1).isLeftOrOn(poly.at(i), poly.at(j))
+								&& poly.at(i + 1).isRightOrOn(poly.at(i), poly.at(j))) 
 						{
 							d = poly.at(i).distanceSquared(poly.at(j));
 							if (d < closestDist) {

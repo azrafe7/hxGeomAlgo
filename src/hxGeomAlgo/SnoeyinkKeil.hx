@@ -30,15 +30,35 @@ using hxGeomAlgo.PolyTools;
 class SnoeyinkKeil
 {
 	
-	static private var poly:Poly;
+	static public var poly:Poly;		// _internal_ clone of simplePoly
 
-	/** Decomposes `poly` into a near-minimum number of convex polygons. */
-	static public function decomposePoly(simplePoly:Poly):Array<Array<Int>> {
+	static public var reversed:Bool;	// true if the _internal_ indices have been reversed
+
+	
+	/** Decomposes `poly` into a minimum number of convex polygons. */
+	static public function decomposePoly(simplePoly:Poly):Array<Poly> {
 		var res = new Array<Poly>();
 		
+		var indices = decomposePolyIndices(simplePoly);
+		
+		for (polyIndices in indices) {
+			var currPoly = new Poly();
+			res.push(currPoly);
+			for (idx in polyIndices) {
+				currPoly.push(simplePoly[idx]);
+			}
+		}
+		
+		return res;
+	}
+	
+	/** Decomposes `poly` into a minimum number of convex polygons and returns their vertices' indices. */
+	static public function decomposePolyIndices(simplePoly:Poly):Array<Array<Int>> {
+		var res = new Array<Array<Int>>();
+
 		poly = new Poly();
-		for (p in simplePoly) poly.push(new Point(p.x, -p.y));
-		var reversed = poly.makeCCW();	// in place
+		for (p in simplePoly) poly.push(new Point(p.x, p.y));	// TODO: invert y (convert screen coord to cartesian)???
+		reversed = poly.makeCCW();	// in place
 		
 		var i, j, k;
 		var n = poly.length;
@@ -88,19 +108,15 @@ class SnoeyinkKeil
 		decomp.guard = 3 * n;
 		decomp.recoverSolution(0, n - 1);
 
-		decomp.draw();
+		res = decomp.decompIndices();
 		
 		if (reversed) {
-			for (poly in decomp._res) {
+			for (poly in res) {
 				for (i in 0...poly.length) poly[i] = n - poly[i] - 1;
 			}
 		}
-		return decomp._res;
-	}
-	
-	/** Used internally by decomposePoly(). */
-	static private function _decomposePoly(poly:Poly, polys:Array<Poly>) {
 		
+		return res;
 	}
 }
 
@@ -125,7 +141,6 @@ class DecompPoly {
 	private var _indicesSet:IntMap<Bool> = new IntMap<Bool>();
 	private var _indicesCount:Int;
 	private var _polys:Array<Poly> = new Array<Poly>();
-	public  var _res:Array<Array<Int>> = new Array<Array<Int>>();
 
 	
 	public function new(poly:Poly) { 
@@ -167,7 +182,7 @@ class DecompPoly {
 			if (isReflex(i)) _reflexFirst = i;
 			i--;
 		}
-		trace(_reflexNext);
+		//trace(_reflexNext);
 	}
 
 	public function isReflex(i:Int) { return _reflexFlag[i]; }
@@ -232,7 +247,7 @@ class DecompPoly {
 		if (guard-- < 0) { trace("Can't recover " + i + "," + k); return; }
 		if (k - i <= 1) return;
 		var pair:PairDeque = subDecomp.pairs(i, k);
-		trace(i, k, pair);
+		//trace(i, k, pair);
 		if (isReflex(i)) {
 			j = pair.backTop();
 			recoverSolution(j, k);
@@ -330,18 +345,18 @@ class DecompPoly {
 		}
 	}
 
-	private function drawDiagonal(i:Int, k:Int) {
-		trace("diag " + i + "-" + k + "  " + poly.at(i) + " " + poly.at(k));
-		/*g.drawLine(sp.p(i).x(), sp.p(i).y(), sp.p(k).x(), sp.p(k).y());
-		if (label && (reflex(i) || reflex(k)))
-		g.drawString(Integer.toString(subD.weight(i,k)), 
-		(sp.p(i).x()+sp.p(k).x())/2, (sp.p(i).y()+sp.p(k).y())/2);
-		*/
-	}
-
-	private function drawHelper(i:Int, k:Int) {
+	private function _decompByDiags(i:Int, k:Int, outIndices:Array<Array<Int>>, level:Int=0, lastInnerDiag:{i:Int, j:Int} = null) {
+		//trace('level -> $level');
+		
+		if (level == 0) {
+			_indicesSet.set(0, true);
+			_indicesSet.set(poly.length - 1, true);
+			//trace("diag " + i + "-" + k + "  " + poly.at(i) + " " + poly.at(k));
+		}
+		
 		var j:Int; 
 		var ijReal = true, jkReal = true;
+		var nDiags:Int = 0;
 		
 		if (k - i <= 1) return;
 		
@@ -354,45 +369,52 @@ class DecompPoly {
 			jkReal = (pair.backBottom() == pair.frontTop()); }
 
 		if (ijReal) {
-			if (!_indicesSet.exists(i)) {
-				_indicesSet.set(i, true);
-				_indicesCount++;
-			}
-			if (!_indicesSet.exists(j)) {
-				_indicesSet.set(j, true);
-				_indicesCount++;
-			}
-			drawDiagonal(i, j);
+			_indicesSet.set(i, true);
+			_indicesSet.set(j, true);
+			//trace("diag " + i + "-" + j + "  " + poly.at(i) + " " + poly.at(j));
+			if (Math.abs(i - j) % poly.length > 1) lastInnerDiag = { i:i, j:j };
+			nDiags++;
 		}
 
 		if (jkReal) {
-			if (!_indicesSet.exists(j)) {
-				_indicesSet.set(j, true);
-				_indicesCount++;
-			}
-			if (!_indicesSet.exists(k)) {
-				_indicesSet.set(k, true);
-				_indicesCount++;
-			}
-			drawDiagonal(j, k);
+			_indicesSet.set(j, true);
+			_indicesSet.set(k, true);
+			//trace("diag " + j + "-" + k + "  " + poly.at(j) + " " + poly.at(k));
+			nDiags++;
+			if (Math.abs(j - k) % poly.length > 1) lastInnerDiag = { i:k, j:j };
 		}
 
 		if (guard-- < 0) { 
-			trace("Infinite loop drawing " + i + "," + k); 
+			trace("Infinite loop diag " + i + "," + k); 
 			return;
 		}
 		
-		drawHelper(i, j);
-		
-		if (_indicesCount > 0) {	// new decomposing poly
+		if (nDiags > 1) {	// add new decomposing poly
+			var hasInnerDiags = false;
 			var indices:Array<Int> = [for (k in _indicesSet.keys()) k];
-			indices.sort(intCmp);
-			_res.push(indices);
-			_indicesCount = 0;
-			_indicesSet = new IntMap<Bool>();
+			if (indices.length > 0) {
+				indices.sort(intCmp);
+				for (idx in 1...indices.length) {
+					if (Math.abs(indices[idx] - indices[idx - 1]) % poly.length > 1) {
+						hasInnerDiags = true;
+						break;
+					}
+				}
+				if (!hasInnerDiags && lastInnerDiag != null) {
+					_indicesSet.set(lastInnerDiag.i, true);
+					_indicesSet.set(lastInnerDiag.j, true);
+					indices = [for (k in _indicesSet.keys()) k];
+					indices.sort(intCmp);
+				}
+				outIndices.push(indices);
+				_indicesCount = 0;
+				_indicesSet = new IntMap<Bool>();
+				//trace("poly: " + indices);
+			}
 		}
-		trace("poly");
-		drawHelper(j, k);
+
+		_decompByDiags(i, j, outIndices, level + 1, lastInnerDiag);
+		_decompByDiags(j, k, outIndices, level + 1, lastInnerDiag);
 	}
 
 	private inline function intCmp(a:Int, b:Int):Int {
@@ -401,10 +423,13 @@ class DecompPoly {
 		else return 1;
 	}
 	
-	public function draw() {
+	/** Returns the vertices' indices of each decomposing poly. */
+	public function decompIndices():Array<Array<Int>>
+	{
+		var res = new Array<Array<Int>>();
 		guard = 3 * n;
-		//drawDiagonal(0, poly.length - 1);
-		drawHelper(0, poly.length - 1);
+		_decompByDiags(0, poly.length - 1, res);
+		return res;
 	}
 	
 	public function toString():String {
@@ -447,7 +472,7 @@ class SubDecomp {
 			pd[i] = [for (i in 0...r) null];
 		}
 		
-		trace(rx);
+		//trace(rx);
 	}
 	
 	public function setWeight(i:Int, j:Int, w:Int) { 

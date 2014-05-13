@@ -41,10 +41,14 @@ Based on:
 
  - [http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/VPDemo.html](http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/VPDemo.html)	(Java - by Jack Snoeyink)
 
-### [Snoeyink-Keil Minimum Convex Decomposition](http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/MCDDemo.html) (not fully implemented yet)
+### [Snoeyink-Keil Minimum Convex Decomposition](http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/MCDDemo.html)
    - [http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/MCDDemo.html](http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/MCDDemo.html) (Java - by Jack Snoeyink & Mark Keil)
    - [J. Mark Keil](http://www.informatik.uni-trier.de/~ley/pers/hd/k/Keil:J=_Mark), [Jack Snoeyink](http://www.informatik.uni-trier.de/~ley/pers/hd/s/Snoeyink:Jack.html): On the Time Bound for Convex Decomposition of Simple Polygons. [Int. J. Comput. Geometry Appl. 12](http://www.informatik.uni-trier.de/~ley/db/journals/ijcga/ijcga12.html#KeilS02)(3): 181-192 (2002)
 
 ## Credits
 
-**hxGeomAlgo** is based on the work of many developers and it wouldn't exist if it weren't for them. See the [CREDITS](CREDITS.md) file for a full list. 
+**hxGeomAlgo** is based on the work of many developers and it wouldn't exist if it weren't for them. See the [CREDITS](CREDITS.md) file for a full list.
+
+## License
+
+**hxGeomAlgo** is developed by Giuseppe Di Mauro (azrafe7) and released under the MIT license. See the [LICENSE](LICENSE.md) file for details. 
