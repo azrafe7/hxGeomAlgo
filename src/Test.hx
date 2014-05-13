@@ -61,7 +61,6 @@ class Test extends Sprite {
 	private var simplifiedPoly:Array<Point>;
 	private var triangulation:Array<Tri>;
 	private var decomposition:Array<Poly>;
-	private var decompositionBayazit:Array<Poly>;
 
 
 	public function new () {
@@ -151,7 +150,7 @@ class Test extends Sprite {
 
 	public function dumpPoly(poly:Array<Point>, reverse:Bool = false):Void {
 		var len = poly.length;
-		var str = "";
+		var str = "poly dump: ";
 		for (i in 0...len) {
 			var p = poly[reverse ? len - i - 1 : i];
 			str += p.x + "," + p.y + ",";
