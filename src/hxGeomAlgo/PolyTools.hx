@@ -154,6 +154,53 @@ class PolyTools
 	}
 	
 	/**
+	 * Returns an array of simple polygons contained within specified polygon
+	 */
+	static public function decomposeSelfIntersecting(p_poly:Poly, p_result:Array<Poly>):Void {
+        	var len:Int = p_poly.length;
+
+	        if (len>3) {
+	            for (i in 0...len) {
+	                var p0:Int = i;
+	                var p1:Int = i == len - 1 ? 0 : i + 1;
+	
+	                for (j in i + 1...len) {
+	                    var q0:Int = j;
+	                    var q1:Int = j == len - 1 ? 0 : j + 1;
+	
+	                    var intersection:Point = PolyTools.segmentIntersect(p_poly[p0], p_poly[p1], p_poly[q0], p_poly[q1]);
+	                    if (intersection != null
+	                    && !(intersection.equals(p_poly[p0]) || intersection.equals(p_poly[p1]))
+	                    && !(intersection.equals(p_poly[q0]) || intersection.equals(p_poly[q1])))
+	                    {
+	                        trace(intersection, p_poly[p0], p_poly[p1], p_poly[q0], p_poly[q1]);
+	                        var poly1:Poly = new Poly();
+	                        for (pi in q1...len) {
+	                            poly1.push(p_poly[pi]);
+	                        }
+	                        for (pi in 0...p1) {
+	                            poly1.push(p_poly[pi]);
+	                        }
+	                        poly1.push(intersection;
+	                        decomposeSelfIntersecting(poly1, p_result);
+	
+	                        var poly2:Poly = new Poly();
+	                        for (pi in p1...q1) {
+	                            poly2.push(p_poly[pi]);
+	                        }
+	                        poly2.push(intersection);
+	                        decomposeSelfIntersecting(poly2, p_result);
+	                        return;
+	                    }
+	                }
+	            }
+	        }
+	
+	        p_result.push(p_poly);
+	        return;
+	}
+	
+	/**
 	 * Returns indices of duplicate points in `poly` (or null if none are found).
 	 */
 	static public function findDuplicatePoints(poly:Poly):Array<Int> 
