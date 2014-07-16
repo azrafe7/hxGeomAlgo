@@ -2,7 +2,7 @@
 <project>
 	
 	<meta title="Test" package="net.azrafe7.geomAlgo" version="1.0.0" company="azrafe7" />
-	<app main="Test" path="bin" file="Test" />
+	<app main="GeomAlgoTest" path="bin" file="Test" />
 	
 	<window background="#222222" fps="60" />
 	<window width="700" height="600" unless="mobile" />

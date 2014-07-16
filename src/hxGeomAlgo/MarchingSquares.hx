@@ -12,7 +12,7 @@
 package hxGeomAlgo;
 
 import flash.display.BitmapData;
-import flash.geom.Point;
+
 import flash.geom.Rectangle;
 import flash.utils.ByteArray;
 
@@ -40,7 +40,7 @@ class MarchingSquares
 	private var height:Int;
 	private var byteArray:ByteArray;
 	
-	private var point:Point = new Point();
+	private var point:HxPoint = new HxPoint();
 
 
 	/**
@@ -78,7 +78,7 @@ class MarchingSquares
 	 * @param	startPoint	Start from this point (if null it will be calculated automatically).
 	 * @return	An array containing the points on the perimeter, or an empty array if no perimeter is found.
 	 */
-	public function march(?startPoint:Point = null):Array<Point> 
+	public function march(?startPoint:HxPoint = null):Array<HxPoint> 
 	{
 		if (startPoint == null) {
 			if (findStartPoint() == null) return [];
@@ -93,7 +93,7 @@ class MarchingSquares
 	 * 
 	 * @return The first opaque pixel location, or null if not found.
 	 */
-	public function findStartPoint(line:Int = 0):Point {
+	public function findStartPoint(line:Int = 0):HxPoint {
 		byteArray.position = 0;
 		point.setTo(-1, -1);
 		
@@ -112,7 +112,7 @@ class MarchingSquares
  	}
 	
 	/** Finds points belonging to the perimeter starting from `startX`, `startY`. */
-	private function walkPerimeter(startX:Int, startY:Int):Array<Point> 
+	private function walkPerimeter(startX:Int, startY:Int):Array<HxPoint> 
 	{
 		// clamp to source boundaries
 		if (startX < 0) startX = 0;
@@ -120,7 +120,7 @@ class MarchingSquares
 		if (startY < 0) startY = 0;
 		if (startY > height) startY = height;
 
-		var pointList = new Array<Point>();
+		var pointList = new Array<HxPoint>();
 
 		var x:Int = startX;
 		var y:Int = startY;
@@ -131,7 +131,7 @@ class MarchingSquares
 			step(x, y);
 
 			// add perimeter point to return list (ensuring it's not out of boundaries)
-			pointList.push(new Point(x < width ? x : width - 1, y < height ? y : height - 1));
+			pointList.push(new HxPoint(x < width ? x : width - 1, y < height ? y : height - 1));
 
 			switch (nextStep)
 			{

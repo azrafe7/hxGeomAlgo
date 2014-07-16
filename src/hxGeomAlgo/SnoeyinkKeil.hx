@@ -17,7 +17,7 @@
 
 package hxGeomAlgo;
 
-import flash.geom.Point;
+
 import haxe.ds.ArraySort;
 import haxe.ds.IntMap.IntMap;
 import hxGeomAlgo.PolyTools;
@@ -57,7 +57,7 @@ class SnoeyinkKeil
 		var res = new Array<Array<Int>>();
 
 		poly = new Poly();
-		for (p in simplePoly) poly.push(new Point(p.x, p.y));
+		for (p in simplePoly) poly.push(new HxPoint(p.x, p.y));
 		reversed = poly.makeCW();	// make poly cw (in place)
 		
 		var i, j, k;

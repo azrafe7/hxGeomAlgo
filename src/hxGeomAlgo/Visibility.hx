@@ -15,7 +15,7 @@
 
 package hxGeomAlgo;
 
-import flash.geom.Point;
+
 import hxGeomAlgo.HomogCoord;
 import hxGeomAlgo.PolyTools;
 import hxGeomAlgo.Visibility.VertexType;
@@ -44,7 +44,7 @@ class Visibility
 {
 	inline static private var NOT_SAVED:Int = -1;
 	
-	static private var origPoint:Point;											// origin of visibility polygon
+	static private var origPoint:HxPoint;											// origin of visibility polygon
 	static private var stack:Array<Int> = new Array<Int>();						// stack holds indices of visibility polygon
 	static private var vertexType:Array<VertexType> = new Array<VertexType>();	// types of vertices
 	static private var stackTop:Int;											// stack pointer to top element
@@ -65,7 +65,7 @@ class Visibility
 		vertexType.clear();
 		stackTop = -1;
 		for (i in 0...simplePoly.length) {
-			poly.push(new Point(simplePoly[i].x, simplePoly[i].y));
+			poly.push(new HxPoint(simplePoly[i].x, simplePoly[i].y));
 			stack.push(-1);
 			vertexType.push(VertexType.UNKNOWN);
 		}
@@ -141,8 +141,8 @@ class Visibility
 		if (indices.length <= 0) return res;
 		
 		var q:HomogCoord;
-		var last:Point = poly.at(stack[stackTop]);
-		var lastPushed:Point = null;
+		var last:HxPoint = poly.at(stack[stackTop]);
+		var lastPushed:HxPoint = null;
 		var lastType:VertexType = VertexType.UNKNOWN;
 		var vType:VertexType = UNKNOWN;
 		for (i in 0...stackTop + 1) {
@@ -182,7 +182,7 @@ class Visibility
 	 * of this bay.  Assumes that poly.at(j) is not left of the line
 	 * origPoint->bot.  
 	 */
-	static private function exitRightBay(poly:Poly, j:Int, bot:Point, lid:HomogCoord):Int {
+	static private function exitRightBay(poly:Poly, j:Int, bot:HxPoint, lid:HomogCoord):Int {
 		var windingNum:Int = 0;		// winding number
 		var mouth:HomogCoord = origPoint.meet(bot);
 		var lastLeft:Bool, currLeft:Bool = false;
@@ -213,7 +213,7 @@ class Visibility
 	 * of this bay.  Assumes that poly.at(j) is not right of the line
 	 * origPoint->bot.  
 	 */
-	static private function exitLeftBay(poly:Poly, j:Int, bot:Point, lid:HomogCoord):Int {
+	static private function exitLeftBay(poly:Poly, j:Int, bot:HxPoint, lid:HomogCoord):Int {
 		var windingNum:Int = 0;		// winding number
 		var mouth:HomogCoord = origPoint.meet(bot);
 		var lastRight:Bool, currRight:Bool = false;		// called with !right(org,bot,pj)

@@ -18,7 +18,7 @@
 
 package hxGeomAlgo;
 
-import flash.geom.Point;
+
 import hxGeomAlgo.PolyTools;
 
 
@@ -30,8 +30,8 @@ class Bayazit
 	
 	static private var poly:Poly;		// cw version of simplePoly - used internally
 	
-	static public var reflexVertices:Array<Point> = new Array<Point>();
-	static public var steinerPoints:Array<Point> = new Array<Point>();
+	static public var reflexVertices:Array<HxPoint> = new Array<HxPoint>();
+	static public var steinerPoints:Array<HxPoint> = new Array<HxPoint>();
 
 	static public var reversed:Bool;	// true if the _internal_ indices have been reversed
 
@@ -42,7 +42,7 @@ class Bayazit
 		var res = new Array<Poly>();
 		
 		poly = new Poly();
-		for (p in simplePoly) poly.push(new Point(p.x, p.y));
+		for (p in simplePoly) poly.push(new HxPoint(p.x, p.y));
 		reversed = poly.makeCW();	// make poly cw (in place)
 		
 		reflexVertices.clear();
@@ -55,8 +55,8 @@ class Bayazit
 	
 	/** Used internally by decomposePoly(). */
 	static private function _decomposePoly(poly:Poly, polys:Array<Poly>) {
-		var upperInt:Point = new Point(), lowerInt:Point = new Point(), 
-			p:Point = new Point(), closestVert:Point = new Point();
+		var upperInt:HxPoint = new HxPoint(), lowerInt:HxPoint = new HxPoint(), 
+			p:HxPoint = new HxPoint(), closestVert:HxPoint = new HxPoint();
 		var upperDist:Float = 0, lowerDist:Float = 0, d:Float = 0, closestDist:Float = 0;
 		var upperIdx:Int = 0, lowerIdx:Int = 0, closestIdx:Int = 0;
 		var upperPoly:Poly = new Poly(), lowerPoly:Poly = new Poly();

@@ -11,7 +11,7 @@
 
 package hxGeomAlgo;
 
-import flash.geom.Point;
+
 import hxGeomAlgo.PolyTools;
 
 class RamerDouglasPeucker
@@ -23,7 +23,7 @@ class RamerDouglasPeucker
 	 * @param	epsilon		Perpendicular distance threshold (typically in the range [1..2]).
 	 * @return	An array of points defining the simplified polyline.
 	 */
-	static public function simplify(points:Array<Point>, epsilon:Float = 1):Array<Point> 
+	static public function simplify(points:Array<HxPoint>, epsilon:Float = 1):Array<HxPoint> 
 	{
 		var firstPoint = points[0];
 		var lastPoint = points[points.length - 1];

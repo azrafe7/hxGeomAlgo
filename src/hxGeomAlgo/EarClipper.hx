@@ -15,11 +15,11 @@
 
 package hxGeomAlgo;
 
-import flash.geom.Point;
+
 import hxGeomAlgo.PolyTools;
 
 
-typedef Tri = Poly;	// assumes Array<Point> of length 3
+typedef Tri = Poly;	// assumes Array<HxPoint> of length 3
 
 
 class EarClipper
@@ -47,7 +47,7 @@ class EarClipper
 		if (v.length < 3)
 			return null;
 
-		var remList:Array<Point> = new Array<Point>().concat(v);
+		var remList:Array<HxPoint> = new Array<HxPoint>().concat(v);
 		
 		var resultList:Array<Tri> = new Array<Tri>();
 
@@ -67,7 +67,7 @@ class EarClipper
 			if (earIndex == -1)
 				return null;
 
-			var newList:Array<Point> = new Array<Point>().concat(remList);
+			var newList:Array<HxPoint> = new Array<HxPoint>().concat(remList);
 
 			newList.splice(earIndex, 1);
 
@@ -197,7 +197,7 @@ class EarClipper
 	}
 	
 	/** Checks if `point` is inside the triangle. */
-	static public function isPointInsideTri(point:Point, tri:Tri):Bool
+	static public function isPointInsideTri(point:HxPoint, tri:Tri):Bool
 	{
 		var vx2:Float = point.x - tri[0].x;
 		var vy2:Float = point.y - tri[0].y;
@@ -218,7 +218,7 @@ class EarClipper
 		return ((u > 0) && (v > 0) && (u + v < 1));
 	}
 	
-	static public function createCCWTri(point1:Point, point2:Point, point3:Point):Tri
+	static public function createCCWTri(point1:HxPoint, point2:HxPoint, point3:HxPoint):Tri
 	{
 		var points:Tri = [point1, point2, point3];
 		PolyTools.makeCCW(points);
@@ -297,7 +297,7 @@ class EarClipper
 		if (tipT == firstT || tipT == secondT) tipT = 1;
 		if (tipT == firstT || tipT == secondT) tipT = 2;
 
-		var newPoints:Array<Point> = new Array<Point>();
+		var newPoints:Array<HxPoint> = new Array<HxPoint>();
 
 		for (i in 0...poly.length)
 		{

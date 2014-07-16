@@ -8,7 +8,6 @@ import flash.display.Sprite;
 import flash.display.Stage;
 import flash.events.KeyboardEvent;
 import flash.filters.GlowFilter;
-import flash.geom.Point;
 import flash.geom.Rectangle;
 import flash.Lib;
 import flash.system.System;
@@ -16,6 +15,7 @@ import flash.text.TextField;
 import flash.text.TextFormat;
 import flash.text.TextFormatAlign;
 import hxGeomAlgo.EarClipper;
+import hxGeomAlgo.HxPoint;
 import hxGeomAlgo.MarchingSquares;
 import hxGeomAlgo.PolyTools;
 import hxGeomAlgo.RamerDouglasPeucker;
@@ -28,7 +28,7 @@ import openfl.Assets;
 import openfl.display.FPS;
 
 
-class Test extends Sprite {
+class GeomAlgoTest extends Sprite {
 
 	private var g:Graphics;
 
@@ -49,23 +49,23 @@ class Test extends Sprite {
 	private var TEXT_OFFSET:Float = -60;
 	private var TEXT_OUTLINE:GlowFilter = new GlowFilter(0xFF000000, 1, 2, 2, 6);
 
-	private var START_POINT:Point = new Point(20, 80);
+	private var START_POINT:HxPoint = new HxPoint(20, 80);
 
 	private var originalBMD:BitmapData;
 	private var originalBitmap:Bitmap;
 
 	private var marchingSquares:MarchingSquares;
 	private var clipRect:Rectangle;
-	private var perimeter:Array<Point>;
+	private var perimeter:Array<HxPoint>;
 
-	private var simplifiedPoly:Array<Point>;
+	private var simplifiedPoly:Array<HxPoint>;
 	private var triangulation:Array<Tri>;
 	private var decomposition:Array<Poly>;
 
 
 	public function new () {
 		super ();
-
+		
 		var sprite = new Sprite();
 		addChild(sprite);
 		g = sprite.graphics;
@@ -148,7 +148,7 @@ class Test extends Sprite {
 		dumpPoly(simplifiedPoly, false);
 	}
 
-	public function dumpPoly(poly:Array<Point>, reverse:Bool = false):Void {
+	public function dumpPoly(poly:Array<HxPoint>, reverse:Bool = false):Void {
 		var len = poly.length;
 		var str = "poly dump: ";
 		for (i in 0...len) {
@@ -158,7 +158,7 @@ class Test extends Sprite {
 		trace(str);
 	}
 
-	public function drawPerimeter(points:Array<Point>, x:Float, y:Float):Void 
+	public function drawPerimeter(points:Array<HxPoint>, x:Float, y:Float):Void 
 	{
 		// draw clipRect
 		g.drawRect(originalBitmap.x + clipRect.x, originalBitmap.y + clipRect.y, clipRect.width, clipRect.height);
@@ -166,7 +166,7 @@ class Test extends Sprite {
 		drawPoly(points, x, y, false);
 	}
 
-	public function drawPoints(points:Array<Point>, x:Float, y:Float, radius:Float = 2):Void 
+	public function drawPoints(points:Array<HxPoint>, x:Float, y:Float, radius:Float = 2):Void 
 	{
 		for (i in 0...points.length) {
 			var p = points[i];
@@ -174,7 +174,7 @@ class Test extends Sprite {
 		}
 	}
 	
-	public function drawPointsLabels(points:Array<Point>, x:Float, y:Float):Void 
+	public function drawPointsLabels(points:Array<HxPoint>, x:Float, y:Float):Void 
 	{
 		var len = points.length;
 		var i = len - 1;
@@ -191,7 +191,7 @@ class Test extends Sprite {
 		}
 	}
 	
-	public function drawPoly(points:Array<Point>, x:Float, y:Float, showPoints:Bool = true, showLabels:Bool = false):Void 
+	public function drawPoly(points:Array<HxPoint>, x:Float, y:Float, showPoints:Bool = true, showLabels:Bool = false):Void 
 	{
 		// points
 		if (showPoints) drawPoints(points, x, y);

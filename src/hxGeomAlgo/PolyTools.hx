@@ -1,5 +1,5 @@
 /**
- * Collection of functions to make working with Point and Poly easier.
+ * Collection of functions to make working with HxPoint and Poly easier.
  * 
  * Some of these have been based on:
  * 
@@ -11,17 +11,17 @@
 
 package hxGeomAlgo;
 
-import flash.geom.Point;
+import hxGeomAlgo.HxPoint;
 
 
-typedef Poly = Array<Point>;
+typedef Poly = Array<HxPoint>;
 
 
 class PolyTools
 {
-	static private var point:Point = new Point();	// used internally
+	static private var point:HxPoint = new HxPoint();	// used internally
 	
-	static public var zero:Point = new Point(0, 0);
+	static public var zero:HxPoint = new HxPoint(0, 0);
 	
 	static public var EPSILON:Float = .00000001;
 
@@ -121,7 +121,7 @@ class PolyTools
 				// check for intersection between segment p and segment q.
 				// if the intersection point exists and is different from the endpoints,
 				// then the poly is not simple
-				var intersection:Point = segmentIntersect(poly[p0], poly[p1], poly[q0], poly[q1]);
+				var intersection:HxPoint = segmentIntersect(poly[p0], poly[p1], poly[q0], poly[q1]);
 				if (intersection != null
 					&& !(intersection.equals(poly[p0]) || intersection.equals(poly[p1]))
 					&& !(intersection.equals(poly[q0]) || intersection.equals(poly[q1])))
@@ -137,9 +137,9 @@ class PolyTools
 	/**
 	 * Returns the intersection point between segments p0-p1 and q0-q1. Null if no intersection is found.
 	 */
-	static public function segmentIntersect(p0:Point, p1:Point, q0:Point, q1:Point):Point 
+	static public function segmentIntersect(p0:HxPoint, p1:HxPoint, q0:HxPoint, q1:HxPoint):HxPoint 
 	{
-		var intersectionPoint:Point;
+		var intersectionPoint:HxPoint;
 		var a1:Float, a2:Float;
 		var b1:Float, b2:Float;
 		var c1:Float, c2:Float;
@@ -156,17 +156,17 @@ class PolyTools
 			return null;
 		}
 		
-		intersectionPoint = new Point();
+		intersectionPoint = new HxPoint();
 		intersectionPoint.x = (b1 * c2 - b2 * c1) / denom;
 		intersectionPoint.y = (a2 * c1 - a1 * c2) / denom;
 	 
 		// check to see if distance between intersection and endpoints
 		// is longer than actual segments.
 		// return null otherwise.
-		if (Point.distance(intersectionPoint, p1) > Point.distance(p0, p1)) return null;
-		if (Point.distance(intersectionPoint, p0) > Point.distance(p0, p1)) return null;
-		if (Point.distance(intersectionPoint, q1) > Point.distance(q0, q1)) return null;
-		if (Point.distance(intersectionPoint, q0) > Point.distance(q0, q1)) return null;
+		if (distance(intersectionPoint, p1) > distance(p0, p1)) return null;
+		if (distance(intersectionPoint, p0) > distance(p0, p1)) return null;
+		if (distance(intersectionPoint, q1) > distance(q0, q1)) return null;
+		if (distance(intersectionPoint, q0) > distance(q0, q1)) return null;
 		
 		return intersectionPoint;
 	}
@@ -190,9 +190,9 @@ class PolyTools
 	}
 
 	/** Finds the intersection point between lines extending the segments `p1`-`p2` and `q1`-`q2`. Returns null if they're parallel. */
-	@:noUsing static public function intersection(p1:Point, p2:Point, q1:Point, q2:Point):Point 
+	@:noUsing static public function intersection(p1:HxPoint, p2:HxPoint, q1:HxPoint, q2:HxPoint):HxPoint 
 	{
-		var res:Point = null;
+		var res:HxPoint = null;
 		var a1 = p2.y - p1.y;
 		var b1 = p1.x - p2.x;
 		var c1 = a1 * p1.x + b1 * p1.y;
@@ -201,7 +201,7 @@ class PolyTools
 		var c2 = a2 * q1.x + b2 * q1.y;
 		var det = a1 * b2 - a2 * b1;
 		if (!eq(det, 0)) { // lines are not parallel
-			res = new Point();
+			res = new HxPoint();
 			res.x = (b2 * c1 - b1 * c2) / det;
 			res.y = (a1 * c2 - a2 * c1) / det;
 		}
@@ -218,7 +218,7 @@ class PolyTools
 	}
 	
 	/** Gets `poly` vertex at `idx` (wrapping around if needed). */
-	static inline public function at(poly:Poly, idx:Int):Point 
+	static inline public function at(poly:Poly, idx:Int):HxPoint 
 	{
 		var len:Int = poly.length;
 		while (idx < 0) idx += len;
@@ -226,49 +226,52 @@ class PolyTools
 	}
 	
 	/** Gets the side (signed area) of `p` relative to the line extending `a`-`b` (> 0 -> left, < 0 -> right, == 0 -> collinear). */
-	static inline public function side(p:Point, a:Point, b:Point):Float
+	static inline public function side(p:HxPoint, a:HxPoint, b:HxPoint):Float
 	{
 		return (((a.x - p.x) * (b.y - p.y)) - ((b.x - p.x) * (a.y - p.y)));
 	}
 	
 	/** Returns true if `p` is on the left of the line extending `a`-`b`. */
-	static inline public function isLeft(p:Point, a:Point, b:Point):Bool
+	static inline public function isLeft(p:HxPoint, a:HxPoint, b:HxPoint):Bool
 	{
 		return side(p, a, b) > 0;
 	}
 	
 	/** Returns true if `p` is on the left or collinear to the line extending `a`-`b`. */
-	static inline public function isLeftOrOn(p:Point, a:Point, b:Point):Bool
+	static inline public function isLeftOrOn(p:HxPoint, a:HxPoint, b:HxPoint):Bool
 	{
 		return side(p, a, b) >= 0;
 	}
 	
 	/** Returns true if `p` is on the right of the line extending `a`-`b`. */
-	static inline public function isRight(p:Point, a:Point, b:Point):Bool
+	static inline public function isRight(p:HxPoint, a:HxPoint, b:HxPoint):Bool
 	{
 		return side(p, a, b) < 0;
 	}
 	
 	/** Returns true if `p` is on the right or collinear to the line extending `a`-`b`. */
-	static inline public function isRightOrOn(p:Point, a:Point, b:Point):Bool
+	static inline public function isRightOrOn(p:HxPoint, a:HxPoint, b:HxPoint):Bool
 	{
 		return side(p, a, b) <= 0;
 	}
 	
 	/** Returns true if the specified triangle is degenerate (collinear points). */
-	static inline public function isCollinear(p:Point, a:Point, b:Point):Bool
+	static inline public function isCollinear(p:HxPoint, a:HxPoint, b:HxPoint):Bool
 	{
 		return side(p, a, b) == 0;
 	}
 	
+	/** Distance from `v` to `w`. */
+	inline static public function distance(v:HxPoint, w:HxPoint) { return Math.sqrt(distanceSquared(v, w)); }
+	
 	/** Perpendicular distance from `p` to line segment `v`-`w`. */
-	inline static public function distanceToSegment(p:Point, v:Point, w:Point) { return Math.sqrt(distanceToSegmentSquared(p, v, w)); }
+	inline static public function distanceToSegment(p:HxPoint, v:HxPoint, w:HxPoint) { return Math.sqrt(distanceToSegmentSquared(p, v, w)); }
 	
 	/** Squared distance from `v` to `w`. */
-	inline static public function distanceSquared(v:Point, w:Point):Float { return sqr(v.x - w.x) + sqr(v.y - w.y); }
+	inline static public function distanceSquared(v:HxPoint, w:HxPoint):Float { return sqr(v.x - w.x) + sqr(v.y - w.y); }
 
 	/** Squared perpendicular distance from `p` to line segment `v`-`w`. */
-	static public function distanceToSegmentSquared(p:Point, v:Point, w:Point):Float {
+	static public function distanceToSegmentSquared(p:HxPoint, v:HxPoint, w:HxPoint):Float {
 		var l2:Float = distanceSquared(v, w);
 		if (l2 == 0) return distanceSquared(p, v);
 		var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
@@ -279,13 +282,13 @@ class PolyTools
 	}
 	
 	
-	static public function meet(p:Point, q:Point):HomogCoord 
+	static public function meet(p:HxPoint, q:HxPoint):HomogCoord 
 	{
 		return new HomogCoord(p.y - q.y, q.x - p.x, p.x * q.y - p.y * q.x);
 	}
 	
 	/** Dot product. */
-	static public function dot(p:Point, q:Point):Float 
+	static public function dot(p:HxPoint, q:HxPoint):Float 
 	{
 		return p.x * q.x + p.y * q.y;
 	}
