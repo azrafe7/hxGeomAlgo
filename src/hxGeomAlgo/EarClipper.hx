@@ -128,7 +128,7 @@ class EarClipper
 						if (covered[i]) continue;
 						var newPoly:Poly = addTriangle(poly, triangulation[i]);
 						if (newPoly == null) continue;
-						if (isConvex(newPoly))
+						if (PolyTools.isConvex(newPoly))
 						{
 							poly = newPoly;
 							covered[i] = true;
@@ -225,35 +225,6 @@ class EarClipper
 		return points;
 	}
 	
-	/** Assuming the polygon is simple, checks if it is convex. */
-	static public function isConvex(poly:Poly):Bool
-	{
-		var isPositive:Bool = false;
-
-		for (i in 0...poly.length)
-		{
-			var lower:Int = (i == 0 ? poly.length - 1 : i - 1);
-			var middle:Int = i;
-			var upper:Int = (i == poly.length - 1 ? 0 : i + 1);
-			var dx0:Float = poly[middle].x - poly[lower].x;
-			var dy0:Float = poly[middle].y - poly[lower].y;
-			var dx1:Float = poly[upper].x - poly[middle].x;
-			var dy1:Float = poly[upper].y - poly[middle].y;
-			var cross:Float = dx0 * dy1 - dx1 * dy0;
-			
-			// cross product should have same sign
-			// for each vertex if poly is convex.
-			var newIsP:Bool = (cross > 0 ? true : false);
-
-			if (i == 0)
-				isPositive = newIsP;
-			else if (isPositive != newIsP)
-				return false;
-		}
-
-		return true;
-	}
-
 	/** 
 	 * Tries to add a triangle to the polygon.
 	 * Assumes bitwise equality of join vertices.

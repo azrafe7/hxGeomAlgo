@@ -30,12 +30,12 @@ using hxGeomAlgo.PolyTools;
 class SnoeyinkKeil
 {
 	
-	static public var poly:Poly;		// _internal_ clone of simplePoly
+	static private var poly:Poly;		// cw version of simplePoly - used internally
 
 	static public var reversed:Bool;	// true if the _internal_ indices have been reversed
 
 	
-	/** Decomposes `poly` into a minimum number of convex polygons. */
+	/** Decomposes `simplePoly` into a minimum number of convex polygons. */
 	static public function decomposePoly(simplePoly:Poly):Array<Poly> {
 		var res = new Array<Poly>();
 		
@@ -52,13 +52,13 @@ class SnoeyinkKeil
 		return res;
 	}
 	
-	/** Decomposes `poly` into a minimum number of convex polygons and returns their vertices' indices. */
+	/** Decomposes `simplePoly` into a minimum number of convex polygons and returns their vertices' indices. */
 	static public function decomposePolyIndices(simplePoly:Poly):Array<Array<Int>> {
 		var res = new Array<Array<Int>>();
 
 		poly = new Poly();
-		for (p in simplePoly) poly.push(new Point(p.x, p.y));	// TODO: invert y (convert screen coord to cartesian)???
-		reversed = poly.makeCCW();	// in place
+		for (p in simplePoly) poly.push(new Point(p.x, p.y));
+		reversed = poly.makeCW();	// make poly cw (in place)
 		
 		var i, j, k;
 		var n = poly.length;
@@ -345,7 +345,7 @@ class DecompPoly {
 		}
 	}
 
-	private function _decompByDiags(i:Int, k:Int, outIndices:Array<Array<Int>>, level:Int=0, lastInnerDiag:{i:Int, j:Int} = null) {
+	private function _decompByDiags(i:Int, k:Int, outIndices:Array<Array<Int>>, level:Int = 0) {
 		//trace('level -> $level');
 		
 		if (level == 0) {
@@ -372,7 +372,6 @@ class DecompPoly {
 			_indicesSet.set(i, true);
 			_indicesSet.set(j, true);
 			//trace("diag " + i + "-" + j + "  " + poly.at(i) + " " + poly.at(j));
-			if (Math.abs(i - j) % poly.length > 1) lastInnerDiag = { i:i, j:j };
 			nDiags++;
 		}
 
@@ -381,7 +380,6 @@ class DecompPoly {
 			_indicesSet.set(k, true);
 			//trace("diag " + j + "-" + k + "  " + poly.at(j) + " " + poly.at(k));
 			nDiags++;
-			if (Math.abs(j - k) % poly.length > 1) lastInnerDiag = { i:k, j:j };
 		}
 
 		if (guard-- < 0) { 
@@ -392,20 +390,9 @@ class DecompPoly {
 		if (nDiags > 1) {	// add new decomposing poly
 			var hasInnerDiags = false;
 			var indices:Array<Int> = [for (k in _indicesSet.keys()) k];
+			indices.sort(intCmp);
+			
 			if (indices.length > 0) {
-				indices.sort(intCmp);
-				for (idx in 1...indices.length) {
-					if (Math.abs(indices[idx] - indices[idx - 1]) % poly.length > 1) {
-						hasInnerDiags = true;
-						break;
-					}
-				}
-				if (!hasInnerDiags && lastInnerDiag != null) {
-					_indicesSet.set(lastInnerDiag.i, true);
-					_indicesSet.set(lastInnerDiag.j, true);
-					indices = [for (k in _indicesSet.keys()) k];
-					indices.sort(intCmp);
-				}
 				outIndices.push(indices);
 				_indicesCount = 0;
 				_indicesSet = new IntMap<Bool>();
@@ -413,14 +400,14 @@ class DecompPoly {
 			}
 		}
 
-		_decompByDiags(i, j, outIndices, level + 1, lastInnerDiag);
-		_decompByDiags(j, k, outIndices, level + 1, lastInnerDiag);
+		_decompByDiags(i, j, outIndices, level + 1);
+		_decompByDiags(j, k, outIndices, level + 1);
 	}
 
 	private inline function intCmp(a:Int, b:Int):Int {
 		if (a == b) return 0;
-		else if (b < a) return -1;
-		else return 1;
+		else if (b < a) return 1;
+		else return -1;
 	}
 	
 	/** Returns the vertices' indices of each decomposing poly. */

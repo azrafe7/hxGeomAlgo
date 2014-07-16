@@ -28,19 +28,23 @@ using hxGeomAlgo.PolyTools;
 class Bayazit
 {
 	
+	static private var poly:Poly;		// cw version of simplePoly - used internally
+	
 	static public var reflexVertices:Array<Point> = new Array<Point>();
 	static public var steinerPoints:Array<Point> = new Array<Point>();
 
+	static public var reversed:Bool;	// true if the _internal_ indices have been reversed
+
 	/** 
-	 * Decomposes `poly` into a near-minimum number of convex polygons. 
-	 * 
-	 * NOTE: makes `poly` CCW first, if necessary. 
+	 * Decomposes `simplePoly` into a near-minimum number of convex polygons. 
 	 */
-	static public function decomposePoly(poly:Poly):Array<Poly> {
+	static public function decomposePoly(simplePoly:Poly):Array<Poly> {
 		var res = new Array<Poly>();
 		
-		poly.makeCCW();	// in place
-
+		poly = new Poly();
+		for (p in simplePoly) poly.push(new Point(p.x, p.y));
+		reversed = poly.makeCW();	// make poly cw (in place)
+		
 		reflexVertices.clear();
 		steinerPoints.clear();
 		

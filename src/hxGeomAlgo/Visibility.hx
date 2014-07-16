@@ -48,7 +48,7 @@ class Visibility
 	static private var stack:Array<Int> = new Array<Int>();						// stack holds indices of visibility polygon
 	static private var vertexType:Array<VertexType> = new Array<VertexType>();	// types of vertices
 	static private var stackTop:Int;											// stack pointer to top element
-	static public var poly:Poly;												// cartesian version of simplePoly - used internally
+	static private var poly:Poly;												// cw version of simplePoly - used internally
 	
 	static private var leftLidIdx:Int;
 	static private var rightLidIdx:Int;
@@ -65,12 +65,14 @@ class Visibility
 		vertexType.clear();
 		stackTop = -1;
 		for (i in 0...simplePoly.length) {
-			poly.push(new Point(simplePoly[i].x, simplePoly[i].y));	// ??? invert y (convert screen coord to cartesian)
+			poly.push(new Point(simplePoly[i].x, simplePoly[i].y));
 			stack.push(-1);
 			vertexType.push(VertexType.UNKNOWN);
 		}
-		reversed = poly.makeCCW();	// make poly ccw (in place)
-		if (reversed) origIdx = poly.length - origIdx - 1;
+		reversed = poly.makeCW();	// make poly cw (in place)
+		if (reversed) {
+			origIdx = poly.length - origIdx - 1;
+		}
 		
 		// build
 		var edgeJ:HomogCoord;	// during the loops, this is the line p[j-1]->p[j]

@@ -26,18 +26,18 @@ class PolyTools
 	static public var EPSILON:Float = .00000001;
 
 	
-	/** Returns true if `poly` is counterclockwise. */
+	/** Returns true if `poly` is counterclockwise (assumes y axis pointing down). */
 	static public function isCCW(poly:Poly):Bool {
 		var br:Int = 0;
 
 		// find bottom right point
 		for (i in 1...poly.length) {
-			if (poly[i].y < poly[br].y || (poly[i].y == poly[br].y && poly[i].x > poly[br].x)) {
+			if (poly[i].y > poly[br].y || (poly[i].y == poly[br].y && poly[i].x > poly[br].x)) {
 				br = i;
 			}
 		}
 
-		return isLeft(at(poly, br - 1), at(poly, br), at(poly, br + 1));
+		return isRight(at(poly, br - 1), at(poly, br), at(poly, br + 1));
 	}
 	
 	/** Makes `poly` counterclockwise (in place). Returns true if reversed. */
@@ -53,12 +53,25 @@ class PolyTools
 		return reversed;
 	}
 	
+	/** Makes `poly` clockwise (in place). Returns true if reversed. */
+	static public function makeCW(poly:Poly):Bool {
+		var reversed = false;
+		
+		// reverse poly if counterlockwise
+		if (isCCW(poly)) {
+			poly.reverse();
+			reversed = true;
+		}
+		
+		return reversed;
+	}
+	
 	/** 
 	 * Assuming the polygon is simple (not self-intersecting), checks if it is convex.
 	 **/
 	static public function isConvex(poly:Poly):Bool
 	{
-		var isPositive:Bool = false;
+		var isPositive:Null<Bool> = null;
 
 		for (i in 0...poly.length) {
 			var lower:Int = (i == 0 ? poly.length - 1 : i - 1);
@@ -72,12 +85,15 @@ class PolyTools
 			
 			// cross product should have same sign
 			// for each vertex if poly is convex.
-			var newIsPositive:Bool = (cross >= 0 ? true : false);
+			var newIsPositive:Bool = (cross > 0 ? true : false);
 
-			if (i == 0)
+			if (cross == 0) continue;	// handle collinear case
+			
+			if (isPositive == null)
 				isPositive = newIsPositive;
-			else if (isPositive != newIsPositive)
+			else if (isPositive != newIsPositive) {
 				return false;
+			}
 		}
 
 		return true;
@@ -209,7 +225,7 @@ class PolyTools
 		return poly[idx % len];
 	}
 	
-	/** Gets the side (signed area) of `p` relative to the line extending `a`-`b` (< 0 -> left, > 0 -> right, == 0 -> collinear). */
+	/** Gets the side (signed area) of `p` relative to the line extending `a`-`b` (> 0 -> left, < 0 -> right, == 0 -> collinear). */
 	static inline public function side(p:Point, a:Point, b:Point):Float
 	{
 		return (((a.x - p.x) * (b.y - p.y)) - ((b.x - p.x) * (a.y - p.y)));

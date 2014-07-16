@@ -136,12 +136,12 @@ class Test extends Sprite {
 		drawDecompositionBayazit(decomposition, x + clipRect.x, y + clipRect.y);
 		addChild(getTextField("Bayazit\nDecomp\n" + decomposition.length + " polys", x, y));
 
-		// SNOEYINK-KEIL DECOMPOSITION (buggy)
+		// SNOEYINK-KEIL DECOMPOSITION
 		x += width + X_GAP;
 		decomposition = SnoeyinkKeil.decomposePoly(simplifiedPoly);
 		drawDecomposition(decomposition, x + clipRect.x, y + clipRect.y);
 		addChild(getTextField("Snoeyink-Keil\nMin Decomp\n" + decomposition.length + " polys", x, y));
-
+		
 		//stage.addChild(new FPS(5, 5, 0xFFFFFF));
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 
