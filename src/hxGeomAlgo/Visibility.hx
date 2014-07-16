@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) Giuseppe Di Mauro (azrafe7) 2013-2014.
+ *
+ * This file is part of hxGeomAlgo (https://github.com/azrafe7/hxGeomAlgo). 
+ * hxGeomAlgo is licensed under the MIT license (http://opensource.org/licenses/MIT) and built upon the work of many developers. 
+ * See CREDITS.MD and LICENSE.MD files for more details.
+ */
+
 /**
  * Visibility polygon implementation.
  * NOTE: Should work only for SIMPLE polygons (not self-intersecting, without holes).

@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) Giuseppe Di Mauro (azrafe7) 2013-2014.
+ *
+ * This file is part of hxGeomAlgo (https://github.com/azrafe7/hxGeomAlgo). 
+ * hxGeomAlgo is licensed under the MIT license (http://opensource.org/licenses/MIT) and built upon the work of many developers. 
+ * See CREDITS.MD and LICENSE.MD files for more details.
+ */
+
 /**
  * Snoeyink-Keil minimum convex polygon decomposition implementation.
  * NOTE: Should work only for SIMPLE polygons (not self-intersecting, without holes).
@@ -124,7 +132,6 @@ class SnoeyinkKeil
 class DecompPoly {
 	public static var INFINITY:Int = 100000;
 	public static var BAD:Int = 999990;
-	public static var NONE:Int = 0;
 
 	public var guard:Int;
 
