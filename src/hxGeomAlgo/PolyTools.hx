@@ -37,7 +37,7 @@ class PolyTools
 			}
 		}
 
-		return isLeft(at(poly, br - 1), at(poly, br), at(poly, br + 1));
+		return !isLeft(at(poly, br - 1), at(poly, br), at(poly, br + 1));
 	}
 	
 	/** Makes `poly` counterclockwise (in place). Returns true if reversed. */
