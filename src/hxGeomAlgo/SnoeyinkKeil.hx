@@ -444,19 +444,20 @@ class SubDecomp {
 		for (i in 0...n) rx[i] = reflex[i] ? r++ : 0;
 
 		j = r;
-		for (i in 0...n) if (!reflex[i]) rx[i] = j++;
-
-		wt = [for (i in 0...n) new Array<Int>()];
-		pd = [for (i in 0...n) new Array<PairDeque>()];
-		for (i in 0...r) {
-			wt[i] = [for (i in 0...n) 0];
-			for (j in 0...n) wt[i][j] = DecompPoly.BAD;
-			pd[i] = [for (i in 0...n) null];
-		}
-		for (i in r...n) {
-			wt[i] = [for (i in 0...r) 0];
-			for (j in 0...r) wt[i][j] = DecompPoly.BAD;
-			pd[i] = [for (i in 0...r) null];
+		wt = new Array<Array<Int>>();
+		pd = new Array<Array<PairDeque>>();
+		for (i in 0...n) {
+			if (!reflex[i]) rx[i] = j++;
+			wt[i] = new Array<Int>();
+			pd[i] = new Array<PairDeque>();
+			for (k in 0...n) {
+				if (i < r || k < r) {
+					wt[i][k] = DecompPoly.BAD;
+					pd[i][k] = null;
+				} else {
+					break;
+				}
+			}
 		}
 		
 		//trace(rx);
