@@ -89,6 +89,8 @@ class PolyTools
 	static public function isSimple(poly:Poly):Bool
 	{
 		var len:Int = poly.length;
+		
+		if (len<=3) return true;
 
 		for (i in 0...len) {
 			// first segment
