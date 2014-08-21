@@ -87,7 +87,7 @@ class CCLabeler
 		var width = paddedBMD.width,
 			height = paddedBMD.height,
 			isLabeled:Bool,
-			leftLabeledPixel:Int;
+			leftLabeledPixel:UInt;
 		
 		var x, y = 1;
 		while (y < height - 1) {
@@ -97,31 +97,24 @@ class CCLabeler
 				if (isPixelSolid(x, y))
 				{
 					if (!isLabeled && !isPixelSolid(x, y - 1)) { // external contour
-						trace("external contour @ " + x + "," + y);
+						//trace("external contour @ " + x + "," + y);
 						setLabel(x, y, labelToColor(labelIndex));
 						isLabeled = true;
 						contourTrace(x, y, labelToColor(labelIndex), 7);
-						draw();
 						labelIndex++;
 					}
-					if (x == 3 && y == 2) {
-						trace(isPixelSolid(x, y + 1), StringTools.hex(markedPixels.getPixel32(x, y + 1)), Std.string(markedPixels.getPixel32(x, y + 1)), Std.string(MARKED));
-					}
 					if (!isPixelSolid(x, y + 1) && markedPixels.getPixel32(x, y + 1) != MARKED) { // internal contour
-						trace("internal contour @ " + x + "," + y);
+						//trace("internal contour @ " + x + "," + y);
 						if (!isLabeled) {
 							isLabeled = true;
 							leftLabeledPixel = labelMap.getPixel32(x - 1, y);
 							setLabel(x, y, leftLabeledPixel);
 						}
 						contourTrace(x, y, labelMap.getPixel32(x, y), 3);
-						draw();
-						//quit();
-						
 					}
 					if (!isLabeled) // internal point not belonging to any contour
 					{
-						trace("internal point @ " + x + "," + y);
+						//trace("internal point @ " + x + "," + y);
 						leftLabeledPixel = labelMap.getPixel32(x - 1, y);
 						setLabel(x, y, leftLabeledPixel);
 					}
@@ -131,6 +124,7 @@ class CCLabeler
 			y++;
 		}
 		
+		draw();
 		return labelMap;	
 	}
 	
@@ -163,23 +157,24 @@ class CCLabeler
 		
 		point.setTo(x, y);
 		tracingDir = dir;
-		trace(x, y, StringTools.hex(paddedBMD.getPixel32(x, y)), "dir: " + tracingDir);
+		//trace(x, y, StringTools.hex(paddedBMD.getPixel32(x, y)), "dir: " + tracingDir);
 		var firstPoint = true;
 		while (true) {
-			nextPointExists = nextOnContour(x, y, point, firstPoint);
+			nextPointExists = nextOnContour(x, y, point);
 			if (firstPoint) {
 				point2.setTo(point.x, point.y);
 				firstPoint = false;
 			}
 			if (nextPointExists) {
+				tracingDir = (tracingDir + 6) % 8;	// update direction
 				x = Std.int(point.x);
 				y = Std.int(point.y);
-				trace(x, y, StringTools.hex(paddedBMD.getPixel32(x, y)), "dir: " + tracingDir);
+				//trace(x, y, StringTools.hex(paddedBMD.getPixel32(x, y)), "dir: " + tracingDir);
 				if (x == startX && y == startY) { // we're back to starting point
-					nextOnContour(x, y, point, firstPoint);
+					nextOnContour(x, y, point);
 					
 					// break if next point is the same we found with the first call to nextOnContour
-					// (which can actually be different based on tracing direction)
+					// (which can actually be different based on tracing direction - f.e. in an x-shaped pattern)
 					if (point.x == point2.x && point.y == point2.y) {
 						break;
 					}
@@ -195,7 +190,7 @@ class CCLabeler
 		}
 	}
 	
-	static function nextOnContour(x:Int, y:Int, nextPoint:HxPoint, isFirstPoint:Bool):Bool
+	static function nextOnContour(x:Int, y:Int, nextPoint:HxPoint):Bool
 	{
 		var isolatedPixel = true,
 			cx, cy;
@@ -209,13 +204,11 @@ class CCLabeler
 				isolatedPixel = false;
 				break;
 			} else { // set non-solid pixel as marked
-				trace("- " + cx + "," + cy);
+				//trace("- " + cx + "," + cy);
 				markedPixels.setPixel32(cx, cy, MARKED);
 			}
 			tracingDir = (tracingDir + 1) % 8;
 		}
-		
-		tracingDir = (tracingDir + 6) % 8;
 		
 		return !isolatedPixel;
 	}
@@ -227,7 +220,6 @@ class CCLabeler
 	
 	/** Returns true if the pixel at `x`, `y` is opaque (according to `alphaThreshold`). */
 	inline static public function isPixelSolid(x:Int, y:Int):Bool {
-		//trace((paddedBMD.getPixel32(x, y) >>> 24));
-		return (paddedBMD.getPixel32(x, y) >>> 24) >= alphaThreshold;
+		return ((paddedBMD.getPixel32(x, y) >> 24) & 0xFF) >= alphaThreshold;
 	}
 }
