@@ -8,12 +8,12 @@ package hxGeomAlgo;
 abstract HxPoint(HxPointData)
 {
 	public var x(get, set):Float;
-	inline private function get_x():Float { return this.data[0]; }
-	inline private function set_x(value:Float):Float { return this.data[0] = value; }
+	inline private function get_x():Float { return this.x; }
+	inline private function set_x(value:Float):Float { return this.x = value; }
 	
 	public var y(get, set):Float;
-	inline private function get_y():Float { return this.data[1]; }
-	inline private function set_y(value:Float):Float { return this.data[1] = value; }
+	inline private function get_y():Float { return this.y; }
+	inline private function set_y(value:Float):Float { return this.y = value; }
 
 	public function new(x:Float=0, y:Float=0) 
 	{
@@ -56,10 +56,12 @@ abstract HxPoint(HxPointData)
 
 class HxPointData
 {
-	public var data:Array<Float>;
+	public var x:Float;
+	public var y:Float;
 	
 	inline public function new(x:Float=0, y:Float=0)
 	{
-		data = [x, y];
+		this.x = x;
+		this.y = y;
 	}	
 }
