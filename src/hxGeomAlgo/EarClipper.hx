@@ -45,7 +45,7 @@ class EarClipper
 	public static function triangulate(v:Poly):Array<Tri> 
 	{
 		if (v.length < 3)
-			return null;
+			return [];
 
 		var remList:Array<HxPoint> = new Array<HxPoint>().concat(v);
 		
@@ -65,7 +65,7 @@ class EarClipper
 			}
 
 			if (earIndex == -1)
-				return null;
+				return [];
 
 			var newList:Array<HxPoint> = new Array<HxPoint>().concat(remList);
 
@@ -94,9 +94,9 @@ class EarClipper
 	{
 		var polys = new Array<Poly>();
 
-		if (triangulation == null)
+		if (triangulation.length == 0)
 		{
-			return null;
+			return [];
 		}
 		else
 		{
