@@ -163,7 +163,7 @@ class CCLabeler
 		labelMap.setPixels(labelMap.rect, labelBytes);
 		markedPixels.setPixels(markedPixels.rect, markedBytes);
 		
-		numComponents = labelIndex + 1;
+		numComponents = labelIndex;
 		return labelMap;	
 	}
 	
@@ -276,7 +276,7 @@ class CCLabeler
 	{
 		var pos:UInt = (y * width + x) << 2;
 		var res = outerValue;
-		if (pos >= 0 && pos < ba.length) {
+		if (x >= 0 && y >= 0 && x < width && y < height) {
 			ba.position = pos;
 			res = ba.readUnsignedInt();
 		}
@@ -291,7 +291,7 @@ class CCLabeler
 	{
 		var pos:UInt = (y * width + x) << 2;
 		ba.position = pos;
-		if (pos >= 0 && pos < ba.length) ba.writeUnsignedInt(color);
+		if (x >= 0 && y >= 0 && x < width && y < height) ba.writeUnsignedInt(color);
 	}
 
 	/** 
@@ -299,7 +299,7 @@ class CCLabeler
 	 * Override this to use your own logic to identify solid pixels.
 	 */
 	private function isPixelSolid(x:Int, y:Int):Bool {
-		return (getPixel(sourceBytes, x, y) >> 24 & 0xFF) >= alphaThreshold;
+		return (getPixel(sourceBytes, x, y, 0) >> 24 & 0xFF) >= alphaThreshold;
 	}
 	
 	private function getColorFromHSV(h:Float, s:Float, v:Float):UInt
