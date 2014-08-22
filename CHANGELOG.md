@@ -12,9 +12,12 @@
  - Added Bayazit poly decomp
  - Added PolyTools class and refactored common code
  - Added initial code for Keil decomposition
- - Added first impl. Visibility polygon
+ - Added first impl. of Visibility polygon
  - Visibility: added HomogCoord class
  - Visibility: Fixes for points discovery on polygon edges 
  - Visibility: Refactored into static class
  - SnoeyinkKeil: first impl.
  - SnoeyinkKeil: finished coding missing parts/fixed bugs
+ - Added abstract HxPoint
+ - Added initial impl. of Connected Components Labeling
+ - CCLabeler: refactored and fixed various bugs
