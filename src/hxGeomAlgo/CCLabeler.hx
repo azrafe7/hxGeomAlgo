@@ -19,6 +19,11 @@ import openfl.geom.Rectangle;
 import openfl.utils.ByteArray;
 
 
+@:enum abstract Connectivity(Int) {
+	var FOUR_CONNECTED = 4;
+	var EIGHT_CONNECTED = 8;
+}
+
 class CCLabeler
 {
 	/** Minimum alpha value to consider a pixel opaque. */
@@ -29,6 +34,9 @@ class CCLabeler
 	
 	/** Whether to store contours' points while labeling. */
 	public var traceContours:Bool;
+	
+	/** Type of connectivity to search for. */
+	public var connectivity:Connectivity;
 	
 	/** 
 	 * Contours' points found while labeling (external contours
@@ -78,13 +86,15 @@ class CCLabeler
 	 * @param	bmd				BitmapData to use as source for labeling.
 	 * @param	alphaThreshold  Minimum alpha value to consider a pixel opaque.
 	 * @param	traceContours	Whether to store contours' points while labeling.
+	 * @param	connectivity	Type of connectivity to search for (defaults to EIGHT_CONNECTED).
 	 * @param	clipRect		The region of bmd to process (defaults to the entire image).
 	 */
-	public function new(bmd:BitmapData, alphaThreshold:Int = 1, traceContours:Bool = true, clipRect:Rectangle = null)
+	public function new(bmd:BitmapData, alphaThreshold:Int = 1, traceContours:Bool = true, connectivity:Connectivity = Connectivity.EIGHT_CONNECTED, clipRect:Rectangle = null)
 	{
 		setSource(bmd, clipRect);
 		
 		this.alphaThreshold = alphaThreshold;
+		this.connectivity = connectivity;
 		this.traceContours = traceContours;
 		numComponents = 0;
 	}
@@ -111,7 +121,7 @@ class CCLabeler
 	}
 	
 	/**
-	 * Performs connected components labeling and returns a BitmapData with the label info (also stored in `labelMap`).
+	 * Labels 8-connected components and writes them in the returned BitmapData (also stored in `labelMap`).
 	 * If `traceContours` has been set, it also saves contours' points in the `contours` variable.
 	 */
 	public function run():BitmapData
@@ -227,10 +237,21 @@ class CCLabeler
 	private function nextOnContour(x:Int, y:Int, nextPoint:HxPoint):Bool
 	{
 		var isolatedPixel = true,
-			cx, cy;
+			cx, cy,
+			numSteps = 8,
+			step = 1;
+			
+		// if we're in FOUR_CONNECTED mode then only even values of `tracingDir` are possible 
+		// (i.e. no diagonals and we advance by two)
+		if (connectivity == Connectivity.FOUR_CONNECTED) {
+			if (tracingDir & 1 == 1) tracingDir = (tracingDir + 1) % 8;
+			numSteps = 4;
+			step = 2;
+		}
+		
 		var dir = tracingDir;
 		
-		for (i in 0...searchDir.length) {
+		for (i in 0...numSteps) {
 			cx = x + searchDir[tracingDir].dx;
 			cy = y + searchDir[tracingDir].dy;
 			nextPoint.setTo(cx, cy);
@@ -241,7 +262,7 @@ class CCLabeler
 				//trace("- " + cx + "," + cy);
 				setPixel(markedBytes, cx, cy, MARKED);
 			}
-			tracingDir = (tracingDir + 1) % 8;
+			tracingDir = (tracingDir + step) % 8;
 		}
 		
 		return !isolatedPixel;
@@ -251,7 +272,7 @@ class CCLabeler
 	 * Maps `label` to a color. 
 	 * Override this to use your own label-to-color mapping. 
 	 */
-	private function labelToColor(label:Int):UInt 
+	public function labelToColor(label:Int):UInt 
 	{
 		if (label >= colors.length) {
 			colors[label] = 0xFF000000 | getColorFromHSV(hue, .9, 1);
