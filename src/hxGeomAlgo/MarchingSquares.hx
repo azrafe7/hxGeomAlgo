@@ -29,7 +29,7 @@ enum StepDirection {
 class MarchingSquares
 {
 	/** Minimum alpha value to consider a pixel opaque. */
-	public var alphaThreshold:Int = 1;
+	public var alphaThreshold:Int;
 
 	private var prevStep:StepDirection = StepDirection.NONE;
 	private var nextStep:StepDirection = StepDirection.NONE;
@@ -78,7 +78,7 @@ class MarchingSquares
 	 * @param	startPoint	Start from this point (if null it will be calculated automatically).
 	 * @return	An array containing the points on the perimeter, or an empty array if no perimeter is found.
 	 */
-	public function march(?startPoint:HxPoint = null):Array<HxPoint> 
+	public function march(startPoint:HxPoint = null):Array<HxPoint> 
 	{
 		if (startPoint == null) {
 			if (findStartPoint() == null) return [];
@@ -149,7 +149,7 @@ class MarchingSquares
 	}
 	
 	/** Calculates the next state for pixel at `x`, `y`. */
-	public function step(x:Int, y:Int):Void 
+	private function step(x:Int, y:Int):Void 
 	{
 		var upLeft = isPixelSolid(x - 1, y - 1);
 		var upRight = isPixelSolid(x, y - 1);
@@ -188,8 +188,11 @@ class MarchingSquares
 		}
 	}
 	
-	/** Returns true if the pixel at `x`, `y` is opaque (according to `alphaThreshold`). */
-	inline public function isPixelSolid(x:Int, y:Int):Bool {
+	/** 
+	 * Returns true if the pixel at `x`, `y` is opaque (according to `alphaThreshold`).
+	 * Override this to use your own logic to identify solid pixels.
+	 */
+	private function isPixelSolid(x:Int, y:Int):Bool {
 		return (x >= 0 && y >= 0 && x < width && y < height && (byteArray[(y * width + x) << 2] >= alphaThreshold));
 	}
 }
