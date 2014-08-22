@@ -24,9 +24,14 @@ import hxGeomAlgo.Visibility;
 import hxGeomAlgo.PolyTools.Poly;
 import hxGeomAlgo.PairDeque;
 import hxGeomAlgo.SnoeyinkKeil;
+import hxGeomAlgo.CCLabeler;
 import openfl.Assets;
 import openfl.display.FPS;
-
+import openfl.utils.ByteArray;
+#if (neko)
+import sys.io.File;
+import sys.io.FileOutput;
+#end
 
 class GeomAlgoTest extends Sprite {
 
@@ -91,7 +96,7 @@ class GeomAlgoTest extends Sprite {
 		drawPerimeter(perimeter, x + clipRect.x, y + clipRect.y);
 		addChild(getTextField("MarchSqrs\n" + perimeter.length + " pts", x, y));
 
-		// RAMER-DOUGLAS-PEUCKER
+		// RAMER-DOUGLAS-PEUCKER SIMPLIFICATION
 		x += width + X_GAP;
 		simplifiedPoly = RamerDouglasPeucker.simplify(perimeter, 1.5);
 		drawPoly(simplifiedPoly, x + clipRect.x, y + clipRect.y);
@@ -103,29 +108,26 @@ class GeomAlgoTest extends Sprite {
 		drawTriangulation(triangulation, x + clipRect.x, y + clipRect.y);
 		addChild(getTextField("EC-Triang\n" + triangulation.length + " tris", x, y));
 
-		// VISIBILITY
-		x += width + X_GAP;
-		drawPoly(simplifiedPoly, x, y);
-		var origIdx = Std.int(Math.random() * simplifiedPoly.length);
-		var origPoint = simplifiedPoly[origIdx];
-		// visible points
-		var visPoints = Visibility.getVisiblePolyFrom(simplifiedPoly, origIdx);
-		g.lineStyle(1, 0xFFFF00);
-		drawPoly(visPoints, x, y);	
-		// visible vertices
-		var visIndices = Visibility.getVisibleIndicesFrom(simplifiedPoly, origIdx);
-		var visVertices = [for (i in 0...visIndices.length) simplifiedPoly[visIndices[i]]];
-		g.lineStyle(1, 0x00FF00);
-		drawPoints(visVertices, x, y);
-		// draw origPoint
-		g.lineStyle(1, 0x0000FF);
-		g.drawCircle(x + origPoint.x, y + origPoint.y, 3);
-		addChild(getTextField("Visibility\n" + visVertices.length + " vts\n" + visPoints.length + " pts", x, y));
+		// CONNECTED COMPONENTS LABELING
+		x = START_POINT.x;
+		y += height + Y_GAP;
+		var labeler = new CCLabeler(originalBMD, 150, true, clipRect);
+		labeler.run();
+		var labelBMP = new Bitmap(labeler.labelMap);
+		addChildAt(labelBMP, 0);
+		labelBMP.x = START_POINT.x;
+		labelBMP.y = y;
+		for (contour in labeler.contours) {
+			var color:UInt = PolyTools.isCCW(contour) ? 0xFF00FF00 : 0xFF0000FF;
+			for (p in contour) {
+				labeler.labelMap.setPixel32(Std.int(p.x), Std.int(p.y), color);
+			}
+		}
+		addChild(getTextField("CCLabeler\n" + labeler.numComponents + " cmpts\n" + labeler.contours.length + " cntrs", x, y));
 		g.lineStyle(1, COLOR, ALPHA);
 
 		// EARCLIPPER DECOMPOSITION
-		x = START_POINT.x + width + X_GAP;
-		y += height + Y_GAP;
+		x += width + X_GAP;
 		decomposition = EarClipper.polygonizeTriangles(triangulation);
 		drawDecomposition(decomposition, x + clipRect.x, y + clipRect.y);
 		addChild(getTextField("EarClipper\nDecomp\n" + decomposition.length + " polys", x, y));
@@ -142,12 +144,41 @@ class GeomAlgoTest extends Sprite {
 		drawDecomposition(decomposition, x + clipRect.x, y + clipRect.y);
 		addChild(getTextField("Snoeyink-Keil\nMin Decomp\n" + decomposition.length + " polys", x, y));
 		
+		// VISIBILITY
+		x += width + X_GAP;
+		drawPoly(simplifiedPoly, x + clipRect.x, y + clipRect.y);
+		var origIdx = Std.int(Math.random() * simplifiedPoly.length);
+		var origPoint = simplifiedPoly[origIdx];
+		// visible points
+		var visPoints = Visibility.getVisiblePolyFrom(simplifiedPoly, origIdx);
+		g.lineStyle(1, 0xFFFF00);
+		drawPoly(visPoints, x + clipRect.x, y + clipRect.y);
+		// visible vertices
+		var visIndices = Visibility.getVisibleIndicesFrom(simplifiedPoly, origIdx);
+		var visVertices = [for (i in 0...visIndices.length) simplifiedPoly[visIndices[i]]];
+		g.lineStyle(1, 0x00FF00);
+		drawPoints(visVertices, x + clipRect.x, y + clipRect.y);
+		// draw origPoint
+		g.lineStyle(1, 0x0000FF);
+		g.drawCircle(x + origPoint.x + clipRect.x, y + origPoint.y + clipRect.y, 3);
+		addChild(getTextField("Visibility\n" + visVertices.length + " vts\n" + visPoints.length + " pts", x, y));
+		g.lineStyle(1, COLOR, ALPHA);
+		
 		//stage.addChild(new FPS(5, 5, 0xFFFFFF));
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 
 		dumpPoly(simplifiedPoly, false);
 	}
 
+	static public function savePNG(bmd:BitmapData, fileName:String) {
+	#if (neko)
+		var ba:ByteArray = bmd.encode("png", 1);
+		var file:FileOutput = sys.io.File.write(fileName, true);
+		file.writeString(ba.toString());
+		file.close();
+	#end
+	}
+	
 	public function dumpPoly(poly:Array<HxPoint>, reverse:Bool = false):Void {
 		var len = poly.length;
 		var str = "poly dump: ";

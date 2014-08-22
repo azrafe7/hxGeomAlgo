@@ -42,8 +42,18 @@ Based on:
  - [http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/VPDemo.html](http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/VPDemo.html)	(Java - by Jack Snoeyink)
 
 ### [Snoeyink-Keil Minimum Convex Decomposition](http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/MCDDemo.html)
+
+Based on:
+
    - [http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/MCDDemo.html](http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/MCDDemo.html) (Java - by Jack Snoeyink & Mark Keil)
    - [J. Mark Keil](http://www.informatik.uni-trier.de/~ley/pers/hd/k/Keil:J=_Mark), [Jack Snoeyink](http://www.informatik.uni-trier.de/~ley/pers/hd/s/Snoeyink:Jack.html): On the Time Bound for Convex Decomposition of Simple Polygons. [Int. J. Comput. Geometry Appl. 12](http://www.informatik.uni-trier.de/~ley/db/journals/ijcga/ijcga12.html#KeilS02)(3): 181-192 (2002)
+
+### [Connected Components Labeling](http://en.wikipedia.org/wiki/Connected-component_labeling) ###
+
+Based on:
+
+ - [Fu Chang, Chun-jen Chen, Chi-jen Lu: A linear-time component-labeling algorithm using contour tracing technique (2004)](http://www.iis.sinica.edu.tw/papers/fchang/1362-F.pdf)
+
 
 ## Credits
 
