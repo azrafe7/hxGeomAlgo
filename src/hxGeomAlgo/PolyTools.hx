@@ -172,7 +172,7 @@ class PolyTools
 	}
 	
 	/**
-	 * Returns indices of duplicate points in `poly` (or null if none are found).
+	 * Returns indices of duplicate points in `poly` (or an empty array if none are found).
 	 */
 	static public function findDuplicatePoints(poly:Poly):Array<Int> 
 	{
@@ -186,7 +186,7 @@ class PolyTools
 			}
 		}
 		
-		return res.length != 0 ? res : null;
+		return res;
 	}
 
 	/** Finds the intersection point between lines extending the segments `p1`-`p2` and `q1`-`q2`. Returns null if they're parallel. */
