@@ -29,7 +29,7 @@ class RamerDouglasPeucker
 		var lastPoint = points[points.length - 1];
 		
 		if (points.length < 3) {
-			return points;
+			return [].concat(points);
 		}
 		
 		var index = -1;
