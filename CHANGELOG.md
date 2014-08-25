@@ -21,3 +21,7 @@
  - Added abstract HxPoint
  - Added initial impl. of Connected Components Labeling
  - CCLabeler: refactored and fixed various bugs
+ - CCLabeler: added 4-connectivity option
+ - MarchingSquares: fixed bug causing duplicate points
+ - Added first impl. of Visvalingam-Whyatt simplification (+ MinHeap)
+ - Visv-Whyatt: completed and improved
