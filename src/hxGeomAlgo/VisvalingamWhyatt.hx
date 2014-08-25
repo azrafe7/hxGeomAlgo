@@ -1,25 +1,31 @@
+/**
+ * Visvalingam-Whyatt implementation.
+ * 
+ * Based on:
+ * 
+ * Visvalingam M., Whyatt J. D.: Line generalisation by repeated elimination of the smallest area (1992)
+ * @see https://hydra.hull.ac.uk/resources/hull:8338	(Visvalingam, Whyatt)
+ * @see http://bost.ocks.org/mike/simplify/				(JS - by Mike Bostock)
+ * @see http://en.wikipedia.org/wiki/Binary_heap 		(Binary (Min)Heap) 
+ * 
+ * @author azrafe7
+ */
+
 package hxGeomAlgo;
-
-import haxe.ds.BalancedTree;
-import hxGeomAlgo.EarClipper.Tri;
-
 
 
 /** Specifies the method to use in the simplification process. */
 enum SimplificationMethod {
 	MaxPoints(n:Int);		// Allow max n points (n > 2).
 	ThresholdArea(a:Float);	// Filter out all triangles with area <= a.
-	Ratio(r:Float);			// Retain r ratio of all points (0 <= r <= 1). 
+	Ratio(r:Float);			// Retain r ratio of all points (0 < r <= 1). 
 }
 
-/**
- * ...
- * @author azrafe7
- */
+
 class VisvalingamWhyatt
 {	
 	static private var method:SimplificationMethod;
-	static private var minHeap;
+	static private var minHeap:MinHeap<Triangle>;
 	
 	/**
 	 * Simplify polyline.
@@ -50,37 +56,41 @@ class VisvalingamWhyatt
 		var triangles = [];
 		var triangle:Triangle;
 		
-		// add triangles to minHeap
+		// add triangles to array, and filter by threshold area
 		for (i in 1...numPoints - 1) {
 			triangle = new Triangle(points[i - 1], points[i], points[i + 1]);
-			triangle.index = i;
-			if (points[i].x == 31 && points[i].y == 5) {
-				trace("corner", triangle.area);
-			}
+			triangle.calcArea();
 			if (triangle.area > thresholdArea) {
 				triangles.push(triangle);
-				minHeap.push(triangle);
 			}
 		}
 		
-		// assign prev, next to triangles
+		// assign prev, next to triangles, adjust vertices,
+		// recalc area and add them to minHeap
 		var numTriangles = triangles.length;
 		for (i in 0...numTriangles) {
 			triangle = triangles[i];
-			if (i > 0) triangle.prev = triangles[i - 1];
-			if (i < numTriangles - 1) triangle.next = triangles[i + 1];
+			if (i > 0) {
+				triangle.prev = triangles[i - 1];
+				triangle.points[0] = triangle.prev.points[1];
+			} else {
+				triangle.points[0] = points[0];
+			}
+			if (i < numTriangles - 1) {
+				triangle.next = triangles[i + 1];
+				triangle.points[2] = triangle.next.points[1];
+			} else {
+				triangle.points[2] = points[numPoints - 1];
+			}
+			triangle.calcArea();
+			minHeap.push(triangle);
 		}
-		
-		var pp = [];
-		for (t in minHeap.data) {
-			pp.push(t.points[1]);
-		}
-		trace(PolyTools.findDuplicatePoints(pp));
 		
 		// filter triangles
 		var firstTriangle = triangles[0];
-		while ((minHeap.length > maxPoints - 2) && (triangle = minHeap.pop()) != null) {
-			trace(triangle.area);
+		while (minHeap.length > maxPoints - 2) {
+			triangle = minHeap.pop();
+			
 			if (triangle.prev != null) {
 				triangle.prev.next = triangle.next;
 				triangle.prev.points[2] = triangle.points[2];
@@ -94,37 +104,24 @@ class VisvalingamWhyatt
 				triangle.next.points[0] = triangle.points[0];
 				updateTriangle(triangle.next);
 			}
-			
-			minHeap.rebuild();
 		}
 		
-		pp = [];
-		for (t in minHeap.data) {
-			pp.push(t.points[1]);
-		}
-		trace(PolyTools.findDuplicatePoints(pp));
-
 		var res = [points[0]];
-		minHeap.data.sort(function (t1:Triangle, t2:Triangle):Int 
-		{
-			return t1.index - t2.index;
-		});
-		for (t in minHeap.data) res.push(t.points[1]);
+		triangle = maxPoints > 2 ? firstTriangle : null;
+		while (triangle != null) {
+			res.push(triangle.points[1]);
+			triangle = triangle.next;
+		}
 		res.push(points[numPoints - 1]);
 		
-		/*
-		var res = [firstTriangle.points[0], firstTriangle.points[1]];
-		triangle = firstTriangle;
-		while ((triangle = triangle.next) != null) res.push(triangle.points[2]);
-		*/
 		return res;
 	}
 	
-	static private function updateTriangle(t:Triangle)
+	static private function updateTriangle(triangle:Triangle)
 	{
-		//minHeap.remove(t);
-		t.calcArea();
-		//minHeap.push(t);
+		minHeap.remove(triangle);
+		triangle.calcArea();
+		minHeap.push(triangle);
 	}
 }
 
@@ -135,20 +132,20 @@ private class Triangle
 	public var prev:Triangle = null;
 	public var next:Triangle = null;	
 	public var area:Float = 0;
-	public var index:Int = -1;
 	
 	public function new(a:HxPoint, b:HxPoint, c:HxPoint):Void 
 	{
 		points = [a, b, c];
-		calcArea();
 	}
 	
+	/** @see http://web.archive.org/web/20120305071015/http://www.btinternet.com/~se16/hgb/triangle.htm */
 	public function calcArea():Float
 	{
 		//trace('(${points[0].x} - ${points[2].x}) * (${points[1].y} - ${points[0].y}) - (${points[0].x} - ${points[1].x}) * (${points[2].y} - ${points[0].y})');
-		area = (points[0].x - points[2].x) * (points[1].y - points[0].y) - 
-			   (points[0].x - points[1].x) * (points[2].y - points[0].y);
-		area = area < 0 ? -area : area;
+		area = ((points[0].x * points[2].y - points[2].x * points[0].y) +
+			    (points[1].x * points[0].y - points[0].x * points[1].y) +
+				(points[2].x * points[1].y - points[1].x * points[2].y)) * .5;
+		if (area < 0) area = -area;
 		return area;
 	}
 	
@@ -171,7 +168,7 @@ typedef Comparable<T> = {
  */
 class MinHeap<T:Comparable<T>>
 {
-	public var data:Array<T>;
+	private var data:Array<T>;
 	
 	public function new():Void 
 	{
@@ -202,6 +199,7 @@ class MinHeap<T:Comparable<T>>
             data[0] = lastObj;
             bubbleDown(0);
         }
+		
         return res;
     }
     
@@ -213,7 +211,7 @@ class MinHeap<T:Comparable<T>>
     public function remove(obj:T):Int
     {
         var res = data.indexOf(obj);
-		if (res < 0) return res;
+		if (res < 0 || res >= data.length) throw "Object not found.";
 		
         var len = data.length;
         var lastObj = data.pop();
@@ -221,7 +219,6 @@ class MinHeap<T:Comparable<T>>
             data[res] = lastObj;
             lastObj.compare(obj) < 0 ? bubbleUp(res) : bubbleDown(res);
         }
-		//validate();
         return res;
     }
     
@@ -268,6 +265,11 @@ class MinHeap<T:Comparable<T>>
 		if (data.length > 0) _validate(0);
 	}
 	
+	public function toArray():Array<T>
+	{
+		return [].concat(data);
+	}
+	
 	private function _validate(i:Int):Void
 	{
 		var len = data.length;
@@ -275,11 +277,11 @@ class MinHeap<T:Comparable<T>>
 		var right = rightOf(i);
 		
 		if (left < len) {
-			assert(data[i].compare(data[left]) <= 0, 'Broken heap shape invariant (parent@$i vs leftChild@left).');
+			assert(data[i].compare(data[left]) <= 0, 'Broken heap invariant (parent@$i > leftChild@$left).');
 			_validate(leftOf(i));
 		}
 		if (right < len) {
-			assert(data[i].compare(data[right]) <= 0, 'Broken heap shape invariant(parent@$i vs rightChild@right).');
+			assert(data[i].compare(data[right]) <= 0, 'Broken heap invariant (parent@$i > rightChild@$right).');
 			_validate(rightOf(i));
 		}
 	}
@@ -307,6 +309,6 @@ class MinHeap<T:Comparable<T>>
 	}
 
 	inline private static function assert(cond:Bool, ?message:String) {
-		if (!cond) throw "ASSERT FAILED!" + (message != null ? message : "");
+		if (!cond) throw "ASSERT FAILED! " + (message != null ? message : "");
 	}
 }
