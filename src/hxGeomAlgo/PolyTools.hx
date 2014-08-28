@@ -106,7 +106,7 @@ class PolyTools
 	{
 		var len:Int = poly.length;
 		
-		if (len<=3) return true;
+		if (len <= 3) return true;
 
 		for (i in 0...len) {
 			// first segment
@@ -163,10 +163,10 @@ class PolyTools
 		// check to see if distance between intersection and endpoints
 		// is longer than actual segments.
 		// return null otherwise.
-		if (distance(intersectionPoint, p1) > distance(p0, p1)) return null;
-		if (distance(intersectionPoint, p0) > distance(p0, p1)) return null;
-		if (distance(intersectionPoint, q1) > distance(q0, q1)) return null;
-		if (distance(intersectionPoint, q0) > distance(q0, q1)) return null;
+		if (distanceSquared(intersectionPoint, p1) > distanceSquared(p0, p1)) return null;
+		if (distanceSquared(intersectionPoint, p0) > distanceSquared(p0, p1)) return null;
+		if (distanceSquared(intersectionPoint, q1) > distanceSquared(q0, q1)) return null;
+		if (distanceSquared(intersectionPoint, q0) > distanceSquared(q0, q1)) return null;
 		
 		return intersectionPoint;
 	}
@@ -310,5 +310,33 @@ class PolyTools
 #else
 		untyped array.length = 0;
 #end
+	}
+	
+	/** Converts a poly defined by an Array<HxPoint> to an Array<Float> (appending values to `out` if specified). */
+	static public function toFlatArray(poly:Poly, ?out:Array<Float>):Array<Float>
+	{
+		out = (out != null) ? out : new Array<Float>();
+		
+		for (p in poly) {
+			out.push(p.x);
+			out.push(p.y);
+		}
+		
+		return out;
+	}
+	
+	/** Converts a poly defined by an Array<Float> to an Array<HxPoint> (appending values to `out` if specified). */
+	static public function toPointArray(poly:Array<Float>, ?out:Poly):Poly
+	{
+		out = (out != null) ? out : new Poly();
+		
+		var size = poly.length;
+		if (poly.length % 2 == 1) size--;
+		
+		for (i in 0...size >> 1) {
+			out.push(new HxPoint(poly[i * 2], poly[i * 2 + 1]));
+		}
+		
+		return out;
 	}
 }
