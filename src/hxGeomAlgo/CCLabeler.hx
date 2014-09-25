@@ -1,5 +1,5 @@
 /**
- * Connected components labeling (8 connectivity) implementation.
+ * Connected components labeling (8 and 4-connectivity) implementation.
  * 
  * Based on the paper of:
  * 
@@ -16,13 +16,14 @@ import flash.display.BitmapData;
 import hxGeomAlgo.HxPoint;
 import hxGeomAlgo.PolyTools.Poly;
 import openfl.geom.Rectangle;
-import openfl.utils.ByteArray;
+import openfl.Vector;
 
 
 @:enum abstract Connectivity(Int) {
 	var FOUR_CONNECTED = 4;
 	var EIGHT_CONNECTED = 8;
 }
+
 
 class CCLabeler
 {
@@ -35,6 +36,9 @@ class CCLabeler
 	/** Whether to store contours' points while labeling. */
 	public var traceContours:Bool;
 	
+	/** Whether to compute and store components' area (in areaMap) while labeling. */
+	public var calcArea:Bool;
+	
 	/** Type of connectivity to search for. */
 	public var connectivity:Connectivity;
 	
@@ -43,6 +47,9 @@ class CCLabeler
 	 * are in clockwise order, while internal ones are in ccw order).
 	 */
 	public var contours(default, null):Array<Poly>;
+	
+	/** Count of pixels belonging to the same connected component, indexed by (cast) label color (as returned by labelToColor()). */
+	public var areaMap(default, null):Map<Int, Int>;
 	
 	/** Number of connected components found. */
 	public var numComponents(default, null):Int;
@@ -68,10 +75,10 @@ class CCLabeler
 	private var secondContourPoint:HxPoint = new HxPoint();
 	
 	private var sourceBMD:BitmapData;
-	private var sourceBytes:ByteArray;
+	private var sourceVector:Vector<UInt>;
 	private var markedPixels:BitmapData;
-	private var markedBytes:ByteArray;
-	private var labelBytes:ByteArray;
+	private var markedVector:Vector<UInt>;
+	private var labelVector:Vector<UInt>;
 	
 	private var clipRect:Rectangle;
 	private var width:Int;
@@ -88,14 +95,16 @@ class CCLabeler
 	 * @param	traceContours	Whether to store contours' points while labeling.
 	 * @param	connectivity	Type of connectivity to search for (defaults to EIGHT_CONNECTED).
 	 * @param	clipRect		The region of bmd to process (defaults to the entire image).
+	 * @param	calcArea		Whether to compute and store components' area (in areaMap) while labeling.
 	 */
-	public function new(bmd:BitmapData, alphaThreshold:Int = 1, traceContours:Bool = true, connectivity:Connectivity = Connectivity.EIGHT_CONNECTED, clipRect:Rectangle = null)
+	public function new(bmd:BitmapData, alphaThreshold:Int = 1, traceContours:Bool = true, connectivity:Connectivity = Connectivity.EIGHT_CONNECTED, clipRect:Rectangle = null, calcArea:Bool = false)
 	{
 		setSource(bmd, clipRect);
 		
 		this.alphaThreshold = alphaThreshold;
 		this.connectivity = connectivity;
 		this.traceContours = traceContours;
+		this.calcArea = calcArea;
 		numComponents = 0;
 	}
 	
@@ -113,20 +122,21 @@ class CCLabeler
 		width = Std.int(this.clipRect.width);
 		height = Std.int(this.clipRect.height);
 		labelMap = new BitmapData(width, height, true, UNLABELED);
-		markedPixels = labelMap.clone();
+		markedPixels = new BitmapData(width, height, true, 0);
 		
-		sourceBytes = bmd.getPixels(this.clipRect);
-		labelBytes = labelMap.getPixels(labelMap.rect);
-		markedBytes = markedPixels.getPixels(markedPixels.rect);
+		sourceVector = bmd.getVector(this.clipRect);
+		labelVector = labelMap.getVector(labelMap.rect);
+		markedVector = markedPixels.getVector(markedPixels.rect);
 	}
 	
 	/**
-	 * Labels 8-connected components and writes them in the returned BitmapData (also stored in `labelMap`).
+	 * Labels connected components and writes them in the returned BitmapData (also stored in `labelMap`).
 	 * If `traceContours` has been set, it also saves contours' points in the `contours` variable.
 	 */
 	public function run():BitmapData
 	{
 		contours = traceContours ? new Array<Poly>() : null;
+		areaMap = calcArea ? new Map<Int, Int>() : null;
 		numComponents = 0;
 		labelIndex = 0;
 		
@@ -137,7 +147,7 @@ class CCLabeler
 		while (y < height) {
 			x = 0;
 			while (x < width) {
-				isLabeled = getPixel(labelBytes, x, y, UNLABELED) != UNLABELED;
+				isLabeled = getPixel(labelVector, x, y, UNLABELED) != UNLABELED;
 				if (isPixelSolid(x, y))
 				{
 					if (!isLabeled && !isPixelSolid(x, y - 1)) { // external contour
@@ -147,19 +157,19 @@ class CCLabeler
 						contourTrace(x, y, labelToColor(labelIndex), 7);
 						labelIndex++;
 					}
-					if (!isPixelSolid(x, y + 1) && getPixel(markedBytes, x, y + 1, MARKED) != MARKED) { // internal contour
+					if (!isPixelSolid(x, y + 1) && getPixel(markedVector, x, y + 1, MARKED) != MARKED) { // internal contour
 						//trace("internal contour @ " + x + "," + y);
 						if (!isLabeled) {
-							leftLabeledPixel = getPixel(labelBytes, x - 1, y);
+							leftLabeledPixel = getPixel(labelVector, x - 1, y);
 							setLabel(x, y, leftLabeledPixel);
 							isLabeled = true;
 						}
-						contourTrace(x, y, getPixel(labelBytes, x, y), 3);
+						contourTrace(x, y, getPixel(labelVector, x, y), 3);
 					}
 					if (!isLabeled) // internal point not belonging to any contour
 					{
 						//trace("internal point @ " + x + "," + y);
-						leftLabeledPixel = getPixel(labelBytes, x - 1, y);
+						leftLabeledPixel = getPixel(labelVector, x - 1, y);
 						setLabel(x, y, leftLabeledPixel);
 					}
 				}
@@ -168,10 +178,8 @@ class CCLabeler
 			y++;
 		}
 		
-		labelBytes.position = 0;
-		markedBytes.position = 0;
-		labelMap.setPixels(labelMap.rect, labelBytes);
-		markedPixels.setPixels(markedPixels.rect, markedBytes);
+		labelMap.setVector(labelMap.rect, labelVector);
+		markedPixels.setVector(markedPixels.rect, markedVector);
 		
 		numComponents = labelIndex;
 		return labelMap;	
@@ -200,7 +208,7 @@ class CCLabeler
 		
 		contourPoint.setTo(x, y);
 		tracingDir = dir;
-		//trace(x, y, StringTools.hex(getPixel(sourceBytes(x, y)), "dir: " + tracingDir);
+		//trace(x, y, StringTools.hex(getPixel(sourceVector(x, y)), "dir: " + tracingDir);
 		var firstPoint = true;
 		while (true) {
 			nextPointExists = nextOnContour(x, y, contourPoint);
@@ -212,7 +220,7 @@ class CCLabeler
 				tracingDir = (tracingDir + 6) % 8;	// update direction
 				x = Std.int(contourPoint.x);
 				y = Std.int(contourPoint.y);
-				//trace(x, y, StringTools.hex(getPixel(sourceBytes, x, y)), "dir: " + tracingDir);
+				//trace(x, y, StringTools.hex(getPixel(sourceVector, x, y)), "dir: " + tracingDir);
 				if (x == startX && y == startY) { // we're back to starting point
 					nextOnContour(x, y, contourPoint);
 					
@@ -260,7 +268,7 @@ class CCLabeler
 				break;
 			} else { // set non-solid pixel as marked
 				//trace("- " + cx + "," + cy);
-				setPixel(markedBytes, cx, cy, MARKED);
+				setPixel(markedVector, cx, cy, MARKED);
 			}
 			tracingDir = (tracingDir + step) % 8;
 		}
@@ -286,33 +294,37 @@ class CCLabeler
 	 */
 	private function setLabel(x:Int, y:Int, labelColor:UInt):Void 
 	{
-		setPixel(labelBytes, x, y, labelColor);
+		setPixel(labelVector, x, y, labelColor);
 	}
 	
 	/**
-	 * Returns the 32-bit pixel color at position (`x`, `y`) from `ba`.
+	 * Returns the 32-bit pixel color at position (`x`, `y`) from `vector`.
 	 * If the specified position is out of bounds, `outerValue` is returned.
 	 */
-	inline private function getPixel(ba:ByteArray, x:Int, y:Int, outerValue:UInt = 0):UInt 
+	inline private function getPixel(vector:Vector<UInt>, x:Int, y:Int, outerValue:UInt = 0):UInt 
 	{
-		var pos:UInt = (y * width + x) << 2;
+		var pos:UInt = (y * width + x);
 		var res = outerValue;
 		if (x >= 0 && y >= 0 && x < width && y < height) {
-			ba.position = pos;
-			res = ba.readUnsignedInt();
+			res = vector[pos];
 		}
 		return res;
 	}
 	
 	/**
-	 * Writes a 32-bit pixel `color` at position (`x`, `y`) in `ba`.
+	 * Writes a 32-bit pixel `color` at position (`x`, `y`) in `vector`.
 	 * If the specified position is out of bounds nothing is written.
 	 */
-	inline private function setPixel(ba:ByteArray, x:Int, y:Int, color:UInt):Void
+	inline private function setPixel(vector:Vector<UInt>, x:Int, y:Int, color:UInt):Void
 	{
-		var pos:UInt = (y * width + x) << 2;
-		ba.position = pos;
-		if (x >= 0 && y >= 0 && x < width && y < height) ba.writeUnsignedInt(color);
+		var pos:UInt = (y * width + x);
+		if (x >= 0 && y >= 0 && x < width && y < height) {
+			vector[pos] = color;
+			if (calcArea && vector == labelVector) {
+				var a:Null<Int> = areaMap.exists(cast color) ? cast areaMap.get(cast color) : 0;
+				areaMap.set(cast color, a + 1);
+			}
+		}
 	}
 
 	/** 
@@ -320,7 +332,7 @@ class CCLabeler
 	 * Override this to use your own logic to identify solid pixels.
 	 */
 	private function isPixelSolid(x:Int, y:Int):Bool {
-		return (getPixel(sourceBytes, x, y, 0) >> 24 & 0xFF) >= alphaThreshold;
+		return (getPixel(sourceVector, x, y, 0) >> 24 & 0xFF) >= alphaThreshold;
 	}
 	
 	private function getColorFromHSV(h:Float, s:Float, v:Float):UInt
@@ -342,5 +354,4 @@ class CCLabeler
 			default: return 0;
 		}
 		return 0;
-	}
-}
+	}}
