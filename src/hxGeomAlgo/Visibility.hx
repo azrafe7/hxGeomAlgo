@@ -44,7 +44,7 @@ class Visibility
 {
 	inline static private var NOT_SAVED:Int = -1;
 	
-	static private var origPoint:HxPoint;											// origin of visibility polygon
+	static private var origPoint:HxPoint;										// origin of visibility polygon
 	static private var stack:Array<Int> = new Array<Int>();						// stack holds indices of visibility polygon
 	static private var vertexType:Array<VertexType> = new Array<VertexType>();	// types of vertices
 	static private var stackTop:Int;											// stack pointer to top element

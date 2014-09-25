@@ -5,8 +5,6 @@ Small collection of geometry algorithms in Haxe 3. ([link to AS3 port](https://g
 
 ![](screenshot.png)
 
-**NOTE: All algorithms assume the y-axis is pointing downward.**
-
 #### [Marching Squares (Contour Tracing)](http://en.wikipedia.org/wiki/Marching_squares)
 
 Based on:
@@ -64,6 +62,13 @@ Based on:
  - [http://bost.ocks.org/mike/simplify/](http://bost.ocks.org/mike/simplify/) (JS - by Mike Bostock)
  - [http://en.wikipedia.org/wiki/Binary_heap](http://en.wikipedia.org/wiki/Binary_heap) (Binary (Min)Heap)
 
+#### [Tess2 (Tesselation to Triangles and Convex Polys, Polygon Boolean Ops)](https://github.com/memononen/tess2.js)
+
+Based on:
+
+ - GLU Libtess (by Eric Veach, July 1994)
+ - [tess2.js](https://github.com/memononen/tess2.js) (JS - by Mikko Mononen, Aug 2013)
+
 
 ## Credits
 
@@ -71,4 +76,4 @@ Based on:
 
 ## License
 
-**hxGeomAlgo** is developed by Giuseppe Di Mauro (azrafe7) and released under the MIT license. See the [LICENSE](LICENSE.md) file for details. 
+**hxGeomAlgo** is developed by Giuseppe Di Mauro (azrafe7) and released under the MIT license (except for `Tess2.hx`). See the [LICENSE](LICENSE.md) file for details. 

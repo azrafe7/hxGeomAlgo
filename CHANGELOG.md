@@ -25,3 +25,7 @@
  - MarchingSquares: fixed bug causing duplicate points
  - Added first impl. of Visvalingam-Whyatt simplification (+ MinHeap)
  - Visv-Whyatt: completed and improved
+ - Tess2: ported Mikko Mononen's tess2.js
+ - CCLabeler: improved performance swapping ByteArray with Vector
+ - CCLabeler: added areaMap to store components' area while labeling
+ - 

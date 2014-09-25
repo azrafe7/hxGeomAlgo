@@ -27,4 +27,8 @@
  - Visvalingam-Whyatt (Polyline Simplification)
    - Visvalingam M., Whyatt J. D.: [Line generalisation by repeated elimination of the smallest area](https://hydra.hull.ac.uk/resources/hull:8338) (1992)
    - [http://bost.ocks.org/mike/simplify/](http://bost.ocks.org/mike/simplify/) (JS - by Mike Bostock)
-   - [http://en.wikipedia.org/wiki/Binary_heap](http://en.wikipedia.org/wiki/Binary_heap) (Binary (Min)Heap) 
+   - [http://en.wikipedia.org/wiki/Binary_heap](http://en.wikipedia.org/wiki/Binary_heap) (Binary (Min)Heap)
+ - Tess2 (Tesselation to Triangles and Convex Polys, Polygon Boolean Ops)
+    - GLU Libtess (by Eric Veach, July 1994)
+    - [https://github.com/memononen/tess2.js](https://github.com/memononen/tess2.js) (JS - by Mikko Mononen, Aug 2013)
+ 
