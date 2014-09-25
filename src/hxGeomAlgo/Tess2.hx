@@ -29,7 +29,15 @@
  * Author: Mikko Mononen, Aug 2013.
  * The code is based on GLU libtess by Eric Veach, July 1994
  * 
- * Ported from tess2.js (https://github.com/memononen/tess2.js) to haxe by azrafe7
+ * Ported from tess2.js (https://github.com/memononen/tess2.js) by azrafe7
+ * 
+ * From https://github.com/memononen/tess2.js readme:
+ *
+ * "The tess2.js library performs polygon boolean operations and tesselation to triangles 
+ * and convex polygons. It is a port of libtess2, which in turn is a cleaned up version 
+ * of the stock GLU tesselator. The original code was written by Eric Veach in 1994. 
+ * The greatest thing about tess2.js is that it handles all kinds of input like 
+ * self-intersecting polygons or any number of holes and contours."
  */
 
 package hxGeomAlgo;
@@ -60,9 +68,35 @@ typedef TessResult = {
 	var elementCount:Int;
 }
 
-
+/**
+ * Class offering a quick wrapper around Tesselator functions.
+ * 
+ * For more info about how to use this class see the demo by Mikko Mononen on (https://github.com/memononen/tess2.js).
+ * Live version rehosted here (https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo).
+ * 
+ * Further reading: http://www.glprogramming.com/red/chapter11.html
+ */
 class Tess2
 {
+	/**
+	 * Tesselates the specified `contours`.
+	 * 
+	 * @param	contours		Array of polygons to tesselate. Each poly is specified as a sequence of point coords (i.e. [x0, y0, x1, y1, x2, y2, ...]).
+	 * @param	windingRule		Winding rule to apply. Deaults to WindingRule.ODD.
+	 * @param	resultType		The result type you want as output. Defaults to ResultType.POLYGONS.
+	 * @param	polySize		Max dimesion of the polygons resulting from the tesselation. Defaults to 3.
+	 * @param	vertexDim		Pass 2 when working with 2D polys (default), or 3 for 3D.
+	 * @param	normal			Array of length 3 representing the normals in each plane.
+	 * 
+	 * @return A structure of TessResult type, composed of the following fields:
+	 *		   { 
+	 *				vertices:Array<Float>;		// A sequence of point coords in the same format of `contours`.
+	 *				vertexIndices:Array<Int>;	// A sequence of indices that map into the original `contours` joined together.
+	 *				vertexCount:Int;			// The number of vertices.
+	 *				elements:Array<Int>;		// Elements' indices whose meaning depends on the ResultType used.
+	 *				elementCount:Int;			// The number of elements found.
+	 * 		   };
+	 */
 	static public function tesselate(contours:Array<Array<Float>>, windingRule:WindingRule = null, resultType:ResultType = null, polySize:Int = 3, vertexDim:Int = 2, normal:Array<Float> = null):TessResult
 	{
 		var tess = new Tesselator();
@@ -83,6 +117,17 @@ class Tess2
 		};
 	}
 	
+	/**
+	 * Converts the results from tesselate() in a more manageable output.
+	 * 
+	 * @param	vertices	A sequence of point coords in the same format of `contours`. Typically the `vertices` field of Tess2.tesselate() output.
+	 * @param	elements	A sequence of elements. Typically the `vertices` field of Tess2.tesselate() output.
+	 * @param	resultType	The `resultType` passed to Tess2.tesselate().
+	 * @param	polySize	The `polySize` passed to Tess2.tesselate().
+	 * @param	out			The output will be appended to this array of polygons (if specified).
+	 * 
+	 * @return An array of polygons.
+	 */
 	static public function convertResult(vertices:Array<Float>, elements:Array<Int>, resultType:ResultType, polySize:Int, ?out:Array<Poly>):Array<Poly>
 	{
 		out = (out != null) ? out : new Array<Poly>();
@@ -135,8 +180,14 @@ class Tess2
 		return out;
 	}
 	
-	static public function assert(cond:Bool, ?message:String) {
+	// Used for sanity-checks throughout the code when in debug mode. 
+	// It will be automatically stripped out by the compiler in release mode.
+	inline static public function assert(cond:Bool, ?message:String) {
+	#if (debug)
 		if (!cond) throw "ASSERT FAILED! " + (message != null ? message : "");
+	#else
+		return;
+	#end
 	}
 }
 
@@ -206,7 +257,7 @@ class Tess2
 * a region which is not part of the output polygon.
 */
 
-class TessVertex 
+private class TessVertex 
 {
 	
 	public var next:TessVertex = null;			/* next vertex (never NULL) */
@@ -224,7 +275,7 @@ class TessVertex
 	public function new() {}
 } 
 
-class TessFace 
+private class TessFace 
 {
 	public var next:TessFace = null;			/* next face (never NULL) */
 	public var prev:TessFace = null;			/* previous face (never NULL) */
@@ -239,7 +290,7 @@ class TessFace
 	public function new() {}
 } 
 
-class TessHalfEdge
+private class TessHalfEdge
 {
 	public var next:TessHalfEdge = null;		/* doubly-linked list (prev==Sym->next) */
 	public var Sym:TessHalfEdge = null;			/* same edge, opposite direction */
@@ -292,7 +343,7 @@ class TessHalfEdge
 	private function set_Rnext(v:TessHalfEdge) { return/*this.Oprev*/this.Sym.Lnext.Sym = v; }  /* 3 pointers */
 }
 
-class TessMesh
+private class TessMesh
 {
 	public var v:TessVertex = new TessVertex();
 	public var f:TessFace = new TessFace();
@@ -1003,7 +1054,7 @@ class TessMesh
 	}
 }
 
-class Geom
+private class Geom
 {
 	static public function vertEq(u:TessVertex, v:TessVertex):Bool {
 		return (u.s == v.s && u.t == v.t);
@@ -1241,14 +1292,14 @@ class Geom
 	}
 }
 
-class DictNode
+private class DictNode
 {
 	public var key:ActiveRegion = null;
 	public var next:DictNode = null;
 	public var prev:DictNode = null;	
 }
 
-class Dict
+private class Dict
 {
 	public var head:DictNode;
 	public var frame:Tesselator;
@@ -1309,18 +1360,18 @@ class Dict
 	}
 }
 
-class PQNode
+private class PQNode
 {
 	public var handle:Int = -1;
 }
 
-class PQHandleElem
+private class PQHandleElem
 {
 	public var key:TessVertex = null;
 	public var node:Int = -1;
 }
 
-class PriorityQ
+private class PriorityQ
 {
 	public var size:Int;
 	public var max:Int;
@@ -1351,7 +1402,7 @@ class PriorityQ
 		this.handles[1].key = null;
 	}
 	
-	public function floatDown_(curr:Int):Void
+	private function floatDown_(curr:Int):Void
 	{
 		var n = this.nodes;
 		var h = this.handles;
@@ -1379,7 +1430,7 @@ class PriorityQ
 		}
 	}
 	
-	public function floatUp_(curr:Int):Void
+	private function floatUp_(curr:Int):Void
 	{
 		var n = this.nodes;
 		var h = this.handles;
@@ -1510,7 +1561,7 @@ class PriorityQ
 * sweep line crosses each vertex, we update the affected regions.
 */
 
-class ActiveRegion 
+private class ActiveRegion 
 {
 	public var eUp:TessHalfEdge = null;		/* upper edge, directed right to left */
 	public var nodeUp:DictNode = null;		/* dictionary node corresponding to eUp */
@@ -1526,7 +1577,7 @@ class ActiveRegion
 											* any edges leaving to the right) */
 }
 
-class Sweep
+private class Sweep
 {
 	static public function regionBelow(r:ActiveRegion):ActiveRegion {
 		return r.nodeUp.prev.key;
@@ -2756,6 +2807,15 @@ class Sweep
 
 }
 
+
+/**
+ * The actual tesselator class.
+ * 
+ * For more info about how to use this class see the demo by Mikko Mononen on (https://github.com/memononen/tess2.js).
+ * Live version rehosted here (https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo)
+ * 
+ * Further reading: http://www.glprogramming.com/red/chapter11.html
+ */
 class Tesselator
 {
 	/*** state needed for collecting the input data ***/
