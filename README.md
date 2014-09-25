@@ -62,13 +62,12 @@ Based on:
  - [http://bost.ocks.org/mike/simplify/](http://bost.ocks.org/mike/simplify/) (JS - by Mike Bostock)
  - [http://en.wikipedia.org/wiki/Binary_heap](http://en.wikipedia.org/wiki/Binary_heap) (Binary (Min)Heap)
 
-#### [Tess2 (Tesselation to Triangles and Convex Polys, Polygon Boolean Ops)](https://github.com/memononen/tess2.js)
+#### [Tess2 (Tesselation to Triangles and Convex Polys, Polygon Boolean Ops)](https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html)
 
 Based on:
 
  - GLU Libtess (by Eric Veach, July 1994)
  - [tess2.js](https://github.com/memononen/tess2.js) (JS - by Mikko Mononen, Aug 2013)
- - [tess2.js demo](https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo) (JS - by Mikko Mononen, Aug 2013)
 
 
 ## Credits

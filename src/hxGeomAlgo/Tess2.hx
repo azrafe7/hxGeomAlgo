@@ -72,7 +72,7 @@ typedef TessResult = {
  * Class offering a quick wrapper around Tesselator functions.
  * 
  * For more info about how to use this class see the demo by Mikko Mononen on (https://github.com/memononen/tess2.js).
- * Live version rehosted here (https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo).
+ * Live version rehosted here (https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html).
  * 
  * Further reading: http://www.glprogramming.com/red/chapter11.html
  */
@@ -2812,7 +2812,7 @@ private class Sweep
  * The actual tesselator class.
  * 
  * For more info about how to use this class see the demo by Mikko Mononen on (https://github.com/memononen/tess2.js).
- * Live version rehosted here (https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo)
+ * Live version rehosted here (https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html)
  * 
  * Further reading: http://www.glprogramming.com/red/chapter11.html
  */
