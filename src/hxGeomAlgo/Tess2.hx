@@ -48,6 +48,7 @@
 package hxGeomAlgo;
 
 import hxGeomAlgo.PolyTools.Poly;
+import hxGeomAlgo.Debug;
 
 
 enum WindingRule
@@ -139,7 +140,7 @@ class Tess2
 		out = (out != null) ? out : new Array<Poly>();
 		
 		if (!resultType.match(BOUNDARY_CONTOURS)) {
-			assert(polySize >= 3 && (elements.length % polySize == 0), "Invalid size");
+			Debug.assert(polySize >= 3 && (elements.length % polySize == 0), "Invalid size");
 		}
 		
 		var i = 0;
@@ -184,17 +185,7 @@ class Tess2
 		}
 		
 		return out;
-	}
-	
-	// Used for sanity-checks throughout the code when in debug mode. 
-	// It will be automatically stripped out by the compiler in release mode.
-	inline static public function assert(cond:Bool, ?message:String) {
-	#if (debug)
-		if (!cond) throw "ASSERT FAILED! " + (message != null ? message : "");
-	#else
-		return;
-	#end
-	}
+	}	
 }
 
 /* The mesh structure is similar in spirit, notation, and operations
@@ -538,7 +529,7 @@ private class TessMesh
 	//static void MakeVertex( TESSvertex *newVertex, TESShalfEdge *eOrig, TESSvertex *vNext )
 	private function makeVertex_(newVertex:TessVertex, eOrig:TessHalfEdge, vNext:TessVertex) {
 		var vNew = newVertex;
-		Tess2.assert(vNew != null);
+		Debug.assert(vNew != null);
 
 		/* insert in circular doubly-linked list before vNext */
 		var vPrev = vNext.prev;
@@ -567,7 +558,7 @@ private class TessMesh
 	// static void MakeFace( TESSface *newFace, TESShalfEdge *eOrig, TESSface *fNext )
 	private function makeFace_(newFace:TessFace, eOrig:TessHalfEdge, fNext:TessFace) {
 		var fNew = newFace;
-		Tess2.assert(fNew != null); 
+		Debug.assert(fNew != null); 
 
 		/* insert in circular doubly-linked list before fNext */
 		var fPrev = fNext.prev;
@@ -1011,48 +1002,48 @@ private class TessMesh
 
 		fPrev = fHead;
 		while ((f = fPrev.next) != fHead) {
-			Tess2.assert(f.prev == fPrev);
+			Debug.assert(f.prev == fPrev);
 			e = f.anEdge;
 			do {
-				Tess2.assert(e.Sym != e);
-				Tess2.assert(e.Sym.Sym == e);
-				Tess2.assert(e.Lnext.Onext.Sym == e);
-				Tess2.assert(e.Onext.Sym.Lnext == e);
-				Tess2.assert(e.Lface == f);
+				Debug.assert(e.Sym != e);
+				Debug.assert(e.Sym.Sym == e);
+				Debug.assert(e.Lnext.Onext.Sym == e);
+				Debug.assert(e.Onext.Sym.Lnext == e);
+				Debug.assert(e.Lface == f);
 				e = e.Lnext;
 			} while (e != f.anEdge);
 			fPrev = f;
 		}
-		Tess2.assert(f.prev == fPrev && f.anEdge == null);
+		Debug.assert(f.prev == fPrev && f.anEdge == null);
 
 		vPrev = vHead;
 		while ((v = vPrev.next) != vHead) {
-			Tess2.assert(v.prev == vPrev);
+			Debug.assert(v.prev == vPrev);
 			e = v.anEdge;
 			do {
-				Tess2.assert(e.Sym != e);
-				Tess2.assert(e.Sym.Sym == e);
-				Tess2.assert(e.Lnext.Onext.Sym == e);
-				Tess2.assert(e.Onext.Sym.Lnext == e);
-				Tess2.assert(e.Org == v);
+				Debug.assert(e.Sym != e);
+				Debug.assert(e.Sym.Sym == e);
+				Debug.assert(e.Lnext.Onext.Sym == e);
+				Debug.assert(e.Onext.Sym.Lnext == e);
+				Debug.assert(e.Org == v);
 				e = e.Onext;
 			} while (e != v.anEdge);
 			vPrev = v;
 		}
-		Tess2.assert(v.prev == vPrev && v.anEdge == null);
+		Debug.assert(v.prev == vPrev && v.anEdge == null);
 
 		ePrev = eHead;
 		while ((e = ePrev.next) != eHead) {
-			Tess2.assert(e.Sym.next == ePrev.Sym);
-			Tess2.assert(e.Sym != e);
-			Tess2.assert(e.Sym.Sym == e);
-			Tess2.assert(e.Org != null);
-			Tess2.assert(e.Dst != null);
-			Tess2.assert(e.Lnext.Onext.Sym == e);
-			Tess2.assert(e.Onext.Sym.Lnext == e);
+			Debug.assert(e.Sym.next == ePrev.Sym);
+			Debug.assert(e.Sym != e);
+			Debug.assert(e.Sym.Sym == e);
+			Debug.assert(e.Org != null);
+			Debug.assert(e.Dst != null);
+			Debug.assert(e.Lnext.Onext.Sym == e);
+			Debug.assert(e.Onext.Sym.Lnext == e);
 			ePrev = e;
 		}
-		Tess2.assert(e.Sym.next == ePrev.Sym
+		Debug.assert(e.Sym.next == ePrev.Sym
 			&& e.Sym == this.eHeadSym
 			&& e.Sym.Sym == e
 			&& e.Org == null && e.Dst == null
@@ -1100,7 +1091,7 @@ private class Geom
 		* let r be the negated result (this evaluates (uw)(v->s)), then
 		* r is guaranteed to satisfy MIN(u->t,w->t) <= r <= MAX(u->t,w->t).
 		*/
-		Tess2.assert(Geom.vertLeq(u, v) && Geom.vertLeq(v, w));
+		Debug.assert(Geom.vertLeq(u, v) && Geom.vertLeq(v, w));
 
 		var gapL = v.s - u.s;
 		var gapR = w.s - v.s;
@@ -1122,7 +1113,7 @@ private class Geom
 		* is cheaper to evaluate.  Returns > 0, == 0 , or < 0
 		* as v is above, on, or below the edge uw.
 		*/
-		Tess2.assert(Geom.vertLeq(u, v) && Geom.vertLeq(v, w));
+		Debug.assert(Geom.vertLeq(u, v) && Geom.vertLeq(v, w));
 
 		var gapL = v.s - u.s;
 		var gapR = w.s - v.s;
@@ -1151,7 +1142,7 @@ private class Geom
 		* let r be the negated result (this evaluates (uw)(v->t)), then
 		* r is guaranteed to satisfy MIN(u->s,w->s) <= r <= MAX(u->s,w->s).
 		*/
-		Tess2.assert(Geom.transLeq(u, v) && Geom.transLeq(v, w));
+		Debug.assert(Geom.transLeq(u, v) && Geom.transLeq(v, w));
 
 		var gapL = v.t - u.t;
 		var gapR = w.t - v.t;
@@ -1173,7 +1164,7 @@ private class Geom
 		* is cheaper to evaluate.  Returns > 0, == 0 , or < 0
 		* as v is above, on, or below the edge uw.
 		*/
-		Tess2.assert(Geom.transLeq(u, v) && Geom.transLeq(v, w));
+		Debug.assert(Geom.transLeq(u, v) && Geom.transLeq(v, w));
 
 		var gapL = v.t - u.t;
 		var gapR = w.t - v.t;
@@ -1422,7 +1413,7 @@ private class PriorityQ
 				++child;
 			}
 
-			Tess2.assert(child <= this.max);
+			Debug.assert(child <= this.max);
 
 			hChild = n[child].handle;
 			if (child > this.size || this.leq( h[hCurr].key, h[hChild].key)) {
@@ -1541,7 +1532,7 @@ private class PriorityQ
 		var h = this.handles;
 		var curr;
 
-		Tess2.assert(hCurr >= 1 && hCurr <= this.max && h[hCurr].key != null);
+		Debug.assert(hCurr >= 1 && hCurr <= this.max && h[hCurr].key != null);
 
 		curr = h[hCurr].node;
 		n[curr].handle = n[this.size].handle;
@@ -1683,7 +1674,7 @@ private class Sweep
 			* deleted with zero winding number (ie. it better not get merged
 			* with a real edge).
 			*/
-			Tess2.assert(reg.eUp.winding == 0);
+			Debug.assert(reg.eUp.winding == 0);
 		}
 		reg.eUp.activeRegion = null;
 		tess.dict.delete(reg.nodeUp);
@@ -1694,7 +1685,7 @@ private class Sweep
 		/*
 		* Replace an upper edge which needs fixing (see ConnectRightVertex).
 		*/
-		Tess2.assert(reg.fixUpperEdge);
+		Debug.assert(reg.fixUpperEdge);
 		tess.mesh.delete(reg.eUp);
 		reg.fixUpperEdge = false;
 		reg.eUp = newEdge;
@@ -1769,7 +1760,7 @@ private class Sweep
 			case WindingRule.ABS_GEQ_TWO:
 				return (n >= 2) || (n <= -2);
 		}
-		Tess2.assert(false);
+		Debug.assert(false);
 		return false;
 	}
 
@@ -1869,7 +1860,7 @@ private class Sweep
 		/* Insert the new right-going edges in the dictionary */
 		e = eFirst;
 		do {
-			Tess2.assert(Geom.vertLeq(e.Org, e.Dst));
+			Debug.assert(Geom.vertLeq(e.Org, e.Dst));
 			Sweep.addRegionBelow(tess, regUp, e.Sym);
 			e = e.Onext;
 		} while (e != eLast);
@@ -1911,7 +1902,7 @@ private class Sweep
 			ePrev = e;
 		}
 		regPrev.dirty = true;
-		Tess2.assert((regPrev.windingNumber - e.winding) == reg.windingNumber);
+		Debug.assert((regPrev.windingNumber - e.winding) == reg.windingNumber);
 
 		if (cleanUp) {
 			/* Check for intersections between newly adjacent edges. */
@@ -2041,7 +2032,7 @@ private class Sweep
 		var eLo = regLo.eUp;
 		var e;
 
-		Tess2.assert(!Geom.vertEq(eUp.Dst, eLo.Dst));
+		Debug.assert(!Geom.vertEq(eUp.Dst, eLo.Dst));
 
 		if (Geom.vertLeq(eUp.Dst, eLo.Dst)) {
 			if (Geom.edgeSign(eUp.Dst, eLo.Dst, eUp.Org) < 0 ) return false;
@@ -2086,11 +2077,11 @@ private class Sweep
 		var isect = new TessVertex(), orgMin;
 		var e;
 
-		Tess2.assert(!Geom.vertEq(dstLo, dstUp));
-		Tess2.assert(Geom.edgeSign(dstUp, tess.event, orgUp) <= 0);
-		Tess2.assert(Geom.edgeSign(dstLo, tess.event, orgLo) >= 0);
-		Tess2.assert(orgUp != tess.event && orgLo != tess.event);
-		Tess2.assert(!regUp.fixUpperEdge && !regLo.fixUpperEdge);
+		Debug.assert(!Geom.vertEq(dstLo, dstUp));
+		Debug.assert(Geom.edgeSign(dstUp, tess.event, orgUp) <= 0);
+		Debug.assert(Geom.edgeSign(dstLo, tess.event, orgLo) >= 0);
+		Debug.assert(orgUp != tess.event && orgLo != tess.event);
+		Debug.assert(!regUp.fixUpperEdge && !regLo.fixUpperEdge);
 
 		if (orgUp == orgLo) return false;	/* right endpoints are the same */
 
@@ -2109,10 +2100,10 @@ private class Sweep
 
 		Geom.intersect(dstUp, orgUp, dstLo, orgLo, isect);
 		/* The following properties are guaranteed: */
-		Tess2.assert(Math.min(orgUp.t, dstUp.t) <= isect.t);
-		Tess2.assert(isect.t <= Math.max(orgLo.t, dstLo.t));
-		Tess2.assert(Math.min(dstLo.s, dstUp.s) <= isect.s);
-		Tess2.assert(isect.s <= Math.max(orgLo.s, orgUp.s));
+		Debug.assert(Math.min(orgUp.t, dstUp.t) <= isect.t);
+		Debug.assert(isect.t <= Math.max(orgLo.t, dstLo.t));
+		Debug.assert(Math.min(dstLo.s, dstUp.s) <= isect.s);
+		Debug.assert(isect.s <= Math.max(orgLo.s, orgUp.s));
 
 		if (Geom.vertLeq(isect, tess.event)) {
 			/* The intersection point lies slightly to the left of the sweep line,
@@ -2405,7 +2396,7 @@ private class Sweep
 			/* e->Org is an unprocessed vertex - just combine them, and wait
 			* for e->Org to be pulled from the queue
 			*/
-			Tess2.assert(false /*TOLERANCE_NONZERO*/);
+			Debug.assert(false /*TOLERANCE_NONZERO*/);
 			Sweep.spliceMergeVertices(tess, e, vEvent.anEdge);
 			return;
 		}
@@ -2426,7 +2417,7 @@ private class Sweep
 		/* vEvent coincides with e->Dst, which has already been processed.
 		* Splice in the additional right-going edges.
 		*/
-		Tess2.assert(false /*TOLERANCE_NONZERO*/);
+		Debug.assert(false /*TOLERANCE_NONZERO*/);
 		regUp = Sweep.topRightRegion(regUp);
 		reg = Sweep.regionBelow(regUp);
 		eTopRight = reg.eUp.Sym;
@@ -2435,7 +2426,7 @@ private class Sweep
 			/* Here e->Dst has only a single fixable edge going right.
 			* We can delete it since now we have some real right-going edges.
 			*/
-			Tess2.assert(eTopLeft != eTopRight);   /* there are some left edges too */
+			Debug.assert(eTopLeft != eTopRight);   /* there are some left edges too */
 			Sweep.deleteRegion(tess, reg);
 			tess.mesh.delete(eTopRight);
 			eTopRight = eTopLeft.Oprev;
@@ -2548,7 +2539,7 @@ private class Sweep
 		* This takes care of all the left-going edges from vEvent.
 		*/
 		var regUp = Sweep.topLeftRegion(tess, e.activeRegion);
-		Tess2.assert(regUp != null);
+		Debug.assert(regUp != null);
 	//	if (regUp == NULL) longjmp(tess->env,1);
 		var reg = Sweep.regionBelow(regUp);
 		var eTopLeft = reg.eUp;
@@ -2630,10 +2621,10 @@ private class Sweep
 			* created by ConnectRightVertex().
 			*/
 			if (!reg.sentinel) {
-				Tess2.assert(reg.fixUpperEdge);
-				Tess2.assert((++fixedEdges) == 1);
+				Debug.assert(reg.fixUpperEdge);
+				Debug.assert((++fixedEdges) == 1);
 			}
-			Tess2.assert(reg.windingNumber == 0);
+			Debug.assert(reg.windingNumber == 0);
 			Sweep.deleteRegion(tess, reg);
 			/*    tessMeshDelete( reg->eUp );*/
 		}
@@ -2739,7 +2730,7 @@ private class Sweep
 		while (f != mesh.fHead) {
 			fNext = f.next;
 			e = f.anEdge;
-			Tess2.assert(e.Lnext != e);
+			Debug.assert(e.Lnext != e);
 
 			if (e.Lnext.Lnext == e) {
 				/* A face with only two edges */
@@ -2864,7 +2855,7 @@ class Tesselator
 
 	private function normalize_(v:Array<Float>):Void {
 		var len = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
-		Tess2.assert(len > 0.0);
+		Debug.assert(len > 0.0);
 		len = Math.sqrt(len);
 		v[0] /= len;
 		v[1] /= len;
@@ -3136,7 +3127,7 @@ class Tesselator
 		* be close to the edge we want.
 		*/
 		up = face.anEdge;
-		Tess2.assert(up.Lnext != up && up.Lnext.Lnext != up);
+		Debug.assert(up.Lnext != up && up.Lnext.Lnext != up);
 
 		while (Geom.vertLeq(up.Dst, up.Org)) up = up.Lprev;
 		while (Geom.vertLeq(up.Org, up.Dst)) up = up.Lnext;
@@ -3173,7 +3164,7 @@ class Tesselator
 		/* Now lo->Org == up->Dst == the leftmost vertex.  The remaining region
 		* can be tessellated in a fan from this leftmost vertex.
 		*/
-		Tess2.assert(lo.Lnext != up);
+		Debug.assert(lo.Lnext != up);
 		while (lo.Lnext.Lnext != up) {
 			var tempHalfEdge = mesh.connect(lo.Lnext, lo);
 			//if (tempHalfEdge == NULL) return 0;
@@ -3316,7 +3307,7 @@ class Tesselator
 			}
 			while (edge != f.anEdge);
 			
-			Tess2.assert(faceVerts <= polySize);
+			Debug.assert(faceVerts <= polySize);
 
 			f.n = maxFaceCount;
 			++maxFaceCount;

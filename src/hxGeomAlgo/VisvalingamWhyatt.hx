@@ -13,6 +13,8 @@
 
 package hxGeomAlgo;
 
+import hxGeomAlgo.Debug;
+
 
 /** Specifies the method to use in the simplification process. */
 enum SimplificationMethod {
@@ -277,11 +279,11 @@ class MinHeap<T:Comparable<T>>
 		var right = rightOf(i);
 		
 		if (left < len) {
-			assert(data[i].compare(data[left]) <= 0, 'Broken heap invariant (parent@$i > leftChild@$left).');
+			Debug.assert(data[i].compare(data[left]) <= 0, 'Broken heap invariant (parent@$i > leftChild@$left).');
 			_validate(leftOf(i));
 		}
 		if (right < len) {
-			assert(data[i].compare(data[right]) <= 0, 'Broken heap invariant (parent@$i > rightChild@$right).');
+			Debug.assert(data[i].compare(data[right]) <= 0, 'Broken heap invariant (parent@$i > rightChild@$right).');
 			_validate(rightOf(i));
 		}
 	}
@@ -306,9 +308,5 @@ class MinHeap<T:Comparable<T>>
 		var temp = data[i];
 		data[i] = data[j];
 		data[j] = temp;
-	}
-
-	inline private static function assert(cond:Bool, ?message:String) {
-		if (!cond) throw "ASSERT FAILED! " + (message != null ? message : "");
 	}
 }
