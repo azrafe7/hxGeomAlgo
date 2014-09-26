@@ -178,7 +178,7 @@ class GeomAlgoTest extends Sprite {
 		drawPoints(visVertices, X + clipRect.x, Y + clipRect.y);
 		// draw origPoint
 		g.lineStyle(1, 0x0000FF);
-		g.drawCircle(X + origPoint.x + clipRect.x, Y + origPoint.y + clipRect.y, 3);
+		if (origPoint != null) g.drawCircle(X + origPoint.x + clipRect.x, Y + origPoint.y + clipRect.y, 3);
 		addChild(getTextField("Visibility\n" + visVertices.length + " vts\n" + visPoints.length + " pts", X, Y));
 		g.lineStyle(1, COLOR, ALPHA);
 
@@ -286,6 +286,8 @@ class GeomAlgoTest extends Sprite {
 	
 	public function drawPoly(points:Array<HxPoint>, x:Float, y:Float, showPoints:Bool = true, showLabels:Bool = false):Void 
 	{
+		if (points.length <= 0) return;
+		
 		// points
 		if (showPoints) drawPoints(points, x, y);
 		

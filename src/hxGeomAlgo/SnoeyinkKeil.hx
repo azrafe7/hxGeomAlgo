@@ -55,6 +55,7 @@ class SnoeyinkKeil
 	/** Decomposes `simplePoly` into a minimum number of convex polygons and returns their vertices' indices. */
 	static public function decomposePolyIndices(simplePoly:Poly):Array<Array<Int>> {
 		var res = new Array<Array<Int>>();
+		if (simplePoly.length < 3) return res;
 
 		poly = new Poly();
 		for (p in simplePoly) poly.push(new HxPoint(p.x, p.y));

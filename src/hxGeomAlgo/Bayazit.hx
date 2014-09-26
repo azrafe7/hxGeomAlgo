@@ -40,6 +40,7 @@ class Bayazit
 	 */
 	static public function decomposePoly(simplePoly:Poly):Array<Poly> {
 		var res = new Array<Poly>();
+		if (simplePoly.length < 3) return res;
 		
 		poly = new Poly();
 		for (p in simplePoly) poly.push(new HxPoint(p.x, p.y));

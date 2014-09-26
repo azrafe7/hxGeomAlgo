@@ -58,6 +58,7 @@ class Visibility
 	/** Returns an array of indices representing the vertices of `simplePoly` visible from `origIdx`. */
 	static public function getVisibleIndicesFrom(simplePoly:Poly, origIdx:Int = 0):Array<Int> {
 		var res = new Array<Int>();
+		if (simplePoly.length <= 0) return res;
 		
 		// init
 		poly = new Poly();
