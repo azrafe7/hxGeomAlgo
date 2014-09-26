@@ -112,7 +112,7 @@ class CCLabeler
 	 * Updates the BitmapData to use as source and its clipRect. 
 	 * 
 	 * NOTE: If you modifiy your bitmapData between calls to run() you may 
-	 * also want to re-set the source so that the byteArrays get updated too.
+	 * also want to re-set the source so that the vectors get updated too.
 	 */
 	public function setSource(bmd:BitmapData, clipRect:Rectangle = null)
 	{

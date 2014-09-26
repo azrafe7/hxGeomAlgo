@@ -12,9 +12,8 @@
 package hxGeomAlgo;
 
 import flash.display.BitmapData;
-
+import openfl.Vector;
 import flash.geom.Rectangle;
-import flash.utils.ByteArray;
 
 
 enum StepDirection {
@@ -38,7 +37,7 @@ class MarchingSquares
 	private var clipRect:Rectangle;
 	private var width:Int;
 	private var height:Int;
-	private var byteArray:ByteArray;
+	private var sourceVector:Vector<UInt>;
 	
 	private var point:HxPoint = new HxPoint();
 
@@ -61,13 +60,13 @@ class MarchingSquares
 	 * Updates the BitmapData to use as source and its clipRect. 
 	 * 
 	 * NOTE: If you modifiy your bitmapData between calls to march()/walkPerimeter you may 
-	 * also want to re-set the source so that the byteArray gets updated too.
+	 * also want to re-set the source so that the vector gets updated too.
 	 */
 	public function setSource(bmd:BitmapData, clipRect:Rectangle = null)
 	{
 		this.bmd = bmd;
 		this.clipRect = clipRect != null ? clipRect : bmd.rect;
-		byteArray = bmd.getPixels(this.clipRect);
+		sourceVector = bmd.getVector(this.clipRect);
 		width = Std.int(this.clipRect.width);
 		height = Std.int(this.clipRect.height);
 	}
@@ -94,18 +93,16 @@ class MarchingSquares
 	 * @return The first opaque pixel location, or null if not found.
 	 */
 	public function findStartPoint(line:Int = 0):HxPoint {
-		byteArray.position = 0;
 		point.setTo(-1, -1);
 		
-		var alphaIdx:Int = line * width << 2;
-		var len:Int = byteArray.length;
-		var i:Int = 0;
-		while (alphaIdx < len) {
-			if (byteArray[alphaIdx] >= alphaThreshold) {
-				point.setTo((alphaIdx >> 2) % width, Std.int((alphaIdx >> 2) / width));
+		var idx:Int = line * width;
+		var len:Int = sourceVector.length;
+		while (idx < len) {
+			if ((sourceVector[idx] >> 24 & 0xFF) >= alphaThreshold) {
+				point.setTo(idx % width, Std.int(idx / width));
 				break;
 			}
-			alphaIdx += 4;
+			idx++;
 		}
 		
 		return point.x != -1 ? point.clone() : null;
@@ -193,6 +190,6 @@ class MarchingSquares
 	 * Override this to use your own logic to identify solid pixels.
 	 */
 	private function isPixelSolid(x:Int, y:Int):Bool {
-		return (x >= 0 && y >= 0 && x < width && y < height && (byteArray[(y * width + x) << 2] >= alphaThreshold));
+		return (x >= 0 && y >= 0 && x < width && y < height && (sourceVector[y * width + x] >> 24 & 0xFF) >= alphaThreshold);
 	}
 }
