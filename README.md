@@ -48,7 +48,7 @@ Based on:
    - [http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/MCDDemo.html](http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/MCDDemo.html) (Java - by Jack Snoeyink & Mark Keil)
    - [J. Mark Keil](http://www.informatik.uni-trier.de/~ley/pers/hd/k/Keil:J=_Mark), [Jack Snoeyink](http://www.informatik.uni-trier.de/~ley/pers/hd/s/Snoeyink:Jack.html): On the Time Bound for Convex Decomposition of Simple Polygons. [Int. J. Comput. Geometry Appl. 12](http://www.informatik.uni-trier.de/~ley/db/journals/ijcga/ijcga12.html#KeilS02)(3): 181-192 (2002)
 
-#### [Connected Components Labeling (with optional Contour Tracing)](http://en.wikipedia.org/wiki/Connected-component_labeling)
+#### [Connected Components Labeling and Contour Tracing (w/ Holes)](http://en.wikipedia.org/wiki/Connected-component_labeling)
 
 Based on:
 
@@ -62,7 +62,7 @@ Based on:
  - [http://bost.ocks.org/mike/simplify/](http://bost.ocks.org/mike/simplify/) (JS - by Mike Bostock)
  - [http://en.wikipedia.org/wiki/Binary_heap](http://en.wikipedia.org/wiki/Binary_heap) (Binary (Min)Heap)
 
-#### [Tess2 (Tesselation to Triangles and Convex Polys, Polygon Boolean Ops)](https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html)
+#### [Tess2 (Tesselation to Triangles and Convex Polygons, Poly Boolean Ops)](https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html)
 
 Based on:
 

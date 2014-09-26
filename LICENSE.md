@@ -58,5 +58,7 @@ The `Tess2` part of the library is released under the SGI Free Sofware License B
 > this Software without prior written authorization from Silicon Graphics, Inc.
 > 
 > Copyright (c) 1994 Eric Veach
+> 
 > Copyright (c) 2013 Mikko Mononen
+> 
 > Copyright (c) 2014 Giuseppe Di Mauro (azrafe7)

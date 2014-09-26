@@ -25,11 +25,9 @@
  * be used in advertising or otherwise to promote the sale, use or other dealings in
  * this Software without prior written authorization from Silicon Graphics, Inc.
  */
-/*
- * Author: Mikko Mononen, Aug 2013.
- * The code is based on GLU libtess by Eric Veach, July 1994
- * 
- * Ported from tess2.js (https://github.com/memononen/tess2.js) by azrafe7
+
+/**
+ * Tesselator implementation.
  * 
  * From https://github.com/memononen/tess2.js readme:
  *
@@ -38,9 +36,17 @@
  * of the stock GLU tesselator. The original code was written by Eric Veach in 1994. 
  * The greatest thing about tess2.js is that it handles all kinds of input like 
  * self-intersecting polygons or any number of holes and contours."
+ * 
+ * Based on:
+ * 
+ * @see tess2.js (https://github.com/memononen/tess2.js) 		(JS - by Mikko Mononen, Aug 2013)
+ * GLU libtess 													(by Eric Veach, July 1994)
+ * 
+ * @author azrafe7
  */
 
 package hxGeomAlgo;
+
 import hxGeomAlgo.PolyTools.Poly;
 
 
