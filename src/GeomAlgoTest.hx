@@ -1,6 +1,5 @@
 package;
 
-
 import flash.display.Bitmap;
 import flash.display.BitmapData;
 import flash.display.Graphics;
@@ -14,6 +13,7 @@ import flash.system.System;
 import flash.text.TextField;
 import flash.text.TextFormat;
 import flash.text.TextFormatAlign;
+
 import hxGeomAlgo.EarClipper;
 import hxGeomAlgo.HxPoint;
 import hxGeomAlgo.MarchingSquares;
@@ -25,13 +25,18 @@ import hxGeomAlgo.PolyTools.Poly;
 import hxGeomAlgo.PairDeque;
 import hxGeomAlgo.SnoeyinkKeil;
 import hxGeomAlgo.CCLabeler;
+import hxGeomAlgo.VisvalingamWhyatt;
+import hxGeomAlgo.Tess2;
+
 import openfl.Assets;
 import openfl.display.FPS;
+import openfl.geom.Point;
 import openfl.utils.ByteArray;
 #if (neko)
 import sys.io.File;
 import sys.io.FileOutput;
 #end
+
 
 class GeomAlgoTest extends Sprite {
 
@@ -41,7 +46,8 @@ class GeomAlgoTest extends Sprite {
 	private var ASSET:String = "assets/pirate_small.png";
 	//private var ASSET:String = "assets/nazca_monkey.png";
 	//private var ASSET:String = "assets/star.png";
-	//private var ASSET:String = "assets/complex.png";	// Bayazit doesn't play well with this one
+	//private var ASSET:String = "assets/text.png";
+	//private var ASSET:String = "assets/complex.png";		// Bayazit doesn't play well with this one
 	
 	private var COLOR:Int = 0xFF0000;
 	private var ALPHA:Float = 1.;
@@ -63,11 +69,18 @@ class GeomAlgoTest extends Sprite {
 	private var clipRect:Rectangle;
 	private var perimeter:Array<HxPoint>;
 
-	private var simplifiedPoly:Array<HxPoint>;
+	private var simplifiedPolyRDP:Array<HxPoint>;
 	private var triangulation:Array<Tri>;
 	private var decomposition:Array<Poly>;
 
+	var text:TextField;
+	var labelBMP:Bitmap;
 
+	var X:Float;
+	var Y:Float;
+	var WIDTH:Float;
+	var HEIGHT:Float;
+	
 	public function new () {
 		super ();
 		
@@ -76,100 +89,143 @@ class GeomAlgoTest extends Sprite {
 		g = sprite.graphics;
 		g.lineStyle(1, COLOR, ALPHA);
 		originalBMD = Assets.getBitmapData(ASSET);
-
-		var x = START_POINT.x;
-		var y = START_POINT.y;
-		var width = originalBMD.width;
+		WIDTH = originalBMD.width;
+		HEIGHT = originalBMD.height + 80;
 
 		// ORIGINAL IMAGE
+		updateXY(0, 0);
 		addChildAt(originalBitmap = new Bitmap(originalBMD), 0);	// add it underneath sprite
-		originalBitmap.x = x;
-		originalBitmap.y = y;
-		addChild(getTextField("Original\n" + originalBMD.width + "x" + originalBMD.height, x, y));
+		originalBitmap.x = X;
+		originalBitmap.y = Y;
+		addChild(getTextField("Original\n" + originalBMD.width + "x" + originalBMD.height, X, Y));
 
 		// MARCHING SQUARES
-		x += width + X_GAP;
+		updateXY(0, 1);
 		//clipRect = new Rectangle(10, 20, 90, 65);
 		clipRect = originalBMD.rect;
 		marchingSquares = new MarchingSquares(originalBMD, 1, clipRect);
 		perimeter = marchingSquares.march();
-		drawPerimeter(perimeter, x + clipRect.x, y + clipRect.y);
-		addChild(getTextField("MarchSqrs\n" + perimeter.length + " pts", x, y));
+		drawPerimeter(perimeter, X + clipRect.x, Y + clipRect.y);
+		addChild(getTextField("MarchSqrs\n" + perimeter.length + " pts", X, Y));
 
 		// RAMER-DOUGLAS-PEUCKER SIMPLIFICATION
-		x += width + X_GAP;
-		simplifiedPoly = RamerDouglasPeucker.simplify(perimeter, 1.5);
-		drawPoly(simplifiedPoly, x + clipRect.x, y + clipRect.y);
-		addChild(getTextField("Doug-Peuck\n" + simplifiedPoly.length + " pts", x, y));
+		updateXY(0, 2);
+		simplifiedPolyRDP = RamerDouglasPeucker.simplify(perimeter, 1.5);
+		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y);
+		addChild(getTextField("Doug-Peuck\n" + simplifiedPolyRDP.length + " pts", X, Y));
 
+		// VISVALINGAM-WHYATT SIMPLIFICATION
+		updateXY(0, 3);
+		var simplifiedPolyVW = VisvalingamWhyatt.simplify(perimeter, SimplificationMethod.MaxPoints(simplifiedPolyRDP.length));
+		drawPoly(simplifiedPolyVW, X + clipRect.x, Y + clipRect.y);
+		addChild(getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts", X, Y));		
+		
 		// EARCLIPPER TRIANGULATION
-		x += width + X_GAP;
-		triangulation = EarClipper.triangulate(simplifiedPoly);
-		drawTriangulation(triangulation, x + clipRect.x, y + clipRect.y);
-		addChild(getTextField("EC-Triang\n" + triangulation.length + " tris", x, y));
+		updateXY(0, 4);
+		triangulation = EarClipper.triangulate(simplifiedPolyRDP);
+		drawTriangulation(triangulation, X + clipRect.x, Y + clipRect.y);
+		addChild(getTextField("EC-Triang\n" + triangulation.length + " tris", X, Y));
 
 		// CONNECTED COMPONENTS LABELING
-		x = START_POINT.x;
-		y += height + Y_GAP;
-		var labeler = new CCLabeler(originalBMD, 150, true, clipRect);
+		updateXY(1, 0);
+		var labeler = new CustomLabeler(originalBMD, 1, true, Connectivity.EIGHT_CONNECTED, clipRect);
 		labeler.run();
-		var labelBMP = new Bitmap(labeler.labelMap);
+		labelBMP = new Bitmap(labeler.labelMap);
 		addChildAt(labelBMP, 0);
-		labelBMP.x = START_POINT.x;
-		labelBMP.y = y;
+		labelBMP.x = X + clipRect.x;
+		labelBMP.y = Y + clipRect.y;
 		for (contour in labeler.contours) {
-			var color:UInt = PolyTools.isCCW(contour) ? 0xFF00FF00 : 0xFF0000FF;
+			var isHole = PolyTools.isCCW(contour);
+			var color:UInt = isHole ? 0xFF00FF00 : 0xFF0000FF;
+			
 			for (p in contour) {
 				labeler.labelMap.setPixel32(Std.int(p.x), Std.int(p.y), color);
 			}
 		}
-		addChild(getTextField("CCLabeler\n" + labeler.numComponents + " cmpts\n" + labeler.contours.length + " cntrs", x, y));
-		g.lineStyle(1, COLOR, ALPHA);
+		addChild(getTextField("CCLabeler\n" + labeler.numComponents + " cmpts\n" + labeler.contours.length + " cntrs", X, Y));
 
 		// EARCLIPPER DECOMPOSITION
-		x += width + X_GAP;
+		updateXY(1, 1);
 		decomposition = EarClipper.polygonizeTriangles(triangulation);
-		drawDecomposition(decomposition, x + clipRect.x, y + clipRect.y);
-		addChild(getTextField("EarClipper\nDecomp\n" + decomposition.length + " polys", x, y));
+		drawDecomposition(decomposition, X + clipRect.x, Y + clipRect.y);
+		addChild(getTextField("EarClipper\nDecomp\n" + decomposition.length + " polys", X, Y));
 
 		// BAYAZIT DECOMPOSITION
-		x += width + X_GAP;
-		decomposition = Bayazit.decomposePoly(simplifiedPoly);
-		drawDecompositionBayazit(decomposition, x + clipRect.x, y + clipRect.y);
-		addChild(getTextField("Bayazit\nDecomp\n" + decomposition.length + " polys", x, y));
+		updateXY(1, 2);
+		decomposition = Bayazit.decomposePoly(simplifiedPolyRDP);
+		drawDecompositionBayazit(decomposition, X + clipRect.x, Y + clipRect.y);
+		addChild(getTextField("Bayazit\nDecomp\n" + decomposition.length + " polys", X, Y));
 
 		// SNOEYINK-KEIL DECOMPOSITION
-		x += width + X_GAP;
-		decomposition = SnoeyinkKeil.decomposePoly(simplifiedPoly);
-		drawDecomposition(decomposition, x + clipRect.x, y + clipRect.y);
-		addChild(getTextField("Snoeyink-Keil\nMin Decomp\n" + decomposition.length + " polys", x, y));
+		updateXY(1, 3);
+		decomposition = SnoeyinkKeil.decomposePoly(simplifiedPolyRDP);
+		drawDecomposition(decomposition, X + clipRect.x, Y + clipRect.y);
+		addChild(getTextField("Snoeyink-Keil\nMin Decomp\n" + decomposition.length + " polys", X, Y));
 		
 		// VISIBILITY
-		x += width + X_GAP;
-		drawPoly(simplifiedPoly, x + clipRect.x, y + clipRect.y);
-		var origIdx = Std.int(Math.random() * simplifiedPoly.length);
-		var origPoint = simplifiedPoly[origIdx];
+		updateXY(1, 4);
+		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y);
+		var origIdx = Std.int(Math.random() * simplifiedPolyRDP.length);
+		var origPoint = simplifiedPolyRDP[origIdx];
 		// visible points
-		var visPoints = Visibility.getVisiblePolyFrom(simplifiedPoly, origIdx);
+		var visPoints = Visibility.getVisiblePolyFrom(simplifiedPolyRDP, origIdx);
 		g.lineStyle(1, 0xFFFF00);
-		drawPoly(visPoints, x + clipRect.x, y + clipRect.y);
+		drawPoly(visPoints, X + clipRect.x, Y + clipRect.y);
 		// visible vertices
-		var visIndices = Visibility.getVisibleIndicesFrom(simplifiedPoly, origIdx);
-		var visVertices = [for (i in 0...visIndices.length) simplifiedPoly[visIndices[i]]];
+		var visIndices = Visibility.getVisibleIndicesFrom(simplifiedPolyRDP, origIdx);
+		var visVertices = [for (i in 0...visIndices.length) simplifiedPolyRDP[visIndices[i]]];
 		g.lineStyle(1, 0x00FF00);
-		drawPoints(visVertices, x + clipRect.x, y + clipRect.y);
+		drawPoints(visVertices, X + clipRect.x, Y + clipRect.y);
 		// draw origPoint
 		g.lineStyle(1, 0x0000FF);
-		g.drawCircle(x + origPoint.x + clipRect.x, y + origPoint.y + clipRect.y, 3);
-		addChild(getTextField("Visibility\n" + visVertices.length + " vts\n" + visPoints.length + " pts", x, y));
+		g.drawCircle(X + origPoint.x + clipRect.x, Y + origPoint.y + clipRect.y, 3);
+		addChild(getTextField("Visibility\n" + visVertices.length + " vts\n" + visPoints.length + " pts", X, Y));
 		g.lineStyle(1, COLOR, ALPHA);
+
+		// TESS2 - TRIANGULATION
+		updateXY(0, 5);
+		var polySize = 3;
+		var resultType = ResultType.POLYGONS;
+		var flatContours = [for (c in labeler.contours) PolyTools.toFlatArray(RamerDouglasPeucker.simplify(c, 1.5))];
+		var res = Tess2.tesselate(flatContours, null, resultType, polySize);
+		var polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
+		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
+		addChild(getTextField("Tess2-Triang\n" + res.elementCount + " tris", X, Y));
+
+		// TESS2 + EC - DECOMP
+		/*
+		updateXY(1, 6);
+		var polygonized = EarClipper.polygonizeTriangles(polys);
+		for (p in polygonized) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
+		addChild(getTextField("Tess2 + EC\nDecomp\n" + polygonized.length + " polys", X, Y));
+		*/
+
+		// TESS2 - DECOMP
+		updateXY(1, 5);
+		polySize = 24;
+		resultType = ResultType.POLYGONS;
+		res = Tess2.tesselate(flatContours, null, resultType, polySize);
+		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
+		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
+		addChild(getTextField("Tess2\nDecomp\n" + res.elementCount + " polys", X, Y));
+		
+		// TESS2 - CONTOURS
+		/*
+		updateXY(1, 7);
+		resultType = ResultType.BOUNDARY_CONTOURS;
+		res = Tess2.tesselate(flatContours, null, resultType, polySize);
+		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
+		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
+		addChild(getTextField("Tess2\nContours\n" + res.elementCount + " polys", X, Y));
+		*/
 		
 		//stage.addChild(new FPS(5, 5, 0xFFFFFF));
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 
-		dumpPoly(simplifiedPoly, false);
+		dumpPoly(simplifiedPolyRDP, false);
+		
 	}
-
+	
 	static public function savePNG(bmd:BitmapData, fileName:String) {
 	#if (neko)
 		var ba:ByteArray = bmd.encode("png", 1);
@@ -177,6 +233,12 @@ class GeomAlgoTest extends Sprite {
 		file.writeString(ba.toString());
 		file.close();
 	#end
+	}
+	
+	public function updateXY(row:Int, col:Int):Void 
+	{
+		X = START_POINT.x + (WIDTH + X_GAP) * col;
+		Y = START_POINT.y + (HEIGHT + Y_GAP) * row;
 	}
 	
 	public function dumpPoly(poly:Array<HxPoint>, reverse:Bool = false):Void {
@@ -294,11 +356,68 @@ class GeomAlgoTest extends Sprite {
 	public function onKeyDown(e:KeyboardEvent):Void 
 	{
 		if (e.keyCode == 27) {
+			quit();
+		}
+	}
+	
+	public function quit():Void 
+	{
 		#if (flash || html5)
 			System.exit(1);
 		#else
 			Sys.exit(1);
 		#end
-		}
+	}
+}
+
+
+class CustomLabeler extends CCLabeler 
+{
+	
+	public function new(bmd:BitmapData, alphaThreshold:Int = 1, traceContours:Bool = true, connectivity:Connectivity = Connectivity.EIGHT_CONNECTED, clipRect:Rectangle = null, calcArea:Bool = false)
+	{
+		super(bmd, alphaThreshold, traceContours, connectivity, clipRect, calcArea);
+	}
+	
+	override function isPixelSolid(x:Int, y:Int):Bool 
+	{
+		var pixelColor:UInt = getPixel(sourceVector, x, y, 0);
+		
+		var pixel = getPixelInfo(pixelColor);
+		return (pixel.a > 0);
+	}
+	
+	static inline public function getPixelInfo(color:UInt):{a:Int, r:Int, g:Int, b:Int, h:Float, s:Float, v:Float, l:Float}
+	{
+		var a:Int = (color >> 24) & 0xFF;
+		var colMask:Int = a > 0 ? 0xFF : 0;	// fix to force neko to report rgb as 0 when alpha is 0 (to be consistent with flash)
+		var r:Int = (color >> 16) & colMask;
+		var g:Int = (color >> 8) & colMask;
+		var b:Int = color & colMask;
+
+		var info:Dynamic = {a:a, r:r, g:g, b:b};
+		
+		// hue
+		var max:Int = Std.int(Math.max(r, Math.max(g, b)));
+		var min:Int = Std.int(Math.min(r, Math.min(g, b)));
+
+		if (max == min) info.h = 0;
+		else if (max == r) info.h = (60 * (g - b) / (max - min) + 360) % 360;
+		else if (max == g) info.h = (60 * (b - r) / (max - min) + 120);
+		else if (max == b) info.h = (60 * (r - g) / (max - min) + 240);
+
+		info.h /= 360;
+		
+		// saturation
+		if (max == 0) info.s = 0;
+		else info.s = (max - min) / max;
+		
+		// value
+		info.v = max / 255;
+		
+		// luminance
+		info.l = (0.2126 * r / 255 + 0.7152 * g / 255 + 0.0722 * b / 255);
+		
+		return info;
 	}
 }
