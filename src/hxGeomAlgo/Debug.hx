@@ -15,7 +15,6 @@ class Debug
 #if ((debug && !NO_GEOM_CHECKS) || GEOM_CHECKS)
 	static public function assert(cond:Bool, ?message:String, ?pos:PosInfos) {
 		if (!cond) {
-			trace("FAIL");
 			throw "ASSERT FAILED! " + (message != null ? message : "");
 		}
 	}

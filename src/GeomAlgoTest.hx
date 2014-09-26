@@ -32,6 +32,7 @@ import openfl.Assets;
 import openfl.display.FPS;
 import openfl.geom.Point;
 import openfl.utils.ByteArray;
+
 #if (neko)
 import sys.io.File;
 import sys.io.FileOutput;
@@ -42,7 +43,7 @@ class GeomAlgoTest extends Sprite {
 
 	private var g:Graphics;
 
-	//private var ASSET:String = "assets/super_mario.png";	// from here http://www.newgrounds.com/art/view/petelavadigger/super-mario-pixel
+	//private var ASSET:String = "assets/super_mario.png";	// from http://www.newgrounds.com/art/view/petelavadigger/super-mario-pixel
 	private var ASSET:String = "assets/pirate_small.png";
 	//private var ASSET:String = "assets/nazca_monkey.png";
 	//private var ASSET:String = "assets/star.png";
@@ -62,6 +63,11 @@ class GeomAlgoTest extends Sprite {
 
 	private var START_POINT:HxPoint = new HxPoint(20, 80);
 
+	var X:Float;
+	var Y:Float;
+	var WIDTH:Float;
+	var HEIGHT:Float;
+
 	private var originalBMD:BitmapData;
 	private var originalBitmap:Bitmap;
 
@@ -75,11 +81,6 @@ class GeomAlgoTest extends Sprite {
 
 	var text:TextField;
 	var labelBMP:Bitmap;
-
-	var X:Float;
-	var Y:Float;
-	var WIDTH:Float;
-	var HEIGHT:Float;
 	
 	public function new () {
 		super ();

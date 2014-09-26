@@ -81,8 +81,8 @@ class Bayazit
 						}
 					}
 					
-					if (poly.at(i + 1).isLeft(poly.at(i), poly.at(j + 1))
-							&& poly.at(i + 1).isRightOrOn(poly.at(i), poly.at(j))) 
+					if (poly.at(i + 1).isLeft(poly.at(i), poly.at(j + 1)) &&
+						poly.at(i + 1).isRightOrOn(poly.at(i), poly.at(j))) 
 					{			
 						p = PolyTools.intersection(poly.at(i + 1), poly.at(i), poly.at(j), poly.at(j + 1));
 						if (poly.at(i - 1).isLeft(poly.at(i), p)) {

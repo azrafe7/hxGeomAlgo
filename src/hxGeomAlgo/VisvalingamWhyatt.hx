@@ -106,6 +106,9 @@ class VisvalingamWhyatt
 				triangle.next.points[0] = triangle.points[0];
 				updateTriangle(triangle.next);
 			}
+		#if ((debug && !NO_GEOM_CHECKS) || GEOM_CHECKS)
+			minHeap.validate();
+		#end
 		}
 		
 		var res = [points[0]];
@@ -213,7 +216,7 @@ class MinHeap<T:Comparable<T>>
     public function remove(obj:T):Int
     {
         var res = data.indexOf(obj);
-		if (res < 0 || res >= data.length) throw "Object not found.";
+		Debug.assert(res >= 0, "Object not found.");
 		
         var len = data.length;
         var lastObj = data.pop();
@@ -226,11 +229,11 @@ class MinHeap<T:Comparable<T>>
     
 	inline public function clear():Void 
 	{
-#if (cpp || php)
+	#if (cpp || php)
 		data.splice(0, data.length);
-#else
+	#else
 		untyped data.length = 0;
-#end
+	#end
 	}
 	
 	public function rebuild():Void 

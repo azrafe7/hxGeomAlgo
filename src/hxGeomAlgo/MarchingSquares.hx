@@ -136,7 +136,7 @@ class MarchingSquares
 				case StepDirection.LEFT:  x--; 
 				case StepDirection.DOWN:  y++; 
 				case StepDirection.RIGHT: x++; 
-				default: throw "Illegal state at point (x: " + x + ", y: " + y + ").";
+				default: Debug.assert(false, "Illegal state at point (x: " + x + ", y: " + y + ").");
 			}
 			
 			done = (x == startX && y == startY);
@@ -164,7 +164,7 @@ class MarchingSquares
 		if (downLeft) state |= 4;
 		if (downRight) state |= 8;
 
-		if (state == 0 || state == 15) throw "Error: point (x: " + x + ", y: " + y + ") doesn't lie on perimeter.";
+		Debug.assert(state != 0 && state != 15, "Error: point (x: " + x + ", y: " + y + ") doesn't lie on perimeter.");
 		
 		switch (state)
 		{
@@ -181,7 +181,7 @@ class MarchingSquares
 			case 9:
 				nextStep = (prevStep == StepDirection.RIGHT ? StepDirection.UP : StepDirection.DOWN);
 			default: 
-				throw "Illegal state at point (x: " + x + ", y: " + y + ").";
+				Debug.assert(false, "Illegal state at point (x: " + x + ", y: " + y + ").");
 		}
 	}
 	

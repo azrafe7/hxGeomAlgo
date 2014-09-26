@@ -217,13 +217,13 @@ class DecompPoly {
 	}
 
 	private function setAfter(i:Int) { // i reflex
-		if (!isReflex(i)) throw "Non reflex i in setAfter(" + i + ")";
+		Debug.assert(isReflex(i), "Non reflex i in setAfter(" + i + ")");
 		subDecomp.setWeight(i, i + 1, 0);
 		if (visible(i, i + 2)) subDecomp.initWithWeight(i, i + 2, 0, i + 1, i + 1);
 	}
 	
 	private function setBefore(i:Int) { // i reflex
-		if (!isReflex(i)) throw "Non reflex i in setBefore(" + i + ")";
+		Debug.assert(isReflex(i), "Non reflex i in setBefore(" + i + ")");
 		subDecomp.setWeight(i - 1, i, 0);
 		if (visible(i - 2, i))  subDecomp.initWithWeight(i - 2, i, 0, i - 1, i - 1);
 	}
@@ -245,7 +245,8 @@ class DecompPoly {
 
 	public function recoverSolution(i:Int, k:Int) { 
 		var j:Int;
-		if (guard-- < 0) { trace("Can't recover " + i + "," + k); return; }
+		guard--;
+		Debug.assert(guard >= 0, "Can't recover " + i + "," + k);
 		if (k - i <= 1) return;
 		var pair:PairDeque = subDecomp.pairs(i, k);
 		//trace(i, k, pair);
@@ -346,6 +347,7 @@ class DecompPoly {
 		}
 	}
 
+	// TODO: see how to improve this
 	private function _decompByDiags(i:Int, k:Int, outIndices:Array<Array<Int>>, level:Int = 0) {
 		//trace('level -> $level');
 		
@@ -383,10 +385,8 @@ class DecompPoly {
 			nDiags++;
 		}
 
-		if (guard-- < 0) { 
-			trace("Infinite loop diag " + i + "," + k); 
-			return;
-		}
+		guard--;
+		Debug.assert(guard >= 0, "Infinite loop diag " + i + "," + k); 
 		
 		if (nDiags > 1) {	// add new decomposing poly
 			var hasInnerDiags = false;

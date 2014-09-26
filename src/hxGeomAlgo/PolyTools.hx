@@ -204,10 +204,9 @@ class PolyTools
 			res = new HxPoint();
 			res.x = (b2 * c1 - b1 * c2) / det;
 			res.y = (a1 * c2 - a2 * c1) / det;
-		}
-		if (res == null) {
+		} /*else { 
 			trace("parallel");
-		}
+		}*/
 		return res;
 	}
 	

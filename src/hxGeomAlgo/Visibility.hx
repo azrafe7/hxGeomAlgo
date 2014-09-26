@@ -16,6 +16,7 @@
 package hxGeomAlgo;
 
 
+import hxGeomAlgo.Debug;
 import hxGeomAlgo.HomogCoord;
 import hxGeomAlgo.PolyTools;
 import hxGeomAlgo.Visibility.VertexType;
@@ -203,7 +204,7 @@ class Visibility
 			}
 		}
 		
-		trace("ERROR: We never exited RBay " + bot + " " + lid + " " + windingNum + "\n");
+		Debug.assert(false, "ERROR: We never exited RBay " + bot + " " + lid + " " + windingNum);
 		return j;
 	} 
 
@@ -234,7 +235,7 @@ class Visibility
 			}
 		}
 		
-		trace("ERROR: We never exited LBay " + bot + lid + windingNum + "\n");
+		Debug.assert(false, "ERROR: We never exited LBay " + bot + " " + lid + " " + windingNum);
 		return j;
 	} 
 
