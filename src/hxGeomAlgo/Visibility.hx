@@ -135,7 +135,7 @@ class Visibility
 		return res;
 	}
 	
-	/** Returns an array of all the points of `simplePoly` visible from `origIdx`. */
+	/** Returns an array of all the points of `simplePoly` visible from `origIdx` (may include points not in `simplePoly`). */
 	static public function getVisiblePolyFrom(simplePoly:Poly, origIdx:Int = 0):Poly {
 		var indices = getVisibleIndicesFrom(simplePoly, origIdx);
 		var res = new Poly();
@@ -160,8 +160,8 @@ class Visibility
 				q = origPoint.meet(poly.at(stack[i])).meet(poly.at(stack[i - 2]).meet(poly.at(stack[i - 1])));
 				res.push(q.toPoint());
 			} else {
-				if ((vType == VertexType.RIGHT_WALL && lastType == VertexType.RIGHT_LID)
-					|| (vType == VertexType.LEFT_LID && lastType == VertexType.RIGHT_LID)) {
+				if ((vType == VertexType.RIGHT_WALL && lastType == VertexType.RIGHT_LID) || 
+					(vType == VertexType.LEFT_LID && lastType == VertexType.RIGHT_LID)) {
 					// skip this one
 				} else {
 					res.push(last.clone());

@@ -14,6 +14,7 @@ import flash.text.TextField;
 import flash.text.TextFormat;
 import flash.text.TextFormatAlign;
 
+import hxGeomAlgo.Version;
 import hxGeomAlgo.EarClipper;
 import hxGeomAlgo.HxPoint;
 import hxGeomAlgo.MarchingSquares;
@@ -32,6 +33,7 @@ import openfl.Assets;
 import openfl.display.FPS;
 import openfl.geom.Point;
 import openfl.utils.ByteArray;
+import openfl.text.TextFieldAutoSize;
 
 #if (neko)
 import sys.io.File;
@@ -82,9 +84,9 @@ class GeomAlgoTest extends Sprite {
 	var text:TextField;
 	var labelBMP:Bitmap;
 	
-	public function new () {
-		super ();
-		
+	public function new() {
+		super();
+
 		var sprite = new Sprite();
 		addChild(sprite);
 		g = sprite.graphics;
@@ -93,6 +95,12 @@ class GeomAlgoTest extends Sprite {
 		WIDTH = originalBMD.width;
 		HEIGHT = originalBMD.height + 80;
 
+		//  VERSION
+		var versionTF = getTextField("hxGeomAlgo v" + Version.toString(), 0, 0);
+		versionTF.autoSize = TextFieldAutoSize.LEFT;
+		versionTF.y = stage.stageHeight - 17;
+		addChild(versionTF);
+		
 		// ORIGINAL IMAGE
 		updateXY(0, 0);
 		addChildAt(originalBitmap = new Bitmap(originalBMD), 0);	// add it underneath sprite
@@ -219,12 +227,11 @@ class GeomAlgoTest extends Sprite {
 		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
 		addChild(getTextField("Tess2\nContours\n" + res.elementCount + " polys", X, Y));
 		*/
-		
+	
 		//stage.addChild(new FPS(5, 5, 0xFFFFFF));
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 
 		dumpPoly(simplifiedPolyRDP, false);
-		
 	}
 	
 	static public function savePNG(bmd:BitmapData, fileName:String) {
