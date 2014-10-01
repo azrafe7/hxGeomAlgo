@@ -127,8 +127,8 @@ class MarchingSquares
 		while (!done) {
 			step(x, y);
 
-			// add perimeter point to return list (ensuring it's not out of boundaries)
-			if (x < width && y < height) pointList.push(new HxPoint(x, y));
+			// add perimeter point to return list (may be on the boundaries rect)
+			if (x <= width && y <= height) pointList.push(new HxPoint(x, y));
 
 			switch (nextStep)
 			{
