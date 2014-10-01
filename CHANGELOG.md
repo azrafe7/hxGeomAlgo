@@ -1,3 +1,4 @@
+### 0.0.x (from 16 feb 2014)
  - Added first impl. of MarchingSquares and RamerDouglasPeucker
  - MarchingSquares: Fixed bug where it wouldn't work on fully opaque bitmapdata
  - MarchingSquares: Added alpha threshold parameter
@@ -26,6 +27,14 @@
  - Added first impl. of Visvalingam-Whyatt simplification (+ MinHeap)
  - Visv-Whyatt: completed and improved
  - Tess2: ported Mikko Mononen's tess2.js
+ - PolyTools adds conversion to/from fl(o)at array and switches to distanceSquared in segmentIntersect
  - CCLabeler: improved performance swapping ByteArray with Vector
  - CCLabeler: added areaMap to store components' area while labeling
+ - MarchingSquares: switching to Vector (vs ByteArray)
+ - Introducing simple Debug.assert() in the codebase and compiler defines (GEOM\_CHECKS/NO\_GEOM\_CHECKS) 
+ - Bug fixes for some degenerate cases (poly.length < 3)
+### 0.1.0 (from 29 sep 2014)
+ - Version class added (starting at 0.1.0)
+ - MarchingSquares: fixing fully opaque bitmapdata again
+ - Using PosInfos in Debug.assert()
  - 
