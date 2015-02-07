@@ -102,14 +102,14 @@ class GeomAlgoTest extends Sprite {
 		addChild(versionTF);
 		
 		// ORIGINAL IMAGE
-		updateXY(0, 0);
+		setSlot(0, 0);
 		addChildAt(originalBitmap = new Bitmap(originalBMD), 0);	// add it underneath sprite
 		originalBitmap.x = X;
 		originalBitmap.y = Y;
 		addChild(getTextField("Original\n" + originalBMD.width + "x" + originalBMD.height, X, Y));
 
 		// MARCHING SQUARES
-		updateXY(0, 1);
+		setSlot(0, 1);
 		//clipRect = new Rectangle(10, 20, 90, 65);
 		clipRect = originalBMD.rect;
 		marchingSquares = new MarchingSquares(originalBMD, 1, clipRect);
@@ -118,25 +118,25 @@ class GeomAlgoTest extends Sprite {
 		addChild(getTextField("MarchSqrs\n" + perimeter.length + " pts", X, Y));
 
 		// RAMER-DOUGLAS-PEUCKER SIMPLIFICATION
-		updateXY(0, 2);
+		setSlot(0, 2);
 		simplifiedPolyRDP = RamerDouglasPeucker.simplify(perimeter, 1.5);
 		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Doug-Peuck\n" + simplifiedPolyRDP.length + " pts", X, Y));
 
 		// VISVALINGAM-WHYATT SIMPLIFICATION
-		updateXY(0, 3);
+		setSlot(0, 3);
 		var simplifiedPolyVW = VisvalingamWhyatt.simplify(perimeter, SimplificationMethod.MaxPoints(simplifiedPolyRDP.length));
 		drawPoly(simplifiedPolyVW, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts", X, Y));		
 		
 		// EARCLIPPER TRIANGULATION
-		updateXY(0, 4);
+		setSlot(0, 4);
 		triangulation = EarClipper.triangulate(simplifiedPolyRDP);
 		drawTriangulation(triangulation, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("EC-Triang\n" + triangulation.length + " tris", X, Y));
 
 		// CONNECTED COMPONENTS LABELING
-		updateXY(1, 0);
+		setSlot(1, 0);
 		var labeler = new CustomLabeler(originalBMD, 1, true, Connectivity.EIGHT_CONNECTED, clipRect);
 		labeler.run();
 		labelBMP = new Bitmap(labeler.labelMap);
@@ -154,25 +154,25 @@ class GeomAlgoTest extends Sprite {
 		addChild(getTextField("CCLabeler\n" + labeler.numComponents + " cmpts\n" + labeler.contours.length + " cntrs", X, Y));
 
 		// EARCLIPPER DECOMPOSITION
-		updateXY(1, 1);
+		setSlot(1, 1);
 		decomposition = EarClipper.polygonizeTriangles(triangulation);
 		drawDecomposition(decomposition, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("EarClipper\nDecomp\n" + decomposition.length + " polys", X, Y));
 
 		// BAYAZIT DECOMPOSITION
-		updateXY(1, 2);
+		setSlot(1, 2);
 		decomposition = Bayazit.decomposePoly(simplifiedPolyRDP);
 		drawDecompositionBayazit(decomposition, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Bayazit\nDecomp\n" + decomposition.length + " polys", X, Y));
 
 		// SNOEYINK-KEIL DECOMPOSITION
-		updateXY(1, 3);
+		setSlot(1, 3);
 		decomposition = SnoeyinkKeil.decomposePoly(simplifiedPolyRDP);
 		drawDecomposition(decomposition, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Snoeyink-Keil\nMin Decomp\n" + decomposition.length + " polys", X, Y));
 		
 		// VISIBILITY
-		updateXY(1, 4);
+		setSlot(1, 4);
 		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y);
 		var origIdx = Std.int(Math.random() * simplifiedPolyRDP.length);
 		var origPoint = simplifiedPolyRDP[origIdx];
@@ -192,7 +192,7 @@ class GeomAlgoTest extends Sprite {
 		g.lineStyle(1, COLOR, ALPHA);
 
 		// TESS2 - TRIANGULATION
-		updateXY(0, 5);
+		setSlot(0, 5);
 		var polySize = 3;
 		var resultType = ResultType.POLYGONS;
 		var flatContours = [for (c in labeler.contours) PolyTools.toFlatArray(RamerDouglasPeucker.simplify(c, 1.5))];
@@ -203,14 +203,14 @@ class GeomAlgoTest extends Sprite {
 
 		// TESS2 + EC - DECOMP
 		/*
-		updateXY(1, 6);
+		setSlot(1, 6);
 		var polygonized = EarClipper.polygonizeTriangles(polys);
 		for (p in polygonized) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
 		addChild(getTextField("Tess2 + EC\nDecomp\n" + polygonized.length + " polys", X, Y));
 		*/
 
 		// TESS2 - DECOMP
-		updateXY(1, 5);
+		setSlot(1, 5);
 		polySize = 24;
 		resultType = ResultType.POLYGONS;
 		res = Tess2.tesselate(flatContours, null, resultType, polySize);
@@ -220,7 +220,7 @@ class GeomAlgoTest extends Sprite {
 		
 		// TESS2 - CONTOURS
 		/*
-		updateXY(1, 7);
+		setSlot(1, 7);
 		resultType = ResultType.BOUNDARY_CONTOURS;
 		res = Tess2.tesselate(flatContours, null, resultType, polySize);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
@@ -243,7 +243,7 @@ class GeomAlgoTest extends Sprite {
 	#end
 	}
 	
-	public function updateXY(row:Int, col:Int):Void 
+	public function setSlot(row:Int, col:Int):Void 
 	{
 		X = START_POINT.x + (WIDTH + X_GAP) * col;
 		Y = START_POINT.y + (HEIGHT + Y_GAP) * row;
