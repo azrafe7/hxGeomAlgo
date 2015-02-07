@@ -27,7 +27,7 @@ enum StepDirection {
 
 class MarchingSquares
 {
-	/** Minimum alpha value to consider a pixel opaque. */
+	/** Minimum alpha value to consider a pixel opaque (in the range 0-255). */
 	public var alphaThreshold:Int;
 
 	private var prevStep:StepDirection = StepDirection.NONE;
@@ -46,7 +46,7 @@ class MarchingSquares
 	 * Constructor.
 	 * 
 	 * @param	bmd				BitmapData to use as source.
-	 * @param	alphaThreshold  Minimum alpha value to consider a pixel opaque.
+	 * @param	alphaThreshold  Minimum alpha value to consider a pixel opaque (in the range 0-255).
 	 * @param	clipRect		The region of bmd to process (defaults to the entire image)
 	 */
 	public function new(bmd:BitmapData, alphaThreshold:Int = 1, clipRect:Rectangle = null)

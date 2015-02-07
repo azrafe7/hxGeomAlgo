@@ -27,7 +27,7 @@ import openfl.Vector;
 
 class CCLabeler
 {
-	/** Minimum alpha value to consider a pixel opaque. */
+	/** Minimum alpha value to consider a pixel opaque (in the range 1-255). */
 	public var alphaThreshold:Int;
 
 	/** BitmapData containing the labeling info. */
@@ -91,7 +91,7 @@ class CCLabeler
 	 * Constructor.
 	 * 
 	 * @param	bmd				BitmapData to use as source for labeling.
-	 * @param	alphaThreshold  Minimum alpha value to consider a pixel opaque.
+	 * @param	alphaThreshold  Minimum alpha value to consider a pixel opaque (in the range 1-255).
 	 * @param	traceContours	Whether to store contours' points while labeling.
 	 * @param	connectivity	Type of connectivity to search for (defaults to EIGHT_CONNECTED).
 	 * @param	clipRect		The region of bmd to process (defaults to the entire image).
