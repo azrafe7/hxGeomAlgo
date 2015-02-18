@@ -33,8 +33,11 @@
  - MarchingSquares: switching to Vector (vs ByteArray)
  - Introducing simple Debug.assert() in the codebase and compiler defines (GEOM\_CHECKS/NO\_GEOM\_CHECKS) 
  - Bug fixes for some degenerate cases (poly.length < 3)
+
 ### 0.1.0 (from 29 sep 2014)
  - Version class added (starting at 0.1.0)
  - MarchingSquares: fixing fully opaque bitmapdata again
  - Using PosInfos in Debug.assert()
+ - RDP: setting epsilon below 1 now exits without doing any simplification
+ - CCLabeler: improved performance and extensibility
  - 
