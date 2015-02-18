@@ -28,7 +28,7 @@ class RamerDouglasPeucker
 		var firstPoint = points[0];
 		var lastPoint = points[points.length - 1];
 		
-		if (points.length < 2) {
+		if (points.length < 2 || epsilon < 1) {
 			return [].concat(points);
 		}
 		
