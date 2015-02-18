@@ -57,7 +57,7 @@ class GeomAlgoTest extends Sprite {
 	private var X_GAP:Int = 10;
 	private var Y_GAP:Int = 25;
 
-	private var TEXT_COLOR:Int = 0xFFFFFFFF;
+	private var TEXT_COLOR:Int = 0xFFFFFF;
 	private var TEXT_FONT:String = "_typewriter";
 	private var TEXT_SIZE:Float = 12;
 	private var TEXT_OFFSET:Float = -60;
