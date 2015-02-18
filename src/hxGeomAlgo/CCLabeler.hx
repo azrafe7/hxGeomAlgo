@@ -79,6 +79,7 @@ class CCLabeler
 	private var markedPixels:BitmapData;
 	private var markedVector:Vector<UInt>;
 	private var labelVector:Vector<UInt>;
+	private var solidPixels:Array<Bool>;
 	
 	private var clipRect:Rectangle;
 	private var width:Int;
@@ -127,6 +128,8 @@ class CCLabeler
 		sourceVector = bmd.getVector(this.clipRect);
 		labelVector = labelMap.getVector(labelMap.rect);
 		markedVector = markedPixels.getVector(markedPixels.rect);
+		
+		buildSolidPixelsCache();
 	}
 	
 	/**
@@ -135,8 +138,8 @@ class CCLabeler
 	 */
 	public function run():BitmapData
 	{
-		contours = traceContours ? new Array<Poly>() : null;
-		areaMap = calcArea ? new Map<Int, Int>() : null;
+		contours = new Array<Poly>();
+		areaMap = new Map<Int, Int>();
 		numComponents = 0;
 		labelIndex = 0;
 		
@@ -148,16 +151,16 @@ class CCLabeler
 			x = 0;
 			while (x < width) {
 				isLabeled = getPixel(labelVector, x, y, UNLABELED) != UNLABELED;
-				if (isPixelSolid(x, y))
+				if (_isPixelSolid(x, y))
 				{
-					if (!isLabeled && !isPixelSolid(x, y - 1)) { // external contour
+					if (!isLabeled && !_isPixelSolid(x, y - 1)) { // external contour
 						//trace("external contour @ " + x + "," + y);
 						setLabel(x, y, labelToColor(labelIndex));
 						isLabeled = true;
 						contourTrace(x, y, labelToColor(labelIndex), 7);
 						labelIndex++;
 					}
-					if (!isPixelSolid(x, y + 1) && getPixel(markedVector, x, y + 1, MARKED) != MARKED) { // internal contour
+					if (!_isPixelSolid(x, y + 1) && getPixel(markedVector, x, y + 1, MARKED) != MARKED) { // internal contour
 						//trace("internal contour @ " + x + "," + y);
 						if (!isLabeled) {
 							leftLabeledPixel = getPixel(labelVector, x - 1, y);
@@ -200,7 +203,7 @@ class CCLabeler
 			poly:Poly = null,
 			nextPointExists;
 		
-		if (contours != null) {
+		if (traceContours) {
 			poly = new Poly();
 			poly.push(new HxPoint(x, y));
 			contours.push(poly);
@@ -230,7 +233,7 @@ class CCLabeler
 						break;
 					}
 				} else { // found next point on contour
-					if (contours != null) {
+					if (traceContours) {
 						poly.push(contourPoint.clone());
 					}
 					setLabel(x, y, labelColor);
@@ -263,7 +266,7 @@ class CCLabeler
 			cx = x + searchDir[tracingDir].dx;
 			cy = y + searchDir[tracingDir].dy;
 			nextPoint.setTo(cx, cy);
-			if (isPixelSolid(cx, cy)) {
+			if (_isPixelSolid(cx, cy)) {
 				isolatedPixel = false;
 				break;
 			} else { // set non-solid pixel as marked
@@ -278,7 +281,10 @@ class CCLabeler
 	
 	/**
 	 * Maps `label` to a color. 
-	 * Override this to use your own label-to-color mapping. 
+	 * Override this to use your own label-to-color mapping.
+	 * 
+	 * NOTE: Avoid using 0x00000000 as a returned value, as it's used 
+	 * interally to identify unlabeled pixels.
 	 */
 	public function labelToColor(label:Int):UInt 
 	{
@@ -301,11 +307,11 @@ class CCLabeler
 	 * Returns the 32-bit pixel color at position (`x`, `y`) from `vector`.
 	 * If the specified position is out of bounds, `outerValue` is returned.
 	 */
-	inline private function getPixel(vector:Vector<UInt>, x:Int, y:Int, outerValue:UInt = 0):UInt 
+	private function getPixel(vector:Vector<UInt>, x:Int, y:Int, outerValue:UInt = 0):UInt 
 	{
 		var pos:UInt = (y * width + x);
 		var res = outerValue;
-		if (x >= 0 && y >= 0 && x < width && y < height) {
+		if (!isOutOfBounds(x, y)) {
 			res = vector[pos];
 		}
 		return res;
@@ -315,10 +321,10 @@ class CCLabeler
 	 * Writes a 32-bit pixel `color` at position (`x`, `y`) in `vector`.
 	 * If the specified position is out of bounds nothing is written.
 	 */
-	inline private function setPixel(vector:Vector<UInt>, x:Int, y:Int, color:UInt):Void
+	private function setPixel(vector:Vector<UInt>, x:Int, y:Int, color:UInt):Void
 	{
 		var pos:UInt = (y * width + x);
-		if (x >= 0 && y >= 0 && x < width && y < height) {
+		if (!isOutOfBounds(x, y)) {
 			vector[pos] = color;
 			if (calcArea && vector == labelVector) {
 				var a:Null<Int> = areaMap.exists(cast color) ? cast areaMap.get(cast color) : 0;
@@ -329,10 +335,34 @@ class CCLabeler
 
 	/** 
 	 * Returns true if the pixel at `x`, `y` is opaque (according to `alphaThreshold`). 
-	 * Override this to use your own logic to identify solid pixels.
+	 * Override this to use your own criteria to identify solid pixels.
 	 */
 	private function isPixelSolid(x:Int, y:Int):Bool {
 		return (getPixel(sourceVector, x, y, 0) >> 24 & 0xFF) >= alphaThreshold;
+	}
+	
+	/**
+	 * Builds a cache of solid pixels (for faster retrieval).
+	 */
+	private function buildSolidPixelsCache() {
+		solidPixels = [];
+		
+		for (i in 0...width * height) {
+			var x = i % width;
+			var y = Std.int(i / width);
+			solidPixels[i] = isPixelSolid(x, y);
+		}
+	}
+	
+	/**
+	 * Uses the internal cache (`solidPixels`) to check if a pixel is solid. Returns false if it's out of bounds.
+	 */
+	inline private function _isPixelSolid(x:Int, y:Int):Bool {
+		return (isOutOfBounds(x, y)) ? false : solidPixels[x + y * width];
+	}
+	
+	inline private function isOutOfBounds(x:Int, y:Int):Bool {
+		return (x < 0 || y < 0 || x >= width || y >= height);
 	}
 	
 	private function getColorFromHSV(h:Float, s:Float, v:Float):UInt
