@@ -135,8 +135,8 @@ class CCLabeler
 	 */
 	public function run():BitmapData
 	{
-		contours = traceContours ? new Array<Poly>() : null;
-		areaMap = calcArea ? new Map<Int, Int>() : null;
+		contours = new Array<Poly>();
+		areaMap = new Map<Int, Int>();
 		numComponents = 0;
 		labelIndex = 0;
 		
@@ -200,7 +200,7 @@ class CCLabeler
 			poly:Poly = null,
 			nextPointExists;
 		
-		if (contours != null) {
+		if (traceContours) {
 			poly = new Poly();
 			poly.push(new HxPoint(x, y));
 			contours.push(poly);
@@ -230,7 +230,7 @@ class CCLabeler
 						break;
 					}
 				} else { // found next point on contour
-					if (contours != null) {
+					if (traceContours) {
 						poly.push(contourPoint.clone());
 					}
 					setLabel(x, y, labelColor);
@@ -278,7 +278,10 @@ class CCLabeler
 	
 	/**
 	 * Maps `label` to a color. 
-	 * Override this to use your own label-to-color mapping. 
+	 * Override this to use your own label-to-color mapping.
+	 * 
+	 * NOTE: Avoid using 0x00000000 as a returned value, as it's used 
+	 * interally to identify unlabeled pixels.
 	 */
 	public function labelToColor(label:Int):UInt 
 	{
@@ -301,11 +304,11 @@ class CCLabeler
 	 * Returns the 32-bit pixel color at position (`x`, `y`) from `vector`.
 	 * If the specified position is out of bounds, `outerValue` is returned.
 	 */
-	inline private function getPixel(vector:Vector<UInt>, x:Int, y:Int, outerValue:UInt = 0):UInt 
+	private function getPixel(vector:Vector<UInt>, x:Int, y:Int, outerValue:UInt = 0):UInt 
 	{
 		var pos:UInt = (y * width + x);
 		var res = outerValue;
-		if (x >= 0 && y >= 0 && x < width && y < height) {
+		if (!isOutOfBounds(x, y)) {
 			res = vector[pos];
 		}
 		return res;
@@ -318,7 +321,7 @@ class CCLabeler
 	inline private function setPixel(vector:Vector<UInt>, x:Int, y:Int, color:UInt):Void
 	{
 		var pos:UInt = (y * width + x);
-		if (x >= 0 && y >= 0 && x < width && y < height) {
+		if (!isOutOfBounds(x, y)) {
 			vector[pos] = color;
 			if (calcArea && vector == labelVector) {
 				var a:Null<Int> = areaMap.exists(cast color) ? cast areaMap.get(cast color) : 0;
@@ -329,10 +332,14 @@ class CCLabeler
 
 	/** 
 	 * Returns true if the pixel at `x`, `y` is opaque (according to `alphaThreshold`). 
-	 * Override this to use your own logic to identify solid pixels.
+	 * Override this to use your own criteria to identify solid pixels.
 	 */
 	private function isPixelSolid(x:Int, y:Int):Bool {
 		return (getPixel(sourceVector, x, y, 0) >> 24 & 0xFF) >= alphaThreshold;
+	}
+	
+	inline private function isOutOfBounds(x:Int, y:Int):Bool {
+		return (x < 0 || y < 0 || x >= width || y >= height);
 	}
 	
 	private function getColorFromHSV(h:Float, s:Float, v:Float):UInt
