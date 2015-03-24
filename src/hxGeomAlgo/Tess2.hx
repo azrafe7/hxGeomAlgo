@@ -1294,6 +1294,8 @@ private class DictNode
 	public var key:ActiveRegion = null;
 	public var next:DictNode = null;
 	public var prev:DictNode = null;	
+	
+	public function new() { }
 }
 
 private class Dict
@@ -1360,12 +1362,16 @@ private class Dict
 private class PQNode
 {
 	public var handle:Int = -1;
+	
+	public function new() { }
 }
 
 private class PQHandleElem
 {
 	public var key:TessVertex = null;
 	public var node:Int = -1;
+	
+	public function new() { }
 }
 
 private class PriorityQ
@@ -1572,6 +1578,8 @@ private class ActiveRegion
 	public var fixUpperEdge:Bool = false;	/* marks temporary edges introduced when
 											* we process a "right vertex" (one without
 											* any edges leaving to the right) */
+	
+	public function new() { }
 }
 
 private class Sweep
