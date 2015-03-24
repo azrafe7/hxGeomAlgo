@@ -28,7 +28,7 @@ import openfl.Vector;
 class CCLabeler
 {
 	/** Minimum alpha value to consider a pixel opaque (in the range 1-255). */
-	public var alphaThreshold:Int;
+	public var alphaThreshold:UInt;
 
 	/** BitmapData containing the labeling info. */
 	public var labelMap:BitmapData;
@@ -97,7 +97,7 @@ class CCLabeler
 	 * @param	clipRect		The region of bmd to process (defaults to the entire image).
 	 * @param	calcArea		Whether to compute and store components' area (in areaMap) while labeling.
 	 */
-	public function new(bmd:BitmapData, alphaThreshold:Int = 1, traceContours:Bool = true, connectivity:Connectivity = Connectivity.EIGHT_CONNECTED, clipRect:Rectangle = null, calcArea:Bool = false)
+	public function new(bmd:BitmapData, alphaThreshold:UInt = 1, traceContours:Bool = true, connectivity:Connectivity = Connectivity.EIGHT_CONNECTED, clipRect:Rectangle = null, calcArea:Bool = false)
 	{
 		setSource(bmd, clipRect);
 		
