@@ -59,7 +59,9 @@ class PairDeque {
 	public function isFrontEmpty():Bool { return frontTopIdx < 0; }
 	public function frontHasNext():Bool { return frontTopIdx > 0; }
 	public function flush() { lastIdx = frontTopIdx = -1; }
-	public function frontTop():Int { return front[frontTopIdx]; }  
+	public function frontTop():Int { 
+		if (frontTopIdx < 0) return 0; // NOTE: investigate edge cases where this happens (it shouldn't!)
+		return front[frontTopIdx]; }  
 	public function frontPeekNext():Int { return front[frontTopIdx - 1]; }  
 	public function backBottom():Int { return back[frontTopIdx]; }
 	public function popFront():Int { return front[frontTopIdx--]; }
