@@ -39,4 +39,13 @@
  - MarchingSquares: fixing fully opaque bitmapdata again
  - Using PosInfos in Debug.assert()
  - RDP: setting epsilon below 1 now exits without doing any simplification
- - 
+
+### 0.2.0 (from 21 may 2015) w/ breaking changes
+ - Compatible with new haxe 3.2.0 release onward (!)
+ - MarchingSquares & CCLabeler: switched to hxPixels in place of BitmapData (removing openfl direct dependency)
+ - MarchingSquares & CCLabeler: dropped support for clipRect
+ - CCLabeler: minor improvements
+ - Swapped UInt to Int (again ;)
+ - Updated demo and added timings for the various algorithms
+ - PairDeque: fix? edge case
+ - Visv-Whyatt: changes/fixes to MinHeap, also improving performance
