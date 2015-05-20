@@ -13,7 +13,12 @@ import flash.system.System;
 import flash.text.TextField;
 import flash.text.TextFormat;
 import flash.text.TextFormatAlign;
+import flash.utils.ByteArray;
+import flash.text.TextFieldAutoSize;
+
+import haxe.Resource;
 import haxe.Timer;
+
 import hxPixels.Pixels;
 
 import hxGeomAlgo.Version;
@@ -31,12 +36,6 @@ import hxGeomAlgo.CCLabeler;
 import hxGeomAlgo.VisvalingamWhyatt;
 import hxGeomAlgo.Tess2;
 
-import openfl.Assets;
-import openfl.display.FPS;
-import openfl.geom.Point;
-import openfl.utils.ByteArray;
-import openfl.text.TextFieldAutoSize;
-
 #if (neko)
 import sys.io.File;
 import sys.io.FileOutput;
@@ -52,6 +51,7 @@ class GeomAlgoTest extends Sprite {
 	//private var ASSET:String = "assets/nazca_monkey.png";
 	//private var ASSET:String = "assets/star.png";
 	//private var ASSET:String = "assets/text.png";
+	//private var ASSET:String = "assets/opaque_black.png";
 	//private var ASSET:String = "assets/complex.png";		// Bayazit doesn't play well with this one
 	//private var ASSET:String = "assets/big.png";			// Bayazit doesn't play well with this one
 	
@@ -94,7 +94,7 @@ class GeomAlgoTest extends Sprite {
 		addChild(sprite);
 		g = sprite.graphics;
 		g.lineStyle(1, COLOR, ALPHA);
-		originalBMD = Assets.getBitmapData(ASSET);
+		originalBMD = openfl.Assets.getBitmapData(ASSET);
 		WIDTH = originalBMD.width;
 		HEIGHT = originalBMD.height + 80;
 
@@ -133,7 +133,7 @@ class GeomAlgoTest extends Sprite {
 		// VISVALINGAM-WHYATT SIMPLIFICATION
 		setSlot(0, 3);
 		startTime = Timer.stamp();
-		var simplifiedPolyVW = VisvalingamWhyatt.simplify(perimeter, SimplificationMethod.MaxPoints(simplifiedPolyRDP.length));
+		var simplifiedPolyVW = VisvalingamWhyatt.simplify(perimeter, SimplificationMethod.Ratio(.1));
 		trace('Visv-Whyatt   : ${Timer.stamp() - startTime}');
 		drawPoly(simplifiedPolyVW, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts", X, Y));		
@@ -254,7 +254,7 @@ class GeomAlgoTest extends Sprite {
 		addChild(getTextField("Tess2\nContours\n" + res.elementCount + " polys", X, Y));
 		*/
 	
-		//stage.addChild(new FPS(5, 5, 0xFFFFFF));
+		//stage.addChild(new openfl.FPS(5, 5, 0xFFFFFF));
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 
 		dumpPoly(simplifiedPolyRDP, false);

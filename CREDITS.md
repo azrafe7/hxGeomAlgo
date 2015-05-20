@@ -26,10 +26,10 @@
    - Fu Chang, Chun-jen Chen, Chi-jen Lu: [A linear-time component-labeling algorithm using contour tracing technique](http://www.iis.sinica.edu.tw/papers/fchang/1362-F.pdf) (2004)
  - Visvalingam-Whyatt (Polyline Simplification)
    - Visvalingam M., Whyatt J. D.: [Line generalisation by repeated elimination of the smallest area](https://hydra.hull.ac.uk/resources/hull:8338) (1992)
-   - [http://bost.ocks.org/mike/simplify/](http://bost.ocks.org/mike/simplify/) (JS - by Mike Bostock)
+   - [http://bost.ocks.org/mike/simplify/](http://bost.ocks.org/mike/simplify/) (Mike Bostock)
    - [https://github.com/jonasmalacofilho/dheap](https://github.com/jonasmalacofilho/dheap) (Jonas Malaco Filho)
    - [http://en.wikipedia.org/wiki/Binary_heap](http://en.wikipedia.org/wiki/Binary_heap) (Binary (Min)Heap)
  - Tess2 (Tesselation to Triangles and Convex Polygons, Poly Boolean Ops)
     - GLU Libtess (by Eric Veach, July 1994)
-    - [https://github.com/memononen/tess2.js](https://github.com/memononen/tess2.js) (JS - by Mikko Mononen, Aug 2013)
+    - [https://github.com/memononen/tess2.js](https://github.com/memononen/tess2.js) (Mikko Mononen, Aug 2013)
  
