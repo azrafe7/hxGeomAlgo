@@ -60,6 +60,7 @@ Based on:
 
  - Visvalingam M., Whyatt J. D.: [Line generalisation by repeated elimination of the smallest area](https://hydra.hull.ac.uk/resources/hull:8338) (1992)
  - [http://bost.ocks.org/mike/simplify/](http://bost.ocks.org/mike/simplify/) (JS - by Mike Bostock)
+ - [https://github.com/jonasmalacofilho/dheap](https://github.com/jonasmalacofilho/dheap) (Haxe - Jonas Malaco Filho)
  - [http://en.wikipedia.org/wiki/Binary_heap](http://en.wikipedia.org/wiki/Binary_heap) (Binary (Min)Heap)
 
 #### [Tess2 (Tesselation to Triangles and Convex Polygons, Poly Boolean Ops)](https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html)

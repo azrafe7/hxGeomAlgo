@@ -8,10 +8,13 @@
 	<window width="800" height="600" unless="mobile" />
 	<window orientation="landscape" vsync="false" antialiasing="0" if="cpp" />
 	
+	<haxeflag name="-D" value="swf-script-timeout=60" />
+
 	<set name="SWF_VERSION" value="11.2" />
 	<source path="src" />
 	
 	<haxelib name="openfl" />
+	<haxelib name="hxPixels" />
 
 	<assets path="assets" rename="assets" exclude="openfl.svg" include="*.png" />
 	<icon path="assets/openfl.svg" />

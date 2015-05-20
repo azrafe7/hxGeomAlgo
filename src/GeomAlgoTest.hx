@@ -13,6 +13,8 @@ import flash.system.System;
 import flash.text.TextField;
 import flash.text.TextFormat;
 import flash.text.TextFormatAlign;
+import haxe.Timer;
+import hxPixels.Pixels;
 
 import hxGeomAlgo.Version;
 import hxGeomAlgo.EarClipper;
@@ -51,6 +53,7 @@ class GeomAlgoTest extends Sprite {
 	//private var ASSET:String = "assets/star.png";
 	//private var ASSET:String = "assets/text.png";
 	//private var ASSET:String = "assets/complex.png";		// Bayazit doesn't play well with this one
+	//private var ASSET:String = "assets/big.png";			// Bayazit doesn't play well with this one
 	
 	private var COLOR:Int = 0xFF0000;
 	private var ALPHA:Float = 1.;
@@ -112,62 +115,79 @@ class GeomAlgoTest extends Sprite {
 		setSlot(0, 1);
 		//clipRect = new Rectangle(10, 20, 90, 65);
 		clipRect = originalBMD.rect;
-		marchingSquares = new MarchingSquares(originalBMD, 1, clipRect);
+		var startTime = Timer.stamp();
+		marchingSquares = new MarchingSquares(originalBMD, 1);
 		perimeter = marchingSquares.march();
+		trace('MarchSqrs     : ${Timer.stamp() - startTime}');
 		drawPerimeter(perimeter, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("MarchSqrs\n" + perimeter.length + " pts", X, Y));
 
 		// RAMER-DOUGLAS-PEUCKER SIMPLIFICATION
 		setSlot(0, 2);
+		startTime = Timer.stamp();
 		simplifiedPolyRDP = RamerDouglasPeucker.simplify(perimeter, 1.5);
+		trace('Doug-Peuck    : ${Timer.stamp() - startTime}');
 		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Doug-Peuck\n" + simplifiedPolyRDP.length + " pts", X, Y));
-
+		
 		// VISVALINGAM-WHYATT SIMPLIFICATION
 		setSlot(0, 3);
+		startTime = Timer.stamp();
 		var simplifiedPolyVW = VisvalingamWhyatt.simplify(perimeter, SimplificationMethod.MaxPoints(simplifiedPolyRDP.length));
+		trace('Visv-Whyatt   : ${Timer.stamp() - startTime}');
 		drawPoly(simplifiedPolyVW, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts", X, Y));		
 		
 		// EARCLIPPER TRIANGULATION
 		setSlot(0, 4);
+		startTime = Timer.stamp();
 		triangulation = EarClipper.triangulate(simplifiedPolyRDP);
+		trace('ECTriang      : ${Timer.stamp() - startTime}');
 		drawTriangulation(triangulation, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("EC-Triang\n" + triangulation.length + " tris", X, Y));
 
 		// CONNECTED COMPONENTS LABELING
 		setSlot(1, 0);
-		var labeler = new CustomLabeler(originalBMD, 1, true, Connectivity.EIGHT_CONNECTED, clipRect);
+		startTime = Timer.stamp();
+		var labeler = new CustomLabeler(originalBMD, 1, true, Connectivity.EIGHT_CONNECTED);
 		labeler.run();
-		labelBMP = new Bitmap(labeler.labelMap);
+		trace('CCLabeler     : ${Timer.stamp() - startTime}');
+		labelBMP = new Bitmap(new BitmapData(labeler.labelMap.width, labeler.labelMap.height, true, 0));
 		addChildAt(labelBMP, 0);
 		labelBMP.x = X + clipRect.x;
 		labelBMP.y = Y + clipRect.y;
 		for (contour in labeler.contours) {
 			var isHole = PolyTools.isCCW(contour);
-			var color:UInt = isHole ? 0xFF00FF00 : 0xFF0000FF;
+			var color:Int = isHole ? 0xFF00FF00 : 0xFF0000FF;
 			
 			for (p in contour) {
 				labeler.labelMap.setPixel32(Std.int(p.x), Std.int(p.y), color);
 			}
 		}
+		labeler.labelMap.applyToBitmapData(labelBMP.bitmapData);
 		addChild(getTextField("CCLabeler\n" + labeler.numComponents + " cmpts\n" + labeler.contours.length + " cntrs", X, Y));
 
 		// EARCLIPPER DECOMPOSITION
 		setSlot(1, 1);
+		startTime = Timer.stamp();
 		decomposition = EarClipper.polygonizeTriangles(triangulation);
+		trace('ECDecomp      : ${Timer.stamp() - startTime}');
 		drawDecomposition(decomposition, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("EarClipper\nDecomp\n" + decomposition.length + " polys", X, Y));
 
 		// BAYAZIT DECOMPOSITION
 		setSlot(1, 2);
+		startTime = Timer.stamp();
 		decomposition = Bayazit.decomposePoly(simplifiedPolyRDP);
+		trace('BayazDecomp   : ${Timer.stamp() - startTime}');
 		drawDecompositionBayazit(decomposition, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Bayazit\nDecomp\n" + decomposition.length + " polys", X, Y));
 
 		// SNOEYINK-KEIL DECOMPOSITION
 		setSlot(1, 3);
+		startTime = Timer.stamp();
 		decomposition = SnoeyinkKeil.decomposePoly(simplifiedPolyRDP);
+		trace('SnoeKeilDecomp: ${Timer.stamp() - startTime}');
 		drawDecomposition(decomposition, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Snoeyink-Keil\nMin Decomp\n" + decomposition.length + " polys", X, Y));
 		
@@ -177,12 +197,14 @@ class GeomAlgoTest extends Sprite {
 		var origIdx = Std.int(Math.random() * simplifiedPolyRDP.length);
 		var origPoint = simplifiedPolyRDP[origIdx];
 		// visible points
+		startTime = Timer.stamp();
 		var visPoints = Visibility.getVisiblePolyFrom(simplifiedPolyRDP, origIdx);
 		g.lineStyle(1, 0xFFFF00);
 		drawPoly(visPoints, X + clipRect.x, Y + clipRect.y);
 		// visible vertices
 		var visIndices = Visibility.getVisibleIndicesFrom(simplifiedPolyRDP, origIdx);
 		var visVertices = [for (i in 0...visIndices.length) simplifiedPolyRDP[visIndices[i]]];
+		trace('Visisibility  : ${Timer.stamp() - startTime}');
 		g.lineStyle(1, 0x00FF00);
 		drawPoints(visVertices, X + clipRect.x, Y + clipRect.y);
 		// draw origPoint
@@ -196,8 +218,10 @@ class GeomAlgoTest extends Sprite {
 		var polySize = 3;
 		var resultType = ResultType.POLYGONS;
 		var flatContours = [for (c in labeler.contours) PolyTools.toFlatArray(RamerDouglasPeucker.simplify(c, 1.5))];
+		startTime = Timer.stamp();
 		var res = Tess2.tesselate(flatContours, null, resultType, polySize);
 		var polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
+		trace('Tess2Triang   : ${Timer.stamp() - startTime}');
 		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
 		addChild(getTextField("Tess2-Triang\n" + res.elementCount + " tris", X, Y));
 
@@ -213,8 +237,10 @@ class GeomAlgoTest extends Sprite {
 		setSlot(1, 5);
 		polySize = 24;
 		resultType = ResultType.POLYGONS;
+		startTime = Timer.stamp();
 		res = Tess2.tesselate(flatContours, null, resultType, polySize);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
+		trace('Tess2Decomp   : ${Timer.stamp() - startTime}');
 		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
 		addChild(getTextField("Tess2\nDecomp\n" + res.elementCount + " polys", X, Y));
 		
@@ -368,6 +394,11 @@ class GeomAlgoTest extends Sprite {
 		if (e.keyCode == 27) {
 			quit();
 		}
+		// keys to move camera around
+		if (e.charCode == "j".code || e.keyCode == 39) this.x -= 12; // right
+		if (e.charCode == "g".code || e.keyCode == 37) this.x += 12; // left
+		if (e.charCode == "h".code || e.keyCode == 40) this.y -= 12; // down
+		if (e.charCode == "y".code || e.keyCode == 38) this.y += 12; // up
 	}
 	
 	public function quit():Void 
@@ -381,24 +412,41 @@ class GeomAlgoTest extends Sprite {
 }
 
 
+typedef PixelInfo = {
+	var a:Int;
+	var r:Int;
+	var g:Int;
+	var b:Int;
+	var h:Float;
+	var s:Float;
+	var v:Float;
+	var l:Float;
+}
+
 class CustomLabeler extends CCLabeler 
 {
+	var pixelInfoMap:Map<Int, PixelInfo>; // cache
 	
-	public function new(bmd:BitmapData, alphaThreshold:Int = 1, traceContours:Bool = true, connectivity:Connectivity = Connectivity.EIGHT_CONNECTED, clipRect:Rectangle = null, calcArea:Bool = false)
+	public function new(pixels:Pixels, alphaThreshold:Int = 1, traceContours:Bool = true, connectivity:Connectivity = Connectivity.EIGHT_CONNECTED, calcArea:Bool = false)
 	{
-		super(bmd, alphaThreshold, traceContours, connectivity, clipRect, calcArea);
+		super(pixels, alphaThreshold, traceContours, connectivity, calcArea);
+		
+		pixelInfoMap = new Map();
 	}
 	
 	override function isPixelSolid(x:Int, y:Int):Bool 
 	{
-		var pixelColor:UInt = getPixel(sourceVector, x, y, 0);
+		var pixelColor:Int = getPixel32(sourcePixels, x, y, 0);
 		
-		var pixel = getPixelInfo(pixelColor);
-		return (pixel.a > 0);
+		var pixelInfo = getPixelInfo(pixelColor);
+		
+		return (pixelInfo.a > .25); // this could have been more complex (e.g. ` && pixelInfo.h > .5 && pixelInfo.h < .8`)
 	}
 	
-	static inline public function getPixelInfo(color:UInt):{a:Int, r:Int, g:Int, b:Int, h:Float, s:Float, v:Float, l:Float}
+	public function getPixelInfo(color:Int):PixelInfo
 	{
+		if (pixelInfoMap[color] != null) return pixelInfoMap[color];
+		
 		var a:Int = (color >> 24) & 0xFF;
 		var colMask:Int = a > 0 ? 0xFF : 0;	// fix to force neko to report rgb as 0 when alpha is 0 (to be consistent with flash)
 		var r:Int = (color >> 16) & colMask;
@@ -426,7 +474,10 @@ class CustomLabeler extends CCLabeler
 		info.v = max / 255;
 		
 		// luminance
-		info.l = (0.2126 * r / 255 + 0.7152 * g / 255 + 0.0722 * b / 255);
+		//info.l = (0.2126 * r / 255 + 0.7152 * g / 255 + 0.0722 * b / 255);
+		info.l = (0.33333 * r / 255 + 0.33333 * g / 255 + 0.33333 * b / 255);
+		
+		pixelInfoMap[color] = info;
 		
 		return info;
 	}

@@ -11,9 +11,7 @@
 
 package hxGeomAlgo;
 
-import flash.display.BitmapData;
-import openfl.Vector;
-import flash.geom.Rectangle;
+import hxPixels.Pixels;
 
 
 enum StepDirection {
@@ -28,16 +26,14 @@ enum StepDirection {
 class MarchingSquares
 {
 	/** Minimum alpha value to consider a pixel opaque (in the range 0-255). */
-	public var alphaThreshold:UInt;
+	public var alphaThreshold:Int;
 
 	private var prevStep:StepDirection = StepDirection.NONE;
 	private var nextStep:StepDirection = StepDirection.NONE;
 	
-	private var bmd:BitmapData;
-	private var clipRect:Rectangle;
+	private var pixels:Pixels;
 	private var width:Int;
 	private var height:Int;
-	private var sourceVector:Vector<UInt>;
 	
 	private var point:HxPoint = new HxPoint();
 
@@ -45,30 +41,27 @@ class MarchingSquares
 	/**
 	 * Constructor.
 	 * 
-	 * @param	bmd				BitmapData to use as source.
+	 * @param	pixels			Pixels to use as source.
 	 * @param	alphaThreshold  Minimum alpha value to consider a pixel opaque (in the range 0-255).
-	 * @param	clipRect		The region of bmd to process (defaults to the entire image)
 	 */
-	public function new(bmd:BitmapData, alphaThreshold:UInt = 1, clipRect:Rectangle = null)
+	public function new(pixels:Pixels, alphaThreshold:Int = 1)
 	{
-		setSource(bmd, clipRect);
+		setSource(pixels);
 		
 		this.alphaThreshold = alphaThreshold;
 	}
 	
 	/** 
-	 * Updates the BitmapData to use as source and its clipRect. 
+	 * Updates the Pixels to use as source.
 	 * 
-	 * NOTE: If you modifiy your bitmapData between calls to march()/walkPerimeter you may 
-	 * also want to re-set the source so that the vector gets updated too.
+	 * NOTE: If you modifiy your source between calls to march()/walkPerimeter you may 
+	 * also want to re-set the source so that the internal representation gets updated too.
 	 */
-	public function setSource(bmd:BitmapData, clipRect:Rectangle = null)
+	public function setSource(pixels:Pixels)
 	{
-		this.bmd = bmd;
-		this.clipRect = clipRect != null ? clipRect : bmd.rect;
-		sourceVector = bmd.getVector(this.clipRect);
-		width = Std.int(this.clipRect.width);
-		height = Std.int(this.clipRect.height);
+		this.pixels = pixels;
+		width = this.pixels.width;
+		height = this.pixels.height;
 	}
 	
 	/** 
@@ -96,13 +89,13 @@ class MarchingSquares
 		point.setTo(-1, -1);
 		
 		var idx:Int = line * width;
-		var len:Int = sourceVector.length;
+		var len:Int = pixels.count;
 		while (idx < len) {
-			if ((sourceVector[idx] >> 24 & 0xFF) >= alphaThreshold) {
-				point.setTo(idx % width, Std.int(idx / width));
+			if ((pixels[idx]) >= alphaThreshold) {
+				point.setTo((idx >> 2) % width, Std.int((idx >> 2) / width));
 				break;
 			}
-			idx++;
+			idx += 4;
 		}
 		
 		return point.x != -1 ? point.clone() : null;
@@ -190,6 +183,6 @@ class MarchingSquares
 	 * Override this to use your own logic to identify solid pixels.
 	 */
 	private function isPixelSolid(x:Int, y:Int):Bool {
-		return (x >= 0 && y >= 0 && x < width && y < height && (sourceVector[y * width + x] >> 24 & 0xFF) >= alphaThreshold);
+		return (x >= 0 && y >= 0 && x < width && y < height && (pixels[(y * width + x) << 2]) >= alphaThreshold);
 	}
 }
