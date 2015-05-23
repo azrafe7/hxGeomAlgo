@@ -133,7 +133,7 @@ class GeomAlgoTest extends Sprite {
 		// VISVALINGAM-WHYATT SIMPLIFICATION
 		setSlot(0, 3);
 		startTime = Timer.stamp();
-		var simplifiedPolyVW = VisvalingamWhyatt.simplify(perimeter, SimplificationMethod.Ratio(.1));
+		var simplifiedPolyVW = VisvalingamWhyatt.simplify(perimeter, SimplificationMethod.MaxPoints(simplifiedPolyRDP.length));
 		trace('Visv-Whyatt   : ${Timer.stamp() - startTime}');
 		drawPoly(simplifiedPolyVW, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts", X, Y));		
