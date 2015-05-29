@@ -173,20 +173,29 @@ class PolyTools
 	
 	/**
 	 * Returns indices of duplicate points in `poly` (or an empty array if none are found).
+	 * NOTE: indices in the result are guaranteed to be in ascending order.
+	 * 
+	 * @param consecutiveOnly		if true only equal adjacent points are reported
+	 * @param wrapAround			if true also first vs last point will be checked
 	 */
-	static public function findDuplicatePoints(poly:Poly):Array<Int> 
+	static public function findDuplicatePoints(poly:Poly, consecutiveOnly:Bool = true, wrapAround:Bool = true):Array<Int> 
 	{
-		var len:Int = poly.length;
-		if (len <= 1) return null;
-		var res = new Array<Int>();
-		
-		for (i in 0...len) {
-			for (j in i + 1...len) {
-				if (poly[i].equals(poly[j])) res.push(j);
+		var len = poly.length;
+		if (len <= 1) return [];
+		var dupIndices = [];
+
+		for (i in 0...len - 1) {
+			var j = i + 1;
+			while (j < len) {
+				var foundDup = poly[i].equals(poly[j]);
+				if (foundDup) dupIndices.push(i);
+				if (consecutiveOnly || (foundDup && !consecutiveOnly)) break;
+				j++;
 			}
 		}
-		
-		return res;
+		if (wrapAround && consecutiveOnly && poly[0].equals(poly[len - 1])) dupIndices.push(len - 1);
+
+		return dupIndices;
 	}
 
 	/** Finds the intersection point between lines extending the segments `p1`-`p2` and `q1`-`q2`. Returns null if they're parallel. */
