@@ -91,7 +91,7 @@ class Tess2
 	 * @param	contours		Array of polygons to tesselate. Each poly is specified as a sequence of point coords (i.e. [x0, y0, x1, y1, x2, y2, ...]).
 	 * @param	windingRule		Winding rule to apply. Deaults to WindingRule.ODD.
 	 * @param	resultType		The result type you want as output. Defaults to ResultType.POLYGONS.
-	 * @param	polySize		Max dimesion of the polygons resulting from the tesselation. Defaults to 3.
+	 * @param	polySize		Max dimesion of the polygons resulting from the tesselation. Defaults to 3 (not considered if resultType is BOUNDARY_CONTOURS).
 	 * @param	vertexDim		Pass 2 when working with 2D polys (default), or 3 for 3D.
 	 * @param	normal			Array of length 3 representing the normals in each plane.
 	 * 
@@ -122,6 +122,40 @@ class Tess2
 			elements: tess.elements,
 			elementCount: tess.elementCount,
 		};
+	}
+	
+	/** 
+	 * Computes the union between `contoursA` and `contoursB`. 
+	 *
+	 * @see "CSG Uses for Winding Rules" section on http://www.glprogramming.com/red/chapter11.html
+	 */
+	static public function union(contoursA:Array<Array<Float>>, contoursB:Array<Array<Float>>, resultType:ResultType = null, polySize:Int = 3, vertexDim:Int = 2):TessResult
+	{
+		var contours = contoursA.concat(contoursB);
+		return tesselate(contours, WindingRule.NON_ZERO, resultType, polySize, vertexDim);
+	}
+	
+	/** 
+	 * Computes the intersection between `contoursA` and `contoursB`.
+	 *
+	 * @see "CSG Uses for Winding Rules" section on http://www.glprogramming.com/red/chapter11.html
+	 */
+	static public function intersection(contoursA:Array<Array<Float>>, contoursB:Array<Array<Float>>, resultType:ResultType = null, polySize:Int = 3, vertexDim:Int = 2):TessResult
+	{
+		var contours = contoursA.concat(contoursB);
+		return tesselate(contours, WindingRule.ABS_GEQ_TWO, resultType, polySize, vertexDim);
+	}
+	
+	/** 
+	 * Computes `contoursA` - `contoursB`.
+	 *
+	 * @see "CSG Uses for Winding Rules" section on http://www.glprogramming.com/red/chapter11.html
+	 */
+	static public function difference(contoursA:Array<Array<Float>>, contoursB:Array<Array<Float>>, resultType:ResultType = null, polySize:Int = 3, vertexDim:Int = 2):TessResult
+	{
+		var diffB = [for (poly in contoursB) PolyTools.reverseFloatArray(poly)];
+		var contours = contoursA.concat(diffB);
+		return tesselate(contours, WindingRule.POSITIVE, resultType, polySize, vertexDim);
 	}
 	
 	/**
@@ -3445,8 +3479,7 @@ class Tesselator
 			{
 				this.vertexCount++;
 				edge = edge.Lnext;
-			}
-			while (edge != start);
+			} while (edge != start);
 
 			this.elementCount++;
 			f = f.next;
@@ -3506,8 +3539,7 @@ class Tesselator
 				this.vertexIndices[nvi++] = edge.Org.idx;
 				vertCount++;
 				edge = edge.Lnext;
-			}
-			while (edge != start);
+			} while (edge != start);
 
 			this.elements[nel++] = startVert;
 			this.elements[nel++] = vertCount;
@@ -3572,10 +3604,6 @@ class Tesselator
 			e.winding = 1;
 			e.Sym.winding = -1;
 			i += vertexDim;
-		}
-		var v = this.mesh.vHead;
-		while (v.next != this.mesh.vHead) {
-			v = v.next;
 		}
 	}
 
