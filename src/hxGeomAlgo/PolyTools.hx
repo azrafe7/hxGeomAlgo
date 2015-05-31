@@ -321,7 +321,7 @@ class PolyTools
 	}
 	
 	/** Converts a poly defined by an Array<HxPoint> to an Array<Float> (appending values to `out` if specified). */
-	static public function toFlatArray(poly:Poly, ?out:Array<Float>):Array<Float>
+	static public function toFloatArray(poly:Poly, ?out:Array<Float>):Array<Float>
 	{
 		out = (out != null) ? out : new Array<Float>();
 		
@@ -331,6 +331,33 @@ class PolyTools
 		}
 		
 		return out;
+	}
+	
+	/** Reverses the coords of the 2D float array `poly` (doing it `inPlace` if specified). */
+	static public function reverseFloatArray(poly:Array<Float>, inPlace:Bool = false):Array<Float>
+	{
+		var res = inPlace ? poly : new Array<Float>();
+		
+		var nPoints = poly.length >> 1;
+		for (i in 0...nPoints) {
+			var xPos = (nPoints - i - 1) * 2;
+			res[i * 2] = (poly[xPos]);
+			res[i * 2 + 1] = (poly[xPos + 1]);
+		}
+		
+		return res;
+	}
+	
+	/** Converts an Array of Arrays into a 'flattened' Array (appending values to `out` if specified). */
+	static public function flatten<T>(array:Array<Array<T>>, ?out:Array<T>):Array<T>
+	{
+		var res = (out != null) ? out : [];
+		
+		for (arr in array) {
+			for (item in arr) res.push(item);
+		}
+		
+		return res;
 	}
 	
 	/** Converts a poly defined by an Array<Float> to an Array<HxPoint> (appending values to `out` if specified). */
