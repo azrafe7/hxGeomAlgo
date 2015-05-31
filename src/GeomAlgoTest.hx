@@ -109,12 +109,11 @@ class GeomAlgoTest extends Sprite {
 		addChildAt(originalBitmap = new Bitmap(originalBMD), 0);	// add it underneath sprite
 		originalBitmap.x = X;
 		originalBitmap.y = Y;
+		clipRect = originalBMD.rect;
 		addChild(getTextField("Original\n" + originalBMD.width + "x" + originalBMD.height, X, Y));
 
 		// MARCHING SQUARES
 		setSlot(0, 1);
-		//clipRect = new Rectangle(10, 20, 90, 65);
-		clipRect = originalBMD.rect;
 		var startTime = Timer.stamp();
 		marchingSquares = new MarchingSquares(originalBMD, 1);
 		perimeter = marchingSquares.march();
@@ -149,7 +148,7 @@ class GeomAlgoTest extends Sprite {
 		// CONNECTED COMPONENTS LABELING
 		setSlot(1, 0);
 		startTime = Timer.stamp();
-		var labeler = new CustomLabeler(originalBMD, 1, true, Connectivity.EIGHT_CONNECTED);
+		var labeler = new CustomLabeler(originalBMD, 1, true, Connectivity.EIGHT_CONNECTED, true);
 		labeler.run();
 		trace('CCLabeler     : ${Timer.stamp() - startTime}');
 		labelBMP = new Bitmap(new BitmapData(labeler.labelMap.width, labeler.labelMap.height, true, 0));
@@ -217,7 +216,7 @@ class GeomAlgoTest extends Sprite {
 		setSlot(0, 5);
 		var polySize = 3;
 		var resultType = ResultType.POLYGONS;
-		var flatContours = [for (c in labeler.contours) PolyTools.toFlatArray(RamerDouglasPeucker.simplify(c, 1.5))];
+		var flatContours = [for (c in labeler.contours) PolyTools.toFloatArray(RamerDouglasPeucker.simplify(c, 1.))];
 		startTime = Timer.stamp();
 		var res = Tess2.tesselate(flatContours, null, resultType, polySize);
 		var polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
@@ -254,10 +253,65 @@ class GeomAlgoTest extends Sprite {
 		addChild(getTextField("Tess2\nContours\n" + res.elementCount + " polys", X, Y));
 		*/
 	
+		// setup a ring poly to test Tess2 bool ops
+		var radius = originalBMD.width / 2;
+		var holeRadius = radius - 25;
+		var outerCircle = [];
+		var innerCircle = [];
+		var cx = originalBMD.width / 2;
+		var cy = originalBMD.height / 2;
+		var theta = 0.;
+		var delta = 2 * Math.PI / 100;
+		for (i in 0...100) {
+			var cos = Math.cos(theta);
+			var sin = Math.sin(theta);
+			outerCircle.push(new HxPoint(cx + cos * radius, cy + sin * radius));
+			innerCircle.push(new HxPoint(cx + cos * holeRadius, cy + sin * holeRadius));
+			theta += delta;
+		}
+		var flatRing = [PolyTools.toFloatArray(outerCircle), PolyTools.reverseFloatArray(PolyTools.toFloatArray(innerCircle))];
+		
+		polySize = 3;
+		resultType = ResultType.BOUNDARY_CONTOURS;
+
+		setSlot(2, 1);
+		startTime = Timer.stamp();
+		res = Tess2.union(flatContours, flatRing, resultType, polySize, 2);
+		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
+		trace('Tess2Union    : ${Timer.stamp() - startTime}');
+		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false, false, true);
+		addChild(getTextField("Tess2\nUnion\n" + res.elementCount + " polys", X, Y));
+		
+		setSlot(2, 2);
+		startTime = Timer.stamp();
+		res = Tess2.intersection(flatContours, flatRing, resultType, polySize, 2);
+		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
+		trace('Tess2Intersect: ${Timer.stamp() - startTime}');
+		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false, false, true);
+		addChild(getTextField("Tess2\nIntersection\n" + res.elementCount + " polys", X, Y));
+		
+		setSlot(2, 3);
+		startTime = Timer.stamp();
+		res = Tess2.difference(flatContours, flatRing, resultType, polySize, 2);
+		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
+		trace('Tess2Diff     : ${Timer.stamp() - startTime}');
+		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false, false, true);
+		addChild(getTextField("Tess2\nDifference\n" + res.elementCount + " polys", X, Y));
+		
 		//stage.addChild(new openfl.FPS(5, 5, 0xFFFFFF));
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 
 		dumpPoly(simplifiedPolyRDP, false);
+		
+		// Tess2.js parsable poly string (https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html)
+		/*var str = "";
+		for (poly in flatContours) {
+			for (i in 0...poly.length >> 1) {
+				str += '${poly[i * 2]} ${poly[i * 2 + 1]}\n';
+			}
+			str += "\n";
+		}
+		trace(str);*/
 	}
 	
 	static public function savePNG(bmd:BitmapData, fileName:String) {
@@ -318,7 +372,7 @@ class GeomAlgoTest extends Sprite {
 		}
 	}
 	
-	public function drawPoly(points:Array<HxPoint>, x:Float, y:Float, showPoints:Bool = true, showLabels:Bool = false):Void 
+	public function drawPoly(points:Array<HxPoint>, x:Float, y:Float, showPoints:Bool = true, showLabels:Bool = false, fill:Bool = false):Void 
 	{
 		if (points.length <= 0) return;
 		
@@ -326,12 +380,14 @@ class GeomAlgoTest extends Sprite {
 		if (showPoints) drawPoints(points, x, y);
 		
 		// lines
+		if (fill) g.beginFill(COLOR, .5);
 		g.moveTo(x + points[0].x, y + points[0].y);
 		for (i in 1...points.length) {
 			var p = points[i];
 			g.lineTo(x + p.x, y + p.y);
 		}
 		g.lineTo(x + points[0].x, y + points[0].y);
+		if (fill) g.endFill();
 		
 		// labels
 		if (showLabels) drawPointsLabels(points, x, y);
