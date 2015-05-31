@@ -1,7 +1,7 @@
 package hxGeomAlgo;
 
 /**
- * Minimal Point class (auto-converting to/from flash.geom.Point).
+ * Minimal Point class (auto-converting to/from flash.geom.Point and {x:Float, y:Float}).
  * 
  * @author azrafe7
  */
@@ -26,7 +26,7 @@ abstract HxPoint(HxPointData)
 		y = newY;
 	}
 	
-	inline public function equals(p:HxPoint):Bool
+	@:op(A == B) inline public function equals(p:HxPoint):Bool
 	{
 		return x == p.x && y == p.y;
 	}
@@ -52,7 +52,18 @@ abstract HxPoint(HxPointData)
 		return new flash.geom.Point(x, y);
 	}
 #end
+
+	@:from inline static function fromPointStruct(p:{x:Float, y:Float})
+	{
+		return new HxPoint(p.x, p.y);
+	}
+	
+	@:to inline function toPointStruct()
+	{
+		return { x:x, y:y };
+	}
 }
+
 
 class HxPointData
 {
