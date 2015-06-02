@@ -315,7 +315,7 @@ class GeomAlgoTest extends Sprite {
 	}
 	
 	static public function savePNG(bmd:BitmapData, fileName:String) {
-	#if (neko)
+	#if (sys)
 		var ba:ByteArray = bmd.encode("png", 1);
 		var file:FileOutput = sys.io.File.write(fileName, true);
 		file.writeString(ba.toString());
@@ -450,11 +450,22 @@ class GeomAlgoTest extends Sprite {
 		if (e.keyCode == 27) {
 			quit();
 		}
+		
 		// keys to move camera around
 		if (e.charCode == "j".code || e.keyCode == 39) this.x -= 12; // right
 		if (e.charCode == "g".code || e.keyCode == 37) this.x += 12; // left
 		if (e.charCode == "h".code || e.keyCode == 40) this.y -= 12; // down
 		if (e.charCode == "y".code || e.keyCode == 38) this.y += 12; // up
+		
+		// screenshot
+	#if sys
+		if (e.charCode == "s".code) {
+			var bounds = this.getBounds(this);
+			var bmd = new BitmapData(Math.ceil(bounds.right), Math.ceil(bounds.bottom), true, 0);
+			bmd.draw(this);
+			savePNG(bmd, "capture.png");
+		}
+	#end
 	}
 	
 	public function quit():Void 

@@ -7,7 +7,7 @@ class Version
 {
 	inline public static var major:Int = 0;
 	inline public static var minor:Int = 2;
-	inline public static var patch:Int = 0;
+	inline public static var patch:Int = 1;
 	
 	static public function toString():String 
 	{

@@ -49,3 +49,6 @@
  - Updated demo and added timings for the various algorithms
  - PairDeque: fix? edge case
  - Visv-Whyatt: changes/fixes to MinHeap, also improving performance
+ - Refactored Heap into its own class
+ - PolyTools: fixed and improved findDuplicatePoints(), added flatten()
+ - Tess2: shortcut methods for boolean ops on polygons
