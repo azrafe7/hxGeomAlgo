@@ -274,28 +274,31 @@ class GeomAlgoTest extends Sprite {
 		polySize = 3;
 		resultType = ResultType.BOUNDARY_CONTOURS;
 
+		// TESS2 - UNION
 		setSlot(2, 1);
 		startTime = Timer.stamp();
 		res = Tess2.union(flatContours, flatRing, resultType, polySize, 2);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace('Tess2Union    : ${Timer.stamp() - startTime}');
-		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false, false, true);
+		drawPaths(polys, X + clipRect.x, Y + clipRect.y, true);
 		addChild(getTextField("Tess2\nUnion\n" + res.elementCount + " polys", X, Y));
 		
+		// TESS2 - INTERSECTION
 		setSlot(2, 2);
 		startTime = Timer.stamp();
 		res = Tess2.intersection(flatContours, flatRing, resultType, polySize, 2);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace('Tess2Intersect: ${Timer.stamp() - startTime}');
-		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false, false, true);
+		drawPaths(polys, X + clipRect.x, Y + clipRect.y, true);
 		addChild(getTextField("Tess2\nIntersection\n" + res.elementCount + " polys", X, Y));
 		
+		// TESS2 - DIFFERENCE
 		setSlot(2, 3);
 		startTime = Timer.stamp();
 		res = Tess2.difference(flatContours, flatRing, resultType, polySize, 2);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace('Tess2Diff     : ${Timer.stamp() - startTime}');
-		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false, false, true);
+		drawPaths(polys, X + clipRect.x, Y + clipRect.y, true);
 		addChild(getTextField("Tess2\nDifference\n" + res.elementCount + " polys", X, Y));
 		
 		//stage.addChild(new openfl.FPS(5, 5, 0xFFFFFF));
@@ -391,6 +394,35 @@ class GeomAlgoTest extends Sprite {
 		
 		// labels
 		if (showLabels) drawPointsLabels(points, x, y);
+	}
+
+	public function drawPaths(paths:Array<Array<HxPoint>>, x:Float, y:Float, fill:Bool = false):Void 
+	{
+		if (paths.length <= 0) return;
+		
+		var data = new flash.Vector();
+		var commands = new flash.Vector();
+
+		for (path in paths) {
+			var len = path.length;
+			
+			for (i in 0...len) {
+				if (i == 0) commands.push(1); // moveTo
+				else commands.push(2); // lineTo
+				
+				data.push(x + path[i].x);
+				data.push(y + path[i].y);
+			}
+			// close
+			commands.push(2);
+			data.push(x + path[0].x);
+			data.push(y + path[0].y);
+			
+		}
+		
+		if (fill) g.beginFill(COLOR, .5);
+		g.drawPath(commands, data, flash.display.GraphicsPathWinding.EVEN_ODD);
+		if (fill) g.endFill();
 	}
 
 	public function drawTriangulation(tris:Array<Tri>, x:Float, y:Float):Void 
@@ -507,7 +539,7 @@ class CustomLabeler extends CCLabeler
 		
 		var pixelInfo = getPixelInfo(pixelColor);
 		
-		return (pixelInfo.a > .25); // this could have been more complex (e.g. ` && pixelInfo.h > .5 && pixelInfo.h < .8`)
+		return (pixelInfo.a > 0); // this could have been more complex (e.g. ` && pixelInfo.h > .5 && pixelInfo.h < .8`)
 	}
 	
 	public function getPixelInfo(color:Int):PixelInfo
