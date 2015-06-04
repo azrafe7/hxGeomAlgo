@@ -101,7 +101,13 @@ class MarchingSquares
 		return point.x != -1 ? point.clone() : null;
  	}
 	
-	/** Finds points belonging to the perimeter starting from `startX`, `startY`. */
+	/** 
+	 * Finds points belonging to the perimeter starting from `startX`, `startY`. 
+	 * 
+	 * NOTE: The perimeter (if exists) is guaranteed to be fully contained in the souce boundaries
+	 * and will start on a solid pixel. The points found when going up or right might be 1px away 
+	 * from the solid pixels though (see https://github.com/azrafe7/as3GeomAlgo/issues/1#issuecomment-108634264).
+	 */
 	private function walkPerimeter(startX:Int, startY:Int):Array<HxPoint> 
 	{
 		// clamp to source boundaries
@@ -110,6 +116,7 @@ class MarchingSquares
 		if (startY < 0) startY = 0;
 		if (startY > height) startY = height;
 
+		var lastAddedPoint = new HxPoint(-1, -1);
 		var pointList = new Array<HxPoint>();
 
 		var x:Int = startX;
@@ -120,8 +127,14 @@ class MarchingSquares
 		while (!done) {
 			step(x, y);
 
-			// add perimeter point to return list (may be on the boundaries rect)
-			if (x <= width && y <= height) pointList.push(new HxPoint(x, y));
+			// add perimeter point to return list,
+			// but adjusting for out of bounds cases and
+			// skipping duplicate points
+			var newPoint = new HxPoint(x >= width ? x - 1 : x, y >= height ? y - 1 : y);
+			if (!lastAddedPoint.equals(newPoint)) {
+				pointList.push(newPoint);
+				lastAddedPoint = newPoint;
+			}
 
 			switch (nextStep)
 			{
