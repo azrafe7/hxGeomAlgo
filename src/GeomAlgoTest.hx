@@ -51,9 +51,11 @@ class GeomAlgoTest extends Sprite {
 	//private var ASSET:String = "assets/nazca_monkey.png";
 	//private var ASSET:String = "assets/star.png";
 	//private var ASSET:String = "assets/text.png";
+	//private var ASSET:String = "assets/transparent.png";
 	//private var ASSET:String = "assets/opaque_black.png";
 	//private var ASSET:String = "assets/complex.png";		// Bayazit doesn't play well with this one
 	//private var ASSET:String = "assets/big.png";			// Bayazit doesn't play well with this one
+	//private var ASSET:String = "assets/bord.png";
 	
 	private var COLOR:Int = 0xFF0000;
 	private var ALPHA:Float = 1.;
@@ -110,6 +112,7 @@ class GeomAlgoTest extends Sprite {
 		originalBitmap.x = X;
 		originalBitmap.y = Y;
 		clipRect = originalBMD.rect;
+		g.drawRect(originalBitmap.x + clipRect.x, originalBitmap.y + clipRect.y, clipRect.width, clipRect.height);
 		addChild(getTextField("Original\n" + originalBMD.width + "x" + originalBMD.height, X, Y));
 
 		// MARCHING SQUARES
@@ -118,7 +121,12 @@ class GeomAlgoTest extends Sprite {
 		marchingSquares = new MarchingSquares(originalBMD, 1);
 		perimeter = marchingSquares.march();
 		trace('MarchSqrs     : ${Timer.stamp() - startTime}');
-		drawPerimeter(perimeter, X + clipRect.x, Y + clipRect.y);
+		drawPoly(perimeter, X + clipRect.x, Y + clipRect.y, false);
+		// draw perimeter pixels: in red if on solid pixels, in blue if not
+		/*for (p in perimeter) {
+			var isSolid = @:privateAccess marchingSquares.isPixelSolid(Std.int(p.x), Std.int(p.y));
+			originalBMD.setPixel32(Std.int(p.x), Std.int(p.y), isSolid ? 0xFF0000FF : 0xFFFF0000);
+		}*/
 		addChild(getTextField("MarchSqrs\n" + perimeter.length + " pts", X, Y));
 
 		// RAMER-DOUGLAS-PEUCKER SIMPLIFICATION
@@ -142,6 +150,7 @@ class GeomAlgoTest extends Sprite {
 		startTime = Timer.stamp();
 		triangulation = EarClipper.triangulate(simplifiedPolyRDP);
 		trace('ECTriang      : ${Timer.stamp() - startTime}');
+		trace(testOrientation(triangulation), testSimple(triangulation), testConvex(triangulation));
 		drawTriangulation(triangulation, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("EC-Triang\n" + triangulation.length + " tris", X, Y));
 
@@ -171,6 +180,7 @@ class GeomAlgoTest extends Sprite {
 		startTime = Timer.stamp();
 		decomposition = EarClipper.polygonizeTriangles(triangulation);
 		trace('ECDecomp      : ${Timer.stamp() - startTime}');
+		trace(testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
 		drawDecomposition(decomposition, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("EarClipper\nDecomp\n" + decomposition.length + " polys", X, Y));
 
@@ -179,6 +189,7 @@ class GeomAlgoTest extends Sprite {
 		startTime = Timer.stamp();
 		decomposition = Bayazit.decomposePoly(simplifiedPolyRDP);
 		trace('BayazDecomp   : ${Timer.stamp() - startTime}');
+		trace(testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
 		drawDecompositionBayazit(decomposition, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Bayazit\nDecomp\n" + decomposition.length + " polys", X, Y));
 
@@ -187,6 +198,7 @@ class GeomAlgoTest extends Sprite {
 		startTime = Timer.stamp();
 		decomposition = SnoeyinkKeil.decomposePoly(simplifiedPolyRDP);
 		trace('SnoeKeilDecomp: ${Timer.stamp() - startTime}');
+		trace(testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
 		drawDecomposition(decomposition, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Snoeyink-Keil\nMin Decomp\n" + decomposition.length + " polys", X, Y));
 		
@@ -221,6 +233,7 @@ class GeomAlgoTest extends Sprite {
 		var res = Tess2.tesselate(flatContours, null, resultType, polySize);
 		var polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace('Tess2Triang   : ${Timer.stamp() - startTime}');
+		trace(testOrientation(polys), testSimple(polys), testConvex(polys));
 		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
 		addChild(getTextField("Tess2-Triang\n" + res.elementCount + " tris", X, Y));
 
@@ -240,6 +253,7 @@ class GeomAlgoTest extends Sprite {
 		res = Tess2.tesselate(flatContours, null, resultType, polySize);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace('Tess2Decomp   : ${Timer.stamp() - startTime}');
+		trace(testOrientation(polys), testSimple(polys), testConvex(polys));
 		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
 		addChild(getTextField("Tess2\nDecomp\n" + res.elementCount + " polys", X, Y));
 		
@@ -315,6 +329,73 @@ class GeomAlgoTest extends Sprite {
 			str += "\n";
 		}
 		trace(str);*/
+		
+		// test CCW and duplicate points
+		trace("\n");
+		var simplifications = [perimeter, simplifiedPolyRDP, simplifiedPolyVW, visPoints].concat(labeler.contours);
+		var labelerHeaders = [for (i in 0...labeler.contours.length) 'labeler[$i]   '];
+		var headers = ["perimeter    ", "simplifiedRDP", "simplifiedVW ", "visPoints    "].concat(labelerHeaders);
+		for (i in 0...simplifications.length) {
+			var poly = simplifications[i];
+			var name = headers[i];
+			var orientation = testOrientation([poly]);
+			var hasDups = PolyTools.findDuplicatePoints(poly).length > 0;
+			trace('$name (orientation:$orientation, hasDups:$hasDups)');
+		}
+	}
+	
+	static public function testOrientation(polys:Array<Poly>):String {
+		var res = "none";
+		
+		for (i in 0...polys.length) {
+			var poly = polys[i];
+			var orientation = PolyTools.isCCW(poly) ? "CCW" : "CW";
+			
+			if (i == 0) {
+				res = orientation;
+			} else if (res != orientation) {
+				res = "mixed";
+				break;
+			}
+		}
+		
+		return res;
+	}
+	
+	static public function testConvex(polys:Array<Poly>):String {
+		var res = "none";
+		
+		for (i in 0...polys.length) {
+			var poly = polys[i];
+			var convex = PolyTools.isConvex(poly) ? "convex" : "not convex";
+			
+			if (i == 0) {
+				res = convex;
+			} else if (res != convex) {
+				res = "mixed";
+				break;
+			}
+		}
+		
+		return res;
+	}
+	
+	static public function testSimple(polys:Array<Poly>):String {
+		var res = "none";
+		
+		for (i in 0...polys.length) {
+			var poly = polys[i];
+			var convex = PolyTools.isSimple(poly) ? "simple" : "not simple";
+			
+			if (i == 0) {
+				res = convex;
+			} else if (res != convex) {
+				res = "mixed";
+				break;
+			}
+		}
+		
+		return res;
 	}
 	
 	static public function savePNG(bmd:BitmapData, fileName:String) {
@@ -340,14 +421,6 @@ class GeomAlgoTest extends Sprite {
 			str += p.x + "," + p.y + ",";
 		}
 		trace(str);
-	}
-
-	public function drawPerimeter(points:Array<HxPoint>, x:Float, y:Float):Void 
-	{
-		// draw clipRect
-		g.drawRect(originalBitmap.x + clipRect.x, originalBitmap.y + clipRect.y, clipRect.width, clipRect.height);
-
-		drawPoly(points, x, y, false);
 	}
 
 	public function drawPoints(points:Array<HxPoint>, x:Float, y:Float, radius:Float = 2):Void 
