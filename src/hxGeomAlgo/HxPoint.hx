@@ -28,7 +28,12 @@ abstract HxPoint(HxPointData)
 	
 	@:op(A == B) inline public function equals(p:HxPoint):Bool
 	{
-		return x == p.x && y == p.y;
+		return areEqual(this, p);
+	}
+	
+	@:op(A != B) inline public function notEequals(p:HxPoint):Bool
+	{
+		return areNotEqual(this, p);
 	}
 	
 	inline public function clone():HxPoint
@@ -62,6 +67,16 @@ abstract HxPoint(HxPointData)
 	{
 		return { x:x, y:y };
 	}
+	
+	inline static public function areEqual(p:HxPoint, q:HxPoint):Bool
+	{
+		return (p != null && q != null && q.x == p.x && q.y == p.y);
+	}	
+	
+	inline static public function areNotEqual(p:HxPoint, q:HxPoint):Bool
+	{
+		return !areEqual(p, q);
+	}	
 }
 
 
