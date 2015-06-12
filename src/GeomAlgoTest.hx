@@ -25,6 +25,7 @@ import hxGeomAlgo.Version;
 import hxGeomAlgo.EarClipper;
 import hxGeomAlgo.HxPoint;
 import hxGeomAlgo.MarchingSquares;
+import hxGeomAlgo.IsoContours;
 import hxGeomAlgo.PolyTools;
 import hxGeomAlgo.RamerDouglasPeucker;
 import hxGeomAlgo.Bayazit;
@@ -45,17 +46,6 @@ import sys.io.FileOutput;
 class GeomAlgoTest extends Sprite {
 
 	private var g:Graphics;
-
-	//private var ASSET:String = "assets/super_mario.png";	// from http://www.newgrounds.com/art/view/petelavadigger/super-mario-pixel
-	private var ASSET:String = "assets/pirate_small.png";
-	//private var ASSET:String = "assets/nazca_monkey.png";
-	//private var ASSET:String = "assets/star.png";
-	//private var ASSET:String = "assets/text.png";
-	//private var ASSET:String = "assets/transparent.png";
-	//private var ASSET:String = "assets/opaque_black.png";
-	//private var ASSET:String = "assets/complex.png";		// Bayazit doesn't play well with this one
-	//private var ASSET:String = "assets/big.png";			// Bayazit doesn't play well with this one
-	//private var ASSET:String = "assets/bord.png";
 	
 	private var COLOR:Int = 0xFF0000;
 	private var ALPHA:Float = 1.;
@@ -68,12 +58,12 @@ class GeomAlgoTest extends Sprite {
 	private var TEXT_OFFSET:Float = -60;
 	private var TEXT_OUTLINE:GlowFilter = new GlowFilter(0xFF000000, 1, 2, 2, 6);
 
-	private var START_POINT:HxPoint = new HxPoint(20, 80);
+	private var START_POINT:HxPoint = new HxPoint(20, 90);
 
 	var X:Float;
 	var Y:Float;
-	var WIDTH:Float;
-	var HEIGHT:Float;
+	var WIDTH:Int;
+	var HEIGHT:Int;
 
 	private var originalBMD:BitmapData;
 	private var originalBitmap:Bitmap;
@@ -89,21 +79,27 @@ class GeomAlgoTest extends Sprite {
 	var text:TextField;
 	var labelBMP:Bitmap;
 	
-	public function new() {
+	public function new(asset:String) {
 		super();
 
 		var sprite = new Sprite();
 		addChild(sprite);
 		g = sprite.graphics;
-		g.lineStyle(1, COLOR, ALPHA);
-		originalBMD = openfl.Assets.getBitmapData(ASSET);
+		g.lineStyle(.5, COLOR, ALPHA);
+		originalBMD = openfl.Assets.getBitmapData(asset);
 		WIDTH = originalBMD.width;
 		HEIGHT = originalBMD.height + 80;
+
+		//  ASSET IMAGE
+		var assetTF = getTextField("move: ARROWS/GHJY  |  cycle: CTRL+ARROWS  |  zoom: +/-  |  [" + asset + "]", 0, 5 * TEXT_SIZE);
+		trace("\n\n[" + asset + "]\n");
+		assetTF.autoSize = TextFieldAutoSize.LEFT;
+		addChild(assetTF);
 
 		//  VERSION
 		var versionTF = getTextField("hxGeomAlgo v" + Version.toString(), 0, 0);
 		versionTF.autoSize = TextFieldAutoSize.LEFT;
-		versionTF.y = stage.stageHeight - 17;
+		versionTF.y = flash.Lib.current.stage.stageHeight - 17;
 		addChild(versionTF);
 		
 		// ORIGINAL IMAGE
@@ -112,23 +108,84 @@ class GeomAlgoTest extends Sprite {
 		originalBitmap.x = X;
 		originalBitmap.y = Y;
 		clipRect = originalBMD.rect;
-		g.drawRect(originalBitmap.x + clipRect.x, originalBitmap.y + clipRect.y, clipRect.width, clipRect.height);
+		//g.drawRect(originalBitmap.x + clipRect.x, originalBitmap.y + clipRect.y, clipRect.width, clipRect.height);
 		addChild(getTextField("Original\n" + originalBMD.width + "x" + originalBMD.height, X, Y));
 
 		// MARCHING SQUARES
 		setSlot(0, 1);
 		var startTime = Timer.stamp();
 		marchingSquares = new MarchingSquares(originalBMD, 1);
+		trace("ms startPoint: " + marchingSquares.findStartPoint());
 		perimeter = marchingSquares.march();
 		trace('MarchSqrs     : ${Timer.stamp() - startTime}');
 		drawPoly(perimeter, X + clipRect.x, Y + clipRect.y, false);
-		// draw perimeter pixels: in red if on solid pixels, in blue if not
-		/*for (p in perimeter) {
+		// draw perimeter pixels: in green if on solid pixels, in blue if not
+		var perimeterBitmap = new Bitmap(new BitmapData(WIDTH, HEIGHT, true, 0));
+		for (p in perimeter) {
 			var isSolid = @:privateAccess marchingSquares.isPixelSolid(Std.int(p.x), Std.int(p.y));
-			originalBMD.setPixel32(Std.int(p.x), Std.int(p.y), isSolid ? 0xFF0000FF : 0xFFFF0000);
-		}*/
+			//perimeterBitmap.bitmapData.setPixel32(Std.int(p.x), Std.int(p.y), isSolid ? 0xFF0000FF : 0xFF00FF00);
+		}
+		perimeterBitmap.x = originalBitmap.x;
+		perimeterBitmap.y = originalBitmap.y;
+		addChild(perimeterBitmap);
 		addChild(getTextField("MarchSqrs\n" + perimeter.length + " pts", X, Y));
 
+		setSlot(0, 0);
+		startTime = Timer.stamp();
+		
+		var ms2 = new IsoContours(originalBMD);
+		
+		var redIso = function(pixels, x, y) {
+			if (IsoContours.isOutOfBounds(pixels, x, y)) return 0;
+			else return ((pixels.getPixel32(x, y) >>> 24) & 0xFF);
+		}
+		
+		ms2.isoFunction = redIso;
+		var cnts = ms2.find(0x0, false);
+		//cnts = cnts.concat(ms2.find(0x80, false, false));
+		trace('MarchSqrs2    : ${Timer.stamp() - startTime}');
+		/*g.lineStyle(1, 0x0000ff);
+		var nf = cnts[1];
+		while (nf.length > 0) {
+			var p = nf.pop();
+			g.moveTo((X + p.x), (Y + p.y));
+			g.drawCircle((X + p.x), (Y + p.y), 1.5);
+			//g.lineTo((X + p.x + .1), (Y + p.y + .1));
+		}*/
+		for (isoLine in cnts) {
+			trace("isoDups: " + PolyTools.findDuplicatePoints(isoLine));
+			g.lineStyle(.5, Std.random(0xFFFFFF));
+			drawPoly(isoLine, X, Y, false);
+			
+			if (isoLine.length > 1) {
+				// first segment
+				g.lineStyle(1, 0xFF0000, .6);
+				g.moveTo(isoLine[0].x + X, isoLine[0].y + Y);
+				g.lineTo(isoLine[1].x + X, isoLine[1].y + Y);
+			}
+		}
+		/*for (points in cnts) {
+			trace(PolyTools.findDuplicatePoints(points));
+			for (i in 0...points.length-1) {
+				g.lineStyle(.5, Std.random(0xffffff));
+				var p = points[i];
+				var q = points[i+1];
+				g.moveTo((X + p.x), (Y + p.y));
+				g.lineTo((X + q.x), (Y + q.y));
+				var t = .75;
+				var dx = q.x - p.x;
+				var dy = q.y - p.y;
+				if (p.equals(q)) {
+					g.drawCircle((X + p.x), (Y + p.y), .5);
+				}
+				//g.drawCircle(p.x + dx * t + X, p.y + dy * t + Y, .2);
+			    // arrow head
+				drawArrowHead(p, q, X, Y, .5, 20);
+			}
+		}*/
+		trace("cnts: " + cnts.length);
+		//drawPaths(cnts, X, Y, false);
+		
 		// RAMER-DOUGLAS-PEUCKER SIMPLIFICATION
 		setSlot(0, 2);
 		startTime = Timer.stamp();
@@ -315,8 +372,7 @@ class GeomAlgoTest extends Sprite {
 		drawPaths(polys, X + clipRect.x, Y + clipRect.y, true);
 		addChild(getTextField("Tess2\nDifference\n" + res.elementCount + " polys", X, Y));
 		
-		//stage.addChild(new openfl.FPS(5, 5, 0xFFFFFF));
-		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		//flash.Lib.current.stage.addChild(new openfl.FPS(5, 5, 0xFFFFFF));
 
 		dumpPoly(simplifiedPolyRDP, false);
 		
@@ -431,6 +487,25 @@ class GeomAlgoTest extends Sprite {
 		}
 	}
 	
+	// Draw arrow head at `q`
+	public function drawArrowHead(p:HxPoint, q:HxPoint, x:Float, y:Float, factor:Float = 2.5, angleDeg:Float = 30):Void 
+	{
+		var dx = p.x - q.x;
+		var dy = p.y - q.y;
+		var l = Math.sqrt(dx * dx + dy * dy) * factor;
+		var cos = Math.cos(Math.PI * angleDeg / 180);
+		var sin = Math.sin(Math.PI * angleDeg / 180);
+		dx = dx / l;
+		dy = dy / l;
+		var end1 = new HxPoint(q.x + (dx * cos + dy * -sin), q.y + (dx * sin + dy * cos));
+		var end2 = new HxPoint(q.x + (dx * cos + dy * sin), q.y + (dx * -sin + dy * cos));
+		g.moveTo(end1.x + x, end1.y + y);
+		g.lineTo((X + q.x), (Y + q.y));
+		g.lineTo(end2.x + x, end2.y + y);
+		//g.lineTo(end1.x + x, end1.y + y); // close head
+		g.moveTo((X + q.x), (Y + q.y));
+	}
+	
 	public function drawPointsLabels(points:Array<HxPoint>, x:Float, y:Float):Void 
 	{
 		var len = points.length;
@@ -461,6 +536,7 @@ class GeomAlgoTest extends Sprite {
 		for (i in 1...points.length) {
 			var p = points[i];
 			g.lineTo(x + p.x, y + p.y);
+			drawArrowHead(points[i - 1], p, x, y, 2.25);
 		}
 		g.lineTo(x + points[0].x, y + points[0].y);
 		if (fill) g.endFill();
@@ -487,10 +563,11 @@ class GeomAlgoTest extends Sprite {
 				data.push(y + path[i].y);
 			}
 			// close
-			commands.push(2);
-			data.push(x + path[0].x);
-			data.push(y + path[0].y);
-			
+			if (fill) {
+				commands.push(2);
+				data.push(x + path[0].x);
+				data.push(y + path[0].y);
+			}
 		}
 		
 		if (fill) g.beginFill(COLOR, .5);
@@ -549,40 +626,7 @@ class GeomAlgoTest extends Sprite {
 		tf.text = text;
 		return tf;
 	}
-
-	public function onKeyDown(e:KeyboardEvent):Void 
-	{
-		if (e.keyCode == 27) {
-			quit();
-		}
-		
-		// keys to move camera around
-		if (e.charCode == "j".code || e.keyCode == 39) this.x -= 12; // right
-		if (e.charCode == "g".code || e.keyCode == 37) this.x += 12; // left
-		if (e.charCode == "h".code || e.keyCode == 40) this.y -= 12; // down
-		if (e.charCode == "y".code || e.keyCode == 38) this.y += 12; // up
-		
-		// screenshot
-	#if sys
-		if (e.charCode == "s".code) {
-			var bounds = this.getBounds(this);
-			var bmd = new BitmapData(Math.ceil(bounds.right), Math.ceil(bounds.bottom), true, 0);
-			bmd.draw(this);
-			savePNG(bmd, "capture.png");
-		}
-	#end
-	}
-	
-	public function quit():Void 
-	{
-		#if (flash || html5)
-			System.exit(1);
-		#else
-			Sys.exit(1);
-		#end
-	}
 }
-
 
 typedef PixelInfo = {
 	var a:Int;
