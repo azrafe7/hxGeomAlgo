@@ -35,8 +35,6 @@ class MarchingSquares
 	private var width:Int;
 	private var height:Int;
 	
-	private var point:HxPoint = new HxPoint();
-
 
 	/**
 	 * Constructor.
@@ -72,12 +70,10 @@ class MarchingSquares
 	 */
 	public function march(startPoint:HxPoint = null):Array<HxPoint> 
 	{
-		if (startPoint == null) {
-			if (findStartPoint() == null) return [];
-		}
-		else point.setTo(startPoint.x, startPoint.y);
+		if (startPoint == null) startPoint = findStartPoint();
+		if (startPoint == null) return [];
 		
-		return walkPerimeter(Std.int(point.x), Std.int(point.y));
+		return walkPerimeter(Std.int(startPoint.x), Std.int(startPoint.y));
 	}
 	
 	/** 
@@ -86,19 +82,15 @@ class MarchingSquares
 	 * @return The first opaque pixel location, or null if not found.
 	 */
 	public function findStartPoint(line:Int = 0):HxPoint {
-		point.setTo(-1, -1);
+		var found = false;
 		
-		var idx:Int = line * width;
-		var len:Int = pixels.count;
-		while (idx < len) {
-			if ((pixels[idx]) >= alphaThreshold) {
-				point.setTo((idx >> 2) % width, Std.int((idx >> 2) / width));
-				break;
+		for (y in line...height) {
+			for (x in 0...width) {
+				if (isPixelSolid(x, y)) return new HxPoint(x, y);
 			}
-			idx += 4;
 		}
 		
-		return point.x != -1 ? point.clone() : null;
+		return null;
  	}
 	
 	/** 
