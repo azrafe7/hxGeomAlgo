@@ -5,7 +5,7 @@ package hxGeomAlgo;
  * 
  * @author azrafe7
  */
-abstract HxPoint(HxPointData)
+abstract HxPoint(HxPointData) from HxPointData to HxPointData
 {
 	public var x(get, set):Float;
 	inline private function get_x():Float { return this.x; }

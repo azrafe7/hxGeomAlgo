@@ -11,6 +11,7 @@
 package hxGeomAlgo;
 
 import haxe.ds.ArraySort;
+import haxe.ds.Vector;
 import haxe.Timer;
 import hxGeomAlgo.HxPoint.HxPointData;
 import hxPixels.Pixels;
@@ -30,7 +31,7 @@ class IsoContours
 	var width:Int;
 	var height:Int;
 	
-	var values:Array<Array<Float>>;
+	var values:Vector<Float>;
 
 	var adjacencyMap:AdjacencyMap;
 	
@@ -99,18 +100,20 @@ class IsoContours
 	function march(isoValue:Float = 0, addBorders:Bool = true, recalcValues:Bool = true) {
 		
 		adjacencyMap = new AdjacencyMap();
+		var paddedWidth = width + 2;
+		var paddedHeight = height + 2;
 		
 		// run isoFunction through all pixels
 		if (recalcValues || values == null) {
-			values = [];
+			values = new Vector(paddedWidth * paddedHeight);
 			
-			for (x in 0...width + 2) {
-				values[x] = [];
+			for (y in 0...paddedHeight) {
 				
-				for (y in 0...height + 2) {
+				for (x in 0...paddedWidth) {
 					
+					var pos = y * paddedWidth + x;
 					var value = isoFunction(pixels, x - 1, y - 1);
-					values[x][y] = value;
+					values[pos] = value;
 				}
 			}
 		}
@@ -134,10 +137,11 @@ class IsoContours
 			for (y in startY...endY) {
 				
 				// calc binaryIdx (CW from msb)
-				var topLeft = values[x][y];
-				var topRight = values[x + 1][y];
-				var bottomRight = values[x + 1][y + 1];
-				var bottomLeft = values[x][y + 1];
+				var pos = y * paddedWidth + x;
+				var topLeft = values[pos];
+				var topRight = values[pos + 1];
+				var bottomRight = values[pos + 1 + paddedWidth];
+				var bottomLeft = values[pos + paddedWidth];
 				
 				var binaryIdx = 0;
 				if (topLeft > isoValue) binaryIdx += 8;
@@ -151,7 +155,7 @@ class IsoContours
 					var leftPoint = new HxPoint(offset + x, offset + y + interp(isoValue, topLeft, bottomLeft));
 					var rightPoint = new HxPoint(offset + x + 1, offset + y + interp(isoValue, topRight, bottomRight));
 					var bottomPoint = new HxPoint(offset + x + interp(isoValue, bottomLeft, bottomRight), offset + y + 1);
-						
+					
 					// resolve saddle ambiguities by using central (/average) value
 					if (binaryIdx == 5 || binaryIdx == 10) {
 						var avgValue = (topLeft + topRight + bottomRight + bottomLeft) / 4;
@@ -164,46 +168,40 @@ class IsoContours
 					// (except for head and tail segments of open isolines of course)
 					switch (binaryIdx) { 
 						case 1: 
-							addSegment(leftPoint, bottomPoint);
+							adjacencyMap.addSegment(leftPoint, bottomPoint);
 						case 2: 
-							addSegment(bottomPoint, rightPoint);
+							adjacencyMap.addSegment(bottomPoint, rightPoint);
 						case 3: 
-							addSegment(leftPoint, rightPoint);
+							adjacencyMap.addSegment(leftPoint, rightPoint);
 						case 4: 
-							addSegment(rightPoint, topPoint);
+							adjacencyMap.addSegment(rightPoint, topPoint);
 						case 5: // saddle
-							addSegment(leftPoint, topPoint);
-							addSegment(rightPoint, bottomPoint);
+							adjacencyMap.addSegment(leftPoint, topPoint);
+							adjacencyMap.addSegment(rightPoint, bottomPoint);
 						case 6: 
-							addSegment(bottomPoint, topPoint);
+							adjacencyMap.addSegment(bottomPoint, topPoint);
 						case 7: 
-							addSegment(leftPoint, topPoint);
+							adjacencyMap.addSegment(leftPoint, topPoint);
 						case 8: 
-							addSegment(topPoint, leftPoint);
+							adjacencyMap.addSegment(topPoint, leftPoint);
 						case 9: 
-							addSegment(topPoint, bottomPoint);
+							adjacencyMap.addSegment(topPoint, bottomPoint);
 						case 10: // saddle
-							addSegment(bottomPoint, leftPoint);
-							addSegment(topPoint, rightPoint);
+							adjacencyMap.addSegment(bottomPoint, leftPoint);
+							adjacencyMap.addSegment(topPoint, rightPoint);
 						case 11: 
-							addSegment(topPoint, rightPoint);
+							adjacencyMap.addSegment(topPoint, rightPoint);
 						case 12: 
-							addSegment(rightPoint, leftPoint);
+							adjacencyMap.addSegment(rightPoint, leftPoint);
 						case 13: 
-							addSegment(rightPoint, bottomPoint);
+							adjacencyMap.addSegment(rightPoint, bottomPoint);
 						case 14: 
-							addSegment(bottomPoint, leftPoint);
+							adjacencyMap.addSegment(bottomPoint, leftPoint);
 						default:
 					}
 				}
 			}
 		}
-	}
-	
-	function addSegment(fromPoint:HxPoint, toPoint:HxPoint) {
-		if (fromPoint.equals(toPoint)) return;
-		
-		adjacencyMap.addSegment(fromPoint, toPoint);
 	}
 	
 	public function interp(isoValue:Float, fromValue:Float, toValue:Float):Float {
@@ -224,40 +222,50 @@ class IsoContours
 
 class AdjacencyMap {
 
+	var pointSet:Map<String, HxPoint>;
+	
 	var firstIdx:Int = 0;
 	var segments:Array<Segment>;
 	
-	var mapStartToEnd:Map<String, Array<Int>>;
-	var mapEndToStart:Map<String, Array<Int>>;
+	var mapStartToEnd:ObjectMap<HxPoint, Array<Int>>;
+	var mapEndToStart:ObjectMap<HxPoint, Array<Int>>;
 	
 	public function new():Void {
+		pointSet = new Map();
 		segments = [];
-		mapStartToEnd = new Map();
-		mapEndToStart = new Map();
+		mapStartToEnd = new ObjectMap();
+		mapEndToStart = new ObjectMap();
 	}
 	
 	public function addSegment(from:HxPoint, to:HxPoint):Void {
+		if (from.equals(to)) return;
+		
 		var fromKey = from.toString();
 		var toKey = to.toString();
+		
+		if (!pointSet.exists(fromKey)) pointSet[fromKey] = from;
+		else from = pointSet[fromKey];
+		
+		if (!pointSet.exists(toKey)) pointSet[toKey] = to;
+		else to = pointSet[toKey];
 		
 		var idx = segments.length;
 		segments.push(new Segment(from, to));
 		
-		if (mapStartToEnd.exists(fromKey)) mapStartToEnd[fromKey].push(idx);
-		else mapStartToEnd[fromKey] = [idx];
+		if (mapStartToEnd.exists(from)) mapStartToEnd.get(from).push(idx);
+		else mapStartToEnd.set(from, [idx]);
 		
-		if (mapEndToStart.exists(toKey)) mapEndToStart[toKey].push(idx);
-		else mapEndToStart[toKey] = [idx];
+		if (mapEndToStart.exists(to)) mapEndToStart.get(to).push(idx);
+		else mapEndToStart.set(to, [idx]);
 	}
 	
 	public function getStartingPointOf(end:HxPoint):HxPoint {
 		if (end == null) return null;
 		
 		var start = null;
-		var endKey = end.toString();
 		
-		if (mapEndToStart.exists(endKey)) {
-			var entry = mapEndToStart[endKey];
+		if (mapEndToStart.exists(end)) {
+			var entry = mapEndToStart.get(end);
 			var idx = entry[0];
 			start = segments[idx].from;
 			removeSegmentAt(idx);
@@ -270,10 +278,9 @@ class AdjacencyMap {
 		if (start == null) return null;
 		
 		var end = null;
-		var startKey = start.toString();
 		
-		if (mapStartToEnd.exists(startKey)) {
-			var entry = mapStartToEnd[startKey];
+		if (mapStartToEnd.exists(start)) {
+			var entry = mapStartToEnd.get(start);
 			var idx = entry[0];
 			end = segments[idx].to;
 			removeSegmentAt(idx);
@@ -300,16 +307,16 @@ class AdjacencyMap {
 	function removeSegmentAt(i:Int) {
 		var segment = segments[i];
 		
-		var startKey = segment.from.toString();
-		var endKey = segment.to.toString();
+		var start = segment.from;
+		var end = segment.to;
 		
-		var entry = mapStartToEnd[startKey];
+		var entry = mapStartToEnd.get(start);
 		entry.remove(i);
-		if (entry.length == 0) mapStartToEnd.remove(startKey);
+		if (entry.length == 0) mapStartToEnd.remove(start);
 		
-		entry = mapEndToStart[endKey];
+		entry = mapEndToStart.get(end);
 		entry.remove(i);
-		if (entry.length == 0) mapEndToStart.remove(endKey);
+		if (entry.length == 0) mapEndToStart.remove(end);
 		
 		segments[i] = null;
 	}	
