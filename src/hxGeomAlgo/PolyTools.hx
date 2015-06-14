@@ -28,6 +28,8 @@ class PolyTools
 	
 	/** Returns true if `poly` is counterclockwise (assumes y axis pointing down). */
 	static public function isCCW(poly:Poly):Bool {
+		if (poly == null || poly.length <= 2) return false;
+		
 		var br:Int = 0;
 
 		// find bottom right point
