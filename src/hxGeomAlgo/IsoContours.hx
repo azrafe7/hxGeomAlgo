@@ -4,18 +4,17 @@
  * Based on:
  * 
  * @see http://en.wikipedia.org/wiki/Marching_squares
+ * @see https://github.com/deltaluca/nape					(by Luca Deltodesco)
+ * @see https://github.com/scikit-image/scikit-image		(by scikit-image team)
  * 
  * @author azrafe7
  */
 
 package hxGeomAlgo;
 
-import haxe.ds.ArraySort;
 import haxe.ds.Vector;
-import haxe.Timer;
-import hxGeomAlgo.HxPoint.HxPointData;
-import hxPixels.Pixels;
 import haxe.ds.ObjectMap;
+import hxPixels.Pixels;
 
 
 /** function(pixels:Pixels, x:Int, y:Int):Float */
@@ -39,6 +38,7 @@ class IsoContours
 	 * Constructor.
 	 * 
 	 * @param	pixels			Pixels to use as source.
+	 * @param	isoFunction		Function mapping individual pixels to a Float value. Defaults to `isoAlpha()`.
 	 */
 	public function new(pixels:Pixels, isoFunction:IsoFunction = null)
 	{
@@ -47,18 +47,23 @@ class IsoContours
 		this.height = pixels.height;
 		this.values = null;
 		
-		if (isoFunction == null) this.isoFunction = iso;
+		if (isoFunction == null) this.isoFunction = isoAlpha;
 	}
 	
+	/**
+	 * Returns an Array of contours (each contour being an Array of HxPoint) based on where the data crosses the `isoValue`.
+	 * 
+	 * A contour in the output will be in CCW winding order if it's a hole, and in CW order otherwise.
+	 * 
+	 * @param	isoValue		Data values crossing this value will get the corresponding pixel pos inserted in a contour. 
+	 * @param	addBorders		If true this will work as if the source had a 1px wide border around it (handled in isoFunction()).
+	 * @param	recalcValues	Whether isoFunction() needs to be re-run through all pixels.
+	 */
 	public function find(isoValue:Float = 0, addBorders:Bool = true, recalcValues:Bool = true):Array<Array<HxPoint>> {
 		
-		var startTime = Timer.stamp();
 		march(isoValue, addBorders, recalcValues);
-		trace("  march: " + (Timer.stamp() - startTime));
 		
-		startTime = Timer.stamp();
  		var contours = merge();
-		trace("  merge: " + (Timer.stamp() - startTime));
 		
 		return contours;
 	}
@@ -209,9 +214,9 @@ class IsoContours
 		return (isoValue - fromValue) / (toValue - fromValue);
 	}
 	
-	static public function iso(pixels:Pixels, x:Int, y:Int):Float {
+	static public function isoAlpha(pixels:Pixels, x:Int, y:Int):Float {
 		if (isOutOfBounds(pixels, x, y)) return 0;
-		else return ((pixels.getPixel32(x, y) >> 24) & 0xFF);
+		else return pixels.getPixel32(x, y).A;
 	}
 	
 	inline static public function isOutOfBounds(pixels:Pixels, x:Int, y:Int):Bool {
@@ -220,6 +225,15 @@ class IsoContours
 }
 
 
+/**
+ * Stores segments and provides a quick way of finding adjacent/consecutive points.
+ * 
+ * You can query it to fetch:
+ *   - the starting/ending point of a segment (given the other end)
+ *   - the first available segment (in insertion order)
+ * 
+ * Both types of queries will automatically remove the related segment (if any) from the structure.
+ */ 
 class AdjacencyMap {
 
 	var pointSet:Map<String, HxPoint>;
