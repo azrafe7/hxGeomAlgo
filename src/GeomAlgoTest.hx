@@ -15,6 +15,7 @@ import flash.text.TextFormat;
 import flash.text.TextFormatAlign;
 import flash.utils.ByteArray;
 import flash.text.TextFieldAutoSize;
+import flash.display.PNGEncoderOptions;
 
 import haxe.Resource;
 import haxe.Timer;
@@ -37,7 +38,7 @@ import hxGeomAlgo.CCLabeler;
 import hxGeomAlgo.VisvalingamWhyatt;
 import hxGeomAlgo.Tess2;
 
-#if (neko)
+#if (sys)
 import sys.io.File;
 import sys.io.FileOutput;
 #end
@@ -412,10 +413,11 @@ class GeomAlgoTest extends Sprite {
 	
 	static public function savePNG(bmd:BitmapData, fileName:String) {
 	#if (sys)
-		var ba:ByteArray = bmd.encode(bmd.rect, "png");
+		var ba:ByteArray = bmd.encode(bmd.rect, new PNGEncoderOptions());
 		var file:FileOutput = sys.io.File.write(fileName, true);
 		file.writeString(ba.toString());
 		file.close();
+		trace('BitmapData saved as "${fileName}".');
 	#end
 	}
 	
