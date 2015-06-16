@@ -5,7 +5,7 @@
 	<app main="OpenflDemo" path="bin" file="OpenflDemo" />
 	
 	<window background="#222222" fps="60" />
-	<window width="800" height="600" unless="mobile" />
+	<window width="900" height="650" unless="mobile" />
 	<window orientation="landscape" vsync="false" antialiasing="0" if="cpp" />
 	
 	<haxeflag name="-D" value="swf-script-timeout=60" />

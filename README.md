@@ -5,7 +5,7 @@ Small collection of geometry algorithms in Haxe 3. ([link to AS3 port](https://g
 
 ![](screenshot.png)
 
-#### [Marching Squares (Contour Tracing)](http://en.wikipedia.org/wiki/Marching_squares)
+#### [Marching Squares (Contour Tracing)](https://en.wikipedia.org/w/index.php?title=Marching_squares&oldid=342542650)
 
 Based on:
 
@@ -60,7 +60,7 @@ Based on:
 
  - Visvalingam M., Whyatt J. D.: [Line generalisation by repeated elimination of the smallest area](https://hydra.hull.ac.uk/resources/hull:8338) (1992)
  - [http://bost.ocks.org/mike/simplify/](http://bost.ocks.org/mike/simplify/) (JS - by Mike Bostock)
- - [https://github.com/jonasmalacofilho/dheap](https://github.com/jonasmalacofilho/dheap) (Haxe - Jonas Malaco Filho)
+ - [https://github.com/jonasmalacofilho/dheap](https://github.com/jonasmalacofilho/dheap) (Haxe - by Jonas Malaco Filho)
  - [http://en.wikipedia.org/wiki/Binary_heap](http://en.wikipedia.org/wiki/Binary_heap) (Binary (Min)Heap)
 
 #### [Tess2 (Tesselation to Triangles and Convex Polygons, Poly Boolean Ops)](https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html)
@@ -69,6 +69,14 @@ Based on:
 
  - GLU Libtess (by Eric Veach, July 1994)
  - [tess2.js](https://github.com/memononen/tess2.js) (JS - by Mikko Mononen, Aug 2013)
+
+#### [IsoContours (Contour Tracing)](https://en.wikipedia.org/wiki/Contour_line)
+
+Based on:
+
+ - [http://en.wikipedia.org/wiki/Marching_squares)
+ - [https://github.com/deltaluca/nape](https://github.com/deltaluca/nape)	(Haxe - by Luca Deltodesco)
+ - [https://github.com/scikit-image/scikit-image](https://github.com/scikit-image/scikit-image)	(Python - by scikit-image team)
 
 
 ## Credits

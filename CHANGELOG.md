@@ -52,3 +52,8 @@
  - Refactored Heap into its own class
  - PolyTools: fixed and improved findDuplicatePoints(), added flatten()
  - Tess2: shortcut methods for boolean ops on polygons
+ - MarchingSquares: force output inside source boundaries, and fix findStartPoint()
+ - IsoContours: initial implementation
+ - Add some interactivity to openfl demo (and more test images)
+ - IsoContours: improve performance (esp. AdjacencyMap)
+ 

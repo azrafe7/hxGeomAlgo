@@ -9,10 +9,10 @@ import flash.display.BitmapData;
 class OpenflDemo extends Sprite {
 	
 	static var assets:Array<String> = [
-		"assets/small_rect.png",
 		"assets/pirate_small.png",
 		"assets/super_mario.png",	// from http://www.newgrounds.com/art/view/petelavadigger/super-mario-pixel
 		"assets/nazca_monkey.png",
+		"assets/small_rect.png",
 		"assets/star.png",
 		"assets/text.png",
 		"assets/transparent.png",

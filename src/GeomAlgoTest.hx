@@ -115,104 +115,34 @@ class GeomAlgoTest extends Sprite {
 		setSlot(0, 1);
 		var startTime = Timer.stamp();
 		marchingSquares = new MarchingSquares(originalBMD, 1);
-		trace("ms startPoint: " + marchingSquares.findStartPoint());
 		perimeter = marchingSquares.march();
 		trace('MarchSqrs     : ${Timer.stamp() - startTime}');
 		drawPoly(perimeter, X + clipRect.x, Y + clipRect.y, false);
 		// draw perimeter pixels: in green if on solid pixels, in blue if not
-		var perimeterBitmap = new Bitmap(new BitmapData(WIDTH, HEIGHT, true, 0));
+		/*var perimeterBitmap = new Bitmap(new BitmapData(WIDTH, HEIGHT, true, 0));
 		for (p in perimeter) {
 			var isSolid = @:privateAccess marchingSquares.isPixelSolid(Std.int(p.x), Std.int(p.y));
-			//perimeterBitmap.bitmapData.setPixel32(Std.int(p.x), Std.int(p.y), isSolid ? 0xFF0000FF : 0xFF00FF00);
+			perimeterBitmap.bitmapData.setPixel32(Std.int(p.x), Std.int(p.y), isSolid ? 0xFF0000FF : 0xFF00FF00);
 		}
 		perimeterBitmap.x = originalBitmap.x;
 		perimeterBitmap.y = originalBitmap.y;
-		addChild(perimeterBitmap);
+		addChild(perimeterBitmap);*/
 		addChild(getTextField("MarchSqrs\n" + perimeter.length + " pts", X, Y));
 
-		setSlot(0, 0);
-		startTime = Timer.stamp();
-		
-		var ms2 = new IsoContours(originalBMD);
-		
-		var redIso = function(pixels, x, y) {
-			if (IsoContours.isOutOfBounds(pixels, x, y)) return 0;
-			else return ((pixels.getPixel32(x, y) >>> 24) & 0xFF);
-		}
-		
-		ms2.isoFunction = redIso;
-		var cnts = ms2.find(0x0, false);
-		//cnts = cnts.concat(ms2.find(0x80, false, false));
-		trace('MarchSqrs2    : ${Timer.stamp() - startTime}');
-		/*g.lineStyle(1, 0x0000ff);
-		var nf = cnts[1];
-		while (nf.length > 0) {
-			var p = nf.pop();
-			g.moveTo((X + p.x), (Y + p.y));
-			g.drawCircle((X + p.x), (Y + p.y), 1.5);
-			//g.lineTo((X + p.x + .1), (Y + p.y + .1));
-		}*/
-		for (isoLine in cnts) {
-			trace("isoDups: " + PolyTools.findDuplicatePoints(isoLine));
-			g.lineStyle(.5, Std.random(0xFFFFFF));
-			drawPoly(isoLine, X, Y, false);
-			
-			if (isoLine.length > 1) {
-				// first segment
-				g.lineStyle(1, 0xFF0000, .6);
-				g.moveTo(isoLine[0].x + X, isoLine[0].y + Y);
-				g.lineTo(isoLine[1].x + X, isoLine[1].y + Y);
-			}
-		}
-		/*for (points in cnts) {
-			trace(PolyTools.findDuplicatePoints(points));
-			for (i in 0...points.length-1) {
-				g.lineStyle(.5, Std.random(0xffffff));
-				var p = points[i];
-				var q = points[i+1];
-				g.moveTo((X + p.x), (Y + p.y));
-				g.lineTo((X + q.x), (Y + q.y));
-				var t = .75;
-				var dx = q.x - p.x;
-				var dy = q.y - p.y;
-				if (p.equals(q)) {
-					g.drawCircle((X + p.x), (Y + p.y), .5);
-				}
-				//g.drawCircle(p.x + dx * t + X, p.y + dy * t + Y, .2);
-			    // arrow head
-				drawArrowHead(p, q, X, Y, .5, 20);
-			}
-		}*/
-		trace("cnts: " + cnts.length);
-		//drawPaths(cnts, X, Y, false);
-		
-		// RAMER-DOUGLAS-PEUCKER SIMPLIFICATION
+		// ISOCONTOURS
 		setSlot(0, 2);
+		var isoContours = new IsoContours(originalBMD);
 		startTime = Timer.stamp();
-		simplifiedPolyRDP = RamerDouglasPeucker.simplify(perimeter, 1.5);
-		trace('Doug-Peuck    : ${Timer.stamp() - startTime}');
-		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y);
-		addChild(getTextField("Doug-Peuck\n" + simplifiedPolyRDP.length + " pts", X, Y));
+		var contours = isoContours.find(0, true);
+		//contourss = contours.concat(isoContours.find(0x80, false, false));
+		var pts = 0;
+		for (c in contours) pts += c.length;
+		trace('IsoContours   : ${Timer.stamp() - startTime}');
+		drawPaths(contours, X, Y);
+		addChild(getTextField("IsoContours\n" + pts + " pts\n" + contours.length + " cntrs", X, Y));
 		
-		// VISVALINGAM-WHYATT SIMPLIFICATION
-		setSlot(0, 3);
-		startTime = Timer.stamp();
-		var simplifiedPolyVW = VisvalingamWhyatt.simplify(perimeter, SimplificationMethod.MaxPoints(simplifiedPolyRDP.length));
-		trace('Visv-Whyatt   : ${Timer.stamp() - startTime}');
-		drawPoly(simplifiedPolyVW, X + clipRect.x, Y + clipRect.y);
-		addChild(getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts", X, Y));		
-		
-		// EARCLIPPER TRIANGULATION
-		setSlot(0, 4);
-		startTime = Timer.stamp();
-		triangulation = EarClipper.triangulate(simplifiedPolyRDP);
-		trace('ECTriang      : ${Timer.stamp() - startTime}');
-		trace(testOrientation(triangulation), testSimple(triangulation), testConvex(triangulation));
-		drawTriangulation(triangulation, X + clipRect.x, Y + clipRect.y);
-		addChild(getTextField("EC-Triang\n" + triangulation.length + " tris", X, Y));
-
 		// CONNECTED COMPONENTS LABELING
-		setSlot(1, 0);
+		setSlot(0, 3);
 		startTime = Timer.stamp();
 		var labeler = new CustomLabeler(originalBMD, 1, true, Connectivity.EIGHT_CONNECTED, true);
 		labeler.run();
@@ -232,35 +162,60 @@ class GeomAlgoTest extends Sprite {
 		labeler.labelMap.applyToBitmapData(labelBMP.bitmapData);
 		addChild(getTextField("CCLabeler\n" + labeler.numComponents + " cmpts\n" + labeler.contours.length + " cntrs", X, Y));
 
-		// EARCLIPPER DECOMPOSITION
+		// RAMER-DOUGLAS-PEUCKER SIMPLIFICATION
+		setSlot(0, 4);
+		startTime = Timer.stamp();
+		simplifiedPolyRDP = RamerDouglasPeucker.simplify(perimeter, 1.5);
+		trace('Doug-Peuck    : ${Timer.stamp() - startTime}');
+		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y);
+		addChild(getTextField("Doug-Peuck\n" + simplifiedPolyRDP.length + " pts", X, Y));
+		
+		// VISVALINGAM-WHYATT SIMPLIFICATION
+		setSlot(0, 5);
+		startTime = Timer.stamp();
+		var simplifiedPolyVW = VisvalingamWhyatt.simplify(perimeter, SimplificationMethod.MaxPoints(simplifiedPolyRDP.length));
+		trace('Visv-Whyatt   : ${Timer.stamp() - startTime}');
+		drawPoly(simplifiedPolyVW, X + clipRect.x, Y + clipRect.y);
+		addChild(getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts", X, Y));		
+		
+		// EARCLIPPER TRIANGULATION
 		setSlot(1, 1);
+		startTime = Timer.stamp();
+		triangulation = EarClipper.triangulate(simplifiedPolyRDP);
+		trace('ECTriang      : ${Timer.stamp() - startTime}');
+		trace("  " + testOrientation(triangulation), testSimple(triangulation), testConvex(triangulation));
+		drawTriangulation(triangulation, X + clipRect.x, Y + clipRect.y);
+		addChild(getTextField("EC-Triang\n" + triangulation.length + " tris", X, Y));
+
+		// EARCLIPPER DECOMPOSITION
+		setSlot(1, 2);
 		startTime = Timer.stamp();
 		decomposition = EarClipper.polygonizeTriangles(triangulation);
 		trace('ECDecomp      : ${Timer.stamp() - startTime}');
-		trace(testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
+		trace("  " + testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
 		drawDecomposition(decomposition, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("EarClipper\nDecomp\n" + decomposition.length + " polys", X, Y));
 
 		// BAYAZIT DECOMPOSITION
-		setSlot(1, 2);
+		setSlot(1, 3);
 		startTime = Timer.stamp();
 		decomposition = Bayazit.decomposePoly(simplifiedPolyRDP);
 		trace('BayazDecomp   : ${Timer.stamp() - startTime}');
-		trace(testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
+		trace("  " + testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
 		drawDecompositionBayazit(decomposition, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Bayazit\nDecomp\n" + decomposition.length + " polys", X, Y));
 
 		// SNOEYINK-KEIL DECOMPOSITION
-		setSlot(1, 3);
+		setSlot(1, 4);
 		startTime = Timer.stamp();
 		decomposition = SnoeyinkKeil.decomposePoly(simplifiedPolyRDP);
 		trace('SnoeKeilDecomp: ${Timer.stamp() - startTime}');
-		trace(testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
+		trace("  " + testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
 		drawDecomposition(decomposition, X + clipRect.x, Y + clipRect.y);
 		addChild(getTextField("Snoeyink-Keil\nMin Decomp\n" + decomposition.length + " polys", X, Y));
 		
 		// VISIBILITY
-		setSlot(1, 4);
+		setSlot(1, 5);
 		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y);
 		var origIdx = Std.int(Math.random() * simplifiedPolyRDP.length);
 		var origPoint = simplifiedPolyRDP[origIdx];
@@ -282,7 +237,7 @@ class GeomAlgoTest extends Sprite {
 		g.lineStyle(1, COLOR, ALPHA);
 
 		// TESS2 - TRIANGULATION
-		setSlot(0, 5);
+		setSlot(2, 1);
 		var polySize = 3;
 		var resultType = ResultType.POLYGONS;
 		var flatContours = [for (c in labeler.contours) PolyTools.toFloatArray(RamerDouglasPeucker.simplify(c, 1.))];
@@ -290,33 +245,33 @@ class GeomAlgoTest extends Sprite {
 		var res = Tess2.tesselate(flatContours, null, resultType, polySize);
 		var polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace('Tess2Triang   : ${Timer.stamp() - startTime}');
-		trace(testOrientation(polys), testSimple(polys), testConvex(polys));
+		trace("  " + testOrientation(polys), testSimple(polys), testConvex(polys));
 		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
 		addChild(getTextField("Tess2-Triang\n" + res.elementCount + " tris", X, Y));
 
 		// TESS2 + EC - DECOMP
 		/*
-		setSlot(1, 6);
+		setSlot(2, 6);
 		var polygonized = EarClipper.polygonizeTriangles(polys);
 		for (p in polygonized) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
 		addChild(getTextField("Tess2 + EC\nDecomp\n" + polygonized.length + " polys", X, Y));
 		*/
 
 		// TESS2 - DECOMP
-		setSlot(1, 5);
+		setSlot(2, 2);
 		polySize = 24;
 		resultType = ResultType.POLYGONS;
 		startTime = Timer.stamp();
 		res = Tess2.tesselate(flatContours, null, resultType, polySize);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace('Tess2Decomp   : ${Timer.stamp() - startTime}');
-		trace(testOrientation(polys), testSimple(polys), testConvex(polys));
+		trace("  " + testOrientation(polys), testSimple(polys), testConvex(polys));
 		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
 		addChild(getTextField("Tess2\nDecomp\n" + res.elementCount + " polys", X, Y));
 		
 		// TESS2 - CONTOURS
 		/*
-		setSlot(1, 7);
+		setSlot(2, 7);
 		resultType = ResultType.BOUNDARY_CONTOURS;
 		res = Tess2.tesselate(flatContours, null, resultType, polySize);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
@@ -346,7 +301,7 @@ class GeomAlgoTest extends Sprite {
 		resultType = ResultType.BOUNDARY_CONTOURS;
 
 		// TESS2 - UNION
-		setSlot(2, 1);
+		setSlot(2, 3);
 		startTime = Timer.stamp();
 		res = Tess2.union(flatContours, flatRing, resultType, polySize, 2);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
@@ -355,7 +310,7 @@ class GeomAlgoTest extends Sprite {
 		addChild(getTextField("Tess2\nUnion\n" + res.elementCount + " polys", X, Y));
 		
 		// TESS2 - INTERSECTION
-		setSlot(2, 2);
+		setSlot(2, 4);
 		startTime = Timer.stamp();
 		res = Tess2.intersection(flatContours, flatRing, resultType, polySize, 2);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
@@ -364,7 +319,7 @@ class GeomAlgoTest extends Sprite {
 		addChild(getTextField("Tess2\nIntersection\n" + res.elementCount + " polys", X, Y));
 		
 		// TESS2 - DIFFERENCE
-		setSlot(2, 3);
+		setSlot(2, 5);
 		startTime = Timer.stamp();
 		res = Tess2.difference(flatContours, flatRing, resultType, polySize, 2);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
@@ -456,7 +411,7 @@ class GeomAlgoTest extends Sprite {
 	
 	static public function savePNG(bmd:BitmapData, fileName:String) {
 	#if (sys)
-		var ba:ByteArray = bmd.encode("png", 1);
+		var ba:ByteArray = bmd.encode(bmd.rect, "png");
 		var file:FileOutput = sys.io.File.write(fileName, true);
 		file.writeString(ba.toString());
 		file.close();
@@ -536,7 +491,7 @@ class GeomAlgoTest extends Sprite {
 		for (i in 1...points.length) {
 			var p = points[i];
 			g.lineTo(x + p.x, y + p.y);
-			drawArrowHead(points[i - 1], p, x, y, 2.25);
+			//drawArrowHead(points[i - 1], p, x, y, 2.25);
 		}
 		g.lineTo(x + points[0].x, y + points[0].y);
 		if (fill) g.endFill();

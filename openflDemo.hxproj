@@ -6,8 +6,8 @@
     <movie input="" />
     <movie path="project.xml" />
     <movie fps="60" />
-    <movie width="800" />
-    <movie height="600" />
+    <movie width="900" />
+    <movie height="650" />
     <movie version="1" />
     <movie minorVersion="0" />
     <movie platform="Lime" />
@@ -16,7 +16,7 @@
   </output>
   <!-- Other classes to be compiled into your SWF -->
   <classpaths>
-    <class path="C:\HaxeToolkit\haxe\openfl\git" />
+    <class path="C:\HaxeToolkit\haxe\openfl\3,1,0" />
     <class path="C:\HaxeToolkit\haxe\lime\git" />
     <class path="D:\Downloads\Dev\Haxe\hxPixels_git\src" />
     <class path="src" />
@@ -24,7 +24,7 @@
   </classpaths>
   <!-- Build options -->
   <build>
-    <option directives="openfl=3.0.8&#xA;lime=2.4.3&#xA;hxPixels=0.0.0&#xA;openfl-next&#xA;tools=2.4.3&#xA;no-compilation&#xA;openfl-flash&#xA;web&#xA;swf-script-timeout=60" />
+    <option directives="openfl=3.1.0&#xA;lime=2.4.4&#xA;hxPixels=0.0.0&#xA;openfl-next&#xA;tools=2.4.4&#xA;no-compilation&#xA;openfl-flash&#xA;web&#xA;swf-script-timeout=60" />
     <option flashStrict="False" />
     <option noInlineOnDebug="False" />
     <option mainClass="ApplicationMain" />
