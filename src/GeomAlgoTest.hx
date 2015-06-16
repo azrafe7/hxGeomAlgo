@@ -47,6 +47,7 @@ class GeomAlgoTest extends Sprite {
 
 	private var g:Graphics;
 	
+	private var THICKNESS:Float = 1;
 	private var COLOR:Int = 0xFF0000;
 	private var ALPHA:Float = 1.;
 	private var X_GAP:Int = 10;
@@ -85,7 +86,7 @@ class GeomAlgoTest extends Sprite {
 		var sprite = new Sprite();
 		addChild(sprite);
 		g = sprite.graphics;
-		g.lineStyle(.5, COLOR, ALPHA);
+		g.lineStyle(THICKNESS, COLOR, ALPHA);
 		originalBMD = openfl.Assets.getBitmapData(asset);
 		WIDTH = originalBMD.width;
 		HEIGHT = originalBMD.height + 80;
@@ -134,7 +135,7 @@ class GeomAlgoTest extends Sprite {
 		var isoContours = new IsoContours(originalBMD);
 		startTime = Timer.stamp();
 		var contours = isoContours.find(0, true);
-		//contourss = contours.concat(isoContours.find(0x80, false, false));
+		//contours = contours.concat(isoContours.find(0x80, false, false));
 		var pts = 0;
 		for (c in contours) pts += c.length;
 		trace('IsoContours   : ${Timer.stamp() - startTime}');
@@ -222,19 +223,19 @@ class GeomAlgoTest extends Sprite {
 		// visible points
 		startTime = Timer.stamp();
 		var visPoints = Visibility.getVisiblePolyFrom(simplifiedPolyRDP, origIdx);
-		g.lineStyle(1, 0xFFFF00);
+		g.lineStyle(THICKNESS, 0xFFFF00);
 		drawPoly(visPoints, X + clipRect.x, Y + clipRect.y);
 		// visible vertices
 		var visIndices = Visibility.getVisibleIndicesFrom(simplifiedPolyRDP, origIdx);
 		var visVertices = [for (i in 0...visIndices.length) simplifiedPolyRDP[visIndices[i]]];
 		trace('Visisibility  : ${Timer.stamp() - startTime}');
-		g.lineStyle(1, 0x00FF00);
+		g.lineStyle(THICKNESS, 0x00FF00);
 		drawPoints(visVertices, X + clipRect.x, Y + clipRect.y);
 		// draw origPoint
-		g.lineStyle(1, 0x0000FF);
+		g.lineStyle(THICKNESS, 0x0000FF);
 		if (origPoint != null) g.drawCircle(X + origPoint.x + clipRect.x, Y + origPoint.y + clipRect.y, 3);
 		addChild(getTextField("Visibility\n" + visVertices.length + " vts\n" + visPoints.length + " pts", X, Y));
-		g.lineStyle(1, COLOR, ALPHA);
+		g.lineStyle(THICKNESS, COLOR, ALPHA);
 
 		// TESS2 - TRIANGULATION
 		setSlot(2, 1);
@@ -556,15 +557,15 @@ class GeomAlgoTest extends Sprite {
 		
 		// draw Reflex and Steiner points
 		if (showReflex) {
-			g.lineStyle(1, (COLOR >> 1) | COLOR, ALPHA);
+			g.lineStyle(THICKNESS, (COLOR >> 1) | COLOR, ALPHA);
 			for (p in Bayazit.reflexVertices) g.drawCircle(x + p.x, y + p.y, 2);
 		}
 		
 		if (showSteiner) {
-			g.lineStyle(1, (COLOR >> 2) | COLOR, ALPHA);
+			g.lineStyle(THICKNESS, (COLOR >> 2) | COLOR, ALPHA);
 			for (p in Bayazit.steinerPoints) g.drawCircle(x + p.x, y + p.y, 2);
 		}
-		g.lineStyle(1, COLOR, ALPHA);
+		g.lineStyle(THICKNESS, COLOR, ALPHA);
 	}
 
 	public function getTextField(text:String = "", x:Float, y:Float, ?size:Float):TextField
