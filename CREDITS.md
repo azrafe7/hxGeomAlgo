@@ -33,7 +33,7 @@
     - GLU Libtess (by Eric Veach, July 1994)
     - [https://github.com/memononen/tess2.js](https://github.com/memononen/tess2.js) (Mikko Mononen, Aug 2013)
  - IsoContours (Contour Tracing)
-    - [http://en.wikipedia.org/wiki/Marching_squares)
+    - [http://en.wikipedia.org/wiki/Marching_squares](http://en.wikipedia.org/wiki/Marching_squares)
     - [https://github.com/deltaluca/nape](https://github.com/deltaluca/nape) (Luca Deltodesco)
     - [https://github.com/scikit-image/scikit-image](https://github.com/scikit-image/scikit-image) (scikit-image team)
  

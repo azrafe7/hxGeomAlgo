@@ -4,6 +4,7 @@ hxGeomAlgo
 Small collection of geometry algorithms in Haxe 3. ([link to AS3 port](https://github.com/azrafe7/as3GeomAlgo))
 
 ![](screenshot.png)
+<sup>[online swf demo](https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/hxGeomAlgo/OpenflDemo.swf)</sup>
 
 #### [Marching Squares (Contour Tracing)](https://en.wikipedia.org/w/index.php?title=Marching_squares&oldid=342542650)
 
@@ -74,7 +75,7 @@ Based on:
 
 Based on:
 
- - [http://en.wikipedia.org/wiki/Marching_squares)
+ - [http://en.wikipedia.org/wiki/Marching_squares](http://en.wikipedia.org/wiki/Marching_squares)
  - [https://github.com/deltaluca/nape](https://github.com/deltaluca/nape)	(Haxe - by Luca Deltodesco)
  - [https://github.com/scikit-image/scikit-image](https://github.com/scikit-image/scikit-image)	(Python - by scikit-image team)
 
