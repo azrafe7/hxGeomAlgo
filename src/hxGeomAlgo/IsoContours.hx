@@ -47,7 +47,7 @@ class IsoContours
 		this.height = pixels.height;
 		this.values = null;
 		
-		if (isoFunction == null) this.isoFunction = isoAlpha;
+		this.isoFunction = (isoFunction != null) ? isoFunction : isoAlpha;
 	}
 	
 	/**
