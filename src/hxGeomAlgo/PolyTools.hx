@@ -121,8 +121,8 @@ class PolyTools
 				// then the poly is not simple
 				var intersection:HxPoint = segmentIntersect(poly[p0], poly[p1], poly[q0], poly[q1]);
 				if (intersection != null
-					&& !(intersection.equals(poly[p0]) || intersection.equals(poly[p1]))
-					&& !(intersection.equals(poly[q0]) || intersection.equals(poly[q1])))
+					&& !(distance(intersection, poly[p0]) < EPSILON || distance(intersection, poly[p1]) < EPSILON)
+					&& !(distance(intersection, poly[q0]) < EPSILON || distance(intersection, poly[q1]) < EPSILON))
 				{
 					return false;
 				}
@@ -161,10 +161,13 @@ class PolyTools
 		// check to see if distance between intersection and endpoints
 		// is longer than actual segments.
 		// return null otherwise.
-		if (distanceSquared(intersectionPoint, p1) > distanceSquared(p0, p1)) return null;
-		if (distanceSquared(intersectionPoint, p0) > distanceSquared(p0, p1)) return null;
-		if (distanceSquared(intersectionPoint, q1) > distanceSquared(q0, q1)) return null;
-		if (distanceSquared(intersectionPoint, q0) > distanceSquared(q0, q1)) return null;
+		var p0p1 = distanceSquared(p0, p1);
+		var q0q1 = distanceSquared(q0, q1);
+		
+		if (distanceSquared(intersectionPoint, p1) > p0p1) return null;
+		if (distanceSquared(intersectionPoint, p0) > p0p1) return null;
+		if (distanceSquared(intersectionPoint, q1) > q0q1) return null;
+		if (distanceSquared(intersectionPoint, q0) > q0q1) return null;
 		
 		return intersectionPoint;
 	}
