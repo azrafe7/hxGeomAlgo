@@ -110,7 +110,7 @@ class GeomAlgoTest extends Sprite {
 		originalBitmap.x = X;
 		originalBitmap.y = Y;
 		clipRect = originalBMD.rect;
-		//g.drawRect(originalBitmap.x + clipRect.x, originalBitmap.y + clipRect.y, clipRect.width, clipRect.height);
+		g.drawRect(originalBitmap.x + clipRect.x, originalBitmap.y + clipRect.y, clipRect.width, clipRect.height);
 		addChild(getTextField("Original\n" + originalBMD.width + "x" + originalBMD.height, X, Y));
 
 		// MARCHING SQUARES
@@ -133,10 +133,20 @@ class GeomAlgoTest extends Sprite {
 
 		// ISOCONTOURS
 		setSlot(0, 2);
+		
+		var customIsoFunction = function (pixels:Pixels, x:Int, y:Int):Float {
+			if (IsoContours.isOutOfBounds(pixels, x, y)) return 0;
+			else {
+				var pixel = pixels.getPixel32(x, y);
+				return pixel.R;
+			}
+		}
+		
 		var isoContours = new IsoContours(originalBMD);
 		startTime = Timer.stamp();
 		var contours = isoContours.find(0, true);
-		//contours = contours.concat(isoContours.find(0x80, false, false));
+		//isoContours.isoFunction = customIsoFunction;
+		//contours = contours.concat(isoContours.find(0x80);
 		var pts = 0;
 		for (c in contours) pts += c.length;
 		trace('IsoContours   : ${Timer.stamp() - startTime}');
@@ -345,11 +355,12 @@ class GeomAlgoTest extends Sprite {
 		
 		// test CCW and duplicate points
 		trace("\n");
-		var simplifications = [perimeter, simplifiedPolyRDP, simplifiedPolyVW, visPoints].concat(labeler.contours);
+		var polys = [perimeter, simplifiedPolyRDP, simplifiedPolyVW, visPoints].concat(labeler.contours).concat(contours);
 		var labelerHeaders = [for (i in 0...labeler.contours.length) 'labeler[$i]   '];
-		var headers = ["perimeter    ", "simplifiedRDP", "simplifiedVW ", "visPoints    "].concat(labelerHeaders);
-		for (i in 0...simplifications.length) {
-			var poly = simplifications[i];
+		var isoHeaders = [for (i in 0...labeler.contours.length) 'isoCntr[$i]   '];
+		var headers = ["perimeter    ", "simplifiedRDP", "simplifiedVW ", "visPoints    "].concat(labelerHeaders).concat(isoHeaders);
+		for (i in 0...polys.length) {
+			var poly = polys[i];
 			var name = headers[i];
 			var orientation = testOrientation([poly]);
 			var hasDups = PolyTools.findDuplicatePoints(poly).length > 0;
@@ -494,7 +505,7 @@ class GeomAlgoTest extends Sprite {
 		for (i in 1...points.length) {
 			var p = points[i];
 			g.lineTo(x + p.x, y + p.y);
-			//drawArrowHead(points[i - 1], p, x, y, 2.25);
+			//drawArrowHead(points[i - 1], p, x, y, 1.25);
 		}
 		g.lineTo(x + points[0].x, y + points[0].y);
 		if (fill) g.endFill();
