@@ -28,18 +28,14 @@ class PolyTools
 	
 	/** Returns true if `poly` is counterclockwise (assumes y axis pointing down). */
 	static public function isCCW(poly:Poly):Bool {
-		if (poly == null || poly.length <= 2) return false;
+		if (poly.length <= 2) return true;
 		
-		var br:Int = 0;
-
-		// find bottom right point
-		for (i in 1...poly.length) {
-			if (poly[i].y > poly[br].y || (poly[i].y == poly[br].y && poly[i].x > poly[br].x)) {
-				br = i;
-			}
+		var signedArea = 0.;
+		for (i in 0...poly.length) {
+			signedArea += at(poly, i - 1).x * poly[i].y - poly[i].x * at(poly, i - 1).y;
 		}
-
-		return isRight(at(poly, br - 1), at(poly, br), at(poly, br + 1));
+		
+		return signedArea < 0;
 	}
 	
 	/** Makes `poly` counterclockwise (in place). Returns true if reversed. */
