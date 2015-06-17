@@ -304,7 +304,7 @@ class CCLabeler
 	 * Writes a 32-bit pixel `color` at position (`x`, `y`) in `pixels`.
 	 * If the specified position is out of bounds nothing is written.
 	 */
-	inline private function setPixel32(pixels:Pixels, x:Int, y:Int, color:Int):Void
+	private function setPixel32(pixels:Pixels, x:Int, y:Int, color:Int):Void
 	{
 		if (!isOutOfBounds(x, y)) {
 			pixels.setPixel32(x, y, color);
