@@ -48,7 +48,7 @@ class GeomAlgoTest extends Sprite {
 
 	private var g:Graphics;
 	
-	private var THICKNESS:Float = 1;
+	private var THICKNESS:Float = .5;
 	private var COLOR:Int = 0xFF0000;
 	private var ALPHA:Float = 1.;
 	private var X_GAP:Int = 10;
@@ -56,7 +56,7 @@ class GeomAlgoTest extends Sprite {
 
 	private var TEXT_COLOR:Int = 0xFFFFFF;
 	private var TEXT_FONT:String = "_typewriter";
-	private var TEXT_SIZE:Float = 12;
+	private var TEXT_SIZE:Int = 12;
 	private var TEXT_OFFSET:Float = -60;
 	private var TEXT_OUTLINE:GlowFilter = new GlowFilter(0xFF000000, 1, 2, 2, 6);
 
@@ -255,8 +255,8 @@ class GeomAlgoTest extends Sprite {
 		var flatContours = [for (c in labeler.contours) PolyTools.toFloatArray(RamerDouglasPeucker.simplify(c, 1.))];
 		startTime = Timer.stamp();
 		var res = Tess2.tesselate(flatContours, null, resultType, polySize);
-		var polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace('Tess2Triang   : ${Timer.stamp() - startTime}');
+		var polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace("  " + testOrientation(polys), testSimple(polys), testConvex(polys));
 		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
 		addChild(getTextField("Tess2-Triang\n" + res.elementCount + " tris", X, Y));
@@ -481,7 +481,7 @@ class GeomAlgoTest extends Sprite {
 		var i = len - 1;
 		while (i >= 0) {
 			var p = points[i];
-			var label = getTextField("" + i, 0, 0, TEXT_SIZE * .75);
+			var label = getTextField("" + i, 0, 0, Std.int(TEXT_SIZE * .75));
 			var fmt = label.getTextFormat();
 			fmt.align = TextFormatAlign.LEFT;
 			label.setTextFormat(fmt);
@@ -581,7 +581,7 @@ class GeomAlgoTest extends Sprite {
 		g.lineStyle(THICKNESS, COLOR, ALPHA);
 	}
 
-	public function getTextField(text:String = "", x:Float, y:Float, ?size:Float):TextField
+	public function getTextField(text:String = "", x:Float, y:Float, ?size:Int):TextField
 	{
 		var tf:TextField = new TextField();
 		var fmt:TextFormat = new TextFormat(TEXT_FONT, null, TEXT_COLOR);
