@@ -97,7 +97,7 @@ class Tess2
 	 * @param	contours		Array of polygons to tesselate. Each poly is specified as a sequence of point coords (i.e. [x0, y0, x1, y1, x2, y2, ...]).
 	 * @param	windingRule		Winding rule to apply. Deaults to WindingRule.ODD.
 	 * @param	resultType		The result type you want as output. Defaults to ResultType.POLYGONS.
-	 * @param	polySize		Max dimesion of the polygons resulting from the tesselation. Defaults to 3 (not considered if resultType is BOUNDARY_CONTOURS or CONSTRAINED_DELAUNAY).
+	 * @param	polySize		Max dimesion of the polygons resulting from the tesselation. Defaults to 3 (not considered if resultType is BOUNDARY_CONTOURS or EXPERIMENTAL_DELAUNAY).
 	 * @param	vertexDim		Pass 2 when working with 2D polys (default), or 3 for 3D.
 	 * @param	normal			Array of length 3 representing the normals in each plane.
 	 * 
