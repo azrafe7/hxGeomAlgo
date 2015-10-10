@@ -261,6 +261,18 @@ class GeomAlgoTest extends Sprite {
 		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
 		addChild(getTextField("Tess2-Triang\n" + res.elementCount + " tris", X, Y));
 
+		// TESS2 - EXPERIMENTAL DELAUNAY TRIANGULATION
+		setSlot(1, 0);
+		polySize = 3;
+		resultType = ResultType.EXPERIMENTAL_DELAUNAY;
+		startTime = Timer.stamp();
+		res = Tess2.tesselate(flatContours, null, resultType, polySize);
+		trace('Tess2Delaunay : ${Timer.stamp() - startTime}');
+		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
+		trace("  " + testOrientation(polys), testSimple(polys), testConvex(polys));
+		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
+		addChild(getTextField("Tess2-Delaunay\n" + res.elementCount + " tris", X, Y));
+
 		// TESS2 + EC - DECOMP
 		/*
 		setSlot(2, 6);

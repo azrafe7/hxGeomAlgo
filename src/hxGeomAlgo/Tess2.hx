@@ -39,8 +39,9 @@
  * 
  * Based on:
  * 
- * @see tess2.js (https://github.com/memononen/tess2.js) 		(JS - by Mikko Mononen, Aug 2013)
- * GLU libtess 													(by Eric Veach, July 1994)
+ * @see tess2.js (https://github.com/memononen/tess2.js) 			(JS - by Mikko Mononen, Aug 2013)
+ * @see libtess2 PR (https://github.com/memononen/libtess2/pull/7)	(C - by Marius Kintel)
+ * GLU libtess 														(by Eric Veach, July 1994)
  * 
  * @author azrafe7
  */
@@ -65,6 +66,10 @@ enum ResultType
 	POLYGONS;
 	CONNECTED_POLYGONS;
 	BOUNDARY_CONTOURS;
+	EXPERIMENTAL_DELAUNAY; /* Similar to POLYGONS, but we output only triangles and we attempt 
+							  to provide a valid Constrained Delaunay triangulation.
+							  @see https://github.com/memononen/libtess2/pull/7
+							*/
 }
 
 typedef TessResult = {
@@ -83,6 +88,7 @@ typedef TessResult = {
  * 
  * Further reading: http://www.glprogramming.com/red/chapter11.html
  */
+@:expose
 class Tess2
 {
 	/**
@@ -91,7 +97,7 @@ class Tess2
 	 * @param	contours		Array of polygons to tesselate. Each poly is specified as a sequence of point coords (i.e. [x0, y0, x1, y1, x2, y2, ...]).
 	 * @param	windingRule		Winding rule to apply. Deaults to WindingRule.ODD.
 	 * @param	resultType		The result type you want as output. Defaults to ResultType.POLYGONS.
-	 * @param	polySize		Max dimesion of the polygons resulting from the tesselation. Defaults to 3 (not considered if resultType is BOUNDARY_CONTOURS).
+	 * @param	polySize		Max dimesion of the polygons resulting from the tesselation. Defaults to 3 (not considered if resultType is BOUNDARY_CONTOURS or CONSTRAINED_DELAUNAY).
 	 * @param	vertexDim		Pass 2 when working with 2D polys (default), or 3 for 3D.
 	 * @param	normal			Array of length 3 representing the normals in each plane.
 	 * 
@@ -180,7 +186,7 @@ class Tess2
 		var i = 0;
 		switch (resultType) 
 		{
-			case ResultType.POLYGONS:
+			case ResultType.POLYGONS, ResultType.EXPERIMENTAL_DELAUNAY:
 				while (i < elements.length) {
 					var poly = [];
 					for (j in 0...polySize) {
@@ -335,6 +341,7 @@ private class TessHalfEdge
 	public var winding = 0;						/* change in winding number when crossing
 												   from the right face to the left face */
 	public var side:Int;						/* 0 for original dir, 1 for symmetric */
+	public var mark:Bool; 						/* Used by the Edge Flip algorithm */
 	
 	public function new(side:Int)
 	{
@@ -405,7 +412,8 @@ private class TessMesh
 		e.Lface = null;
 		e.winding = 0;
 		e.activeRegion = null;
-
+		e.mark = false;
+		
 		eSym.next = eSym;
 		eSym.Sym = e;
 		eSym.Onext = null;
@@ -414,7 +422,8 @@ private class TessMesh
 		eSym.Lface = null;
 		eSym.winding = 0;
 		eSym.activeRegion = null;
-
+		e.Sym.mark = false;
+		
 		this.vHead = v;			/* dummy header for vertex list */
 		this.fHead = f;			/* dummy header for face list */
 		this.eHead = e;			/* dummy header for edge list */
@@ -753,6 +762,85 @@ private class TessMesh
 			this.makeFace_(newFace, eDst, eOrg.Lface);
 			eOrg.Lface.anEdge = eOrg;
 		}
+	}
+
+	//void tessMeshFlipEdge( TESSmesh *mesh, TESShalfEdge *edge )
+	static public function flipEdge(mesh:TessMesh, edge:TessHalfEdge):Void
+	{
+		var a0:TessHalfEdge = edge;
+		var a1:TessHalfEdge = a0.Lnext;
+		var a2:TessHalfEdge = a1.Lnext;
+		var b0:TessHalfEdge = edge.Sym;
+		var b1:TessHalfEdge = b0.Lnext;
+		var b2:TessHalfEdge = b1.Lnext;
+
+		var aOrg:TessVertex = a0.Org;
+		var aOpp:TessVertex = a2.Org;
+		var bOrg:TessVertex = b0.Org;
+		var bOpp:TessVertex = b2.Org;
+
+		var fa:TessFace = a0.Lface;
+		var fb:TessFace = b0.Lface;
+
+		Debug.assert(Geom.edgeIsInternal(edge));
+		Debug.assert(a2.Lnext == a0);
+		Debug.assert(b2.Lnext == b0);
+
+		a0.Org = bOpp;
+		a0.Onext = b1.Sym;
+		b0.Org = aOpp;
+		b0.Onext = a1.Sym;
+		a2.Onext = b0;
+		b2.Onext = a0;
+		b1.Onext = a2.Sym;
+		a1.Onext = b2.Sym;
+
+		a0.Lnext = a2;
+		a2.Lnext = b1;
+		b1.Lnext = a0;
+
+		b0.Lnext = b2;
+		b2.Lnext = a1;
+		a1.Lnext = b0;
+
+		a1.Lface = fb;
+		b1.Lface = fa;
+
+		fa.anEdge = a0;
+		fb.anEdge = b0;
+
+		if (aOrg.anEdge == a0) aOrg.anEdge = b1;
+		if (bOrg.anEdge == b0) bOrg.anEdge = a1;
+
+		Debug.assert(a0.Lnext.Onext.Sym == a0);
+		Debug.assert(a0.Onext.Sym.Lnext == a0);
+		Debug.assert(a0.Org.anEdge.Org == a0.Org);
+
+
+		Debug.assert(a1.Lnext.Onext.Sym == a1);
+		Debug.assert(a1.Onext.Sym.Lnext == a1);
+		Debug.assert(a1.Org.anEdge.Org == a1.Org);
+
+		Debug.assert(a2.Lnext.Onext.Sym == a2);
+		Debug.assert(a2.Onext.Sym.Lnext == a2);
+		Debug.assert(a2.Org.anEdge.Org == a2.Org);
+
+		Debug.assert(b0.Lnext.Onext.Sym == b0);
+		Debug.assert(b0.Onext.Sym.Lnext == b0);
+		Debug.assert(b0.Org.anEdge.Org == b0.Org);
+
+		Debug.assert(b1.Lnext.Onext.Sym == b1);
+		Debug.assert(b1.Onext.Sym.Lnext == b1);
+		Debug.assert(b1.Org.anEdge.Org == b1.Org);
+
+		Debug.assert(b2.Lnext.Onext.Sym == b2);
+		Debug.assert(b2.Onext.Sym.Lnext == b2);
+		Debug.assert(b2.Org.anEdge.Org == b2.Org);
+
+		Debug.assert(aOrg.anEdge.Org == aOrg);
+		Debug.assert(bOrg.anEdge.Org == bOrg);
+
+		Debug.assert(a0.Oprev.Onext.Org == a0.Org);
 	}
 
 	/* tessMeshDelete( eDel ) removes the edge eDel.  There are several cases:
@@ -1108,6 +1196,10 @@ private class Geom
 	static public function edgeGoesRight(e:TessHalfEdge):Bool {
 		return Geom.vertLeq(e.Org, e.Dst);
 	}
+
+	static public function edgeIsInternal(e:TessHalfEdge):Bool {
+		return e.Rface != null && e.Rface.inside;
+	}
 	
 	static public function vertL1dist(u:TessVertex, v:TessVertex):Float {
 		return (Math.abs(u.s - v.s) + Math.abs(u.t - v.t));
@@ -1320,6 +1412,33 @@ private class Geom
 			if (z1 + z2 < 0) { z1 = -z1; z2 = -z2; }
 			v.t = Geom.interpolate(z1, o2.t, z2, d2.t);
 		}
+	}
+	
+	/*
+		Calculate the angle between v1-v2 and v1-v0
+	 */
+	//TESSreal calcAngle( TESSvertex *v0, TESSvertex *v1, TESSvertex *v2 )
+	static public function calcAngle(v0:TessVertex, v1:TessVertex, v2:TessVertex):Float
+	{
+		var num:Float, den:Float;
+		var a = [v2.s - v1.s, v2.t - v1.t];
+		var b = [v0.s - v1.s, v0.t - v1.t];
+		num = a[0] * b[0] + a[1] * b[1];
+		den = Math.sqrt(a[0] * a[0] + a[1] * a[1]) * Math.sqrt(b[0] * b[0] + b[1] * b[1]);
+		if (den > 0.0) num /= den;
+		if (num < -1.0) num = -1.0;
+		if (num >  1.0) num =  1.0;
+		return Math.acos(num);
+	}
+
+	/*
+		Returns 1 is edge is locally delaunay
+	 */
+	//int tesedgeIsLocallyDelaunay( TESShalfEdge *e )
+	static public function edgeIsLocallyDelaunay(e:TessHalfEdge):Bool
+	{
+		return (calcAngle(e.Lnext.Org, e.Lnext.Lnext.Org, e.Org) +
+				calcAngle(e.Sym.Lnext.Org, e.Sym.Lnext.Lnext.Org, e.Sym.Org)) < (Math.PI + 0.01);
 	}
 }
 
@@ -3238,6 +3357,67 @@ class Tesselator
 		return true;
 	}
 
+	/*
+		Starting with a valid triangulation, uses the Edge Flip algorithm to
+		refine the triangulation into a Constrained Delaunay Triangulation.
+	*/
+	//int tessMeshRefineDelaunay( TESSmesh *mesh, TESSalloc *alloc )
+	//NOTE: double check this function (in regards to allocator esp.)
+	private function refineDelaunay_(mesh:TessMesh):Void
+	{
+		/* At this point, we have a valid, but not optimal, triangulation.
+		   We refine the triangulation using the Edge Flip algorithm */
+
+	/*
+		 1) Find all internal edges
+		 2) Mark all dual edges
+		 3) insert all dual edges into a queue
+	*/
+		var f:TessFace;
+		var stack = [];
+		var e:TessHalfEdge;
+		var edges:Array<TessHalfEdge> = [null, null, null, null];
+		
+		f = mesh.fHead.next;
+		while (f != mesh.fHead) {
+			if (f.inside) {
+				e = f.anEdge;
+				do {
+					e.mark = Geom.edgeIsInternal(e); /* Mark internal edges */
+					if (e.mark && !e.Sym.mark) stack.push(e); /* Insert into queue */
+					e = e.Lnext;
+				} while (e != f.anEdge);
+			}
+			f = f.next;
+		}
+		
+		// Pop stack until we find a reversed edge
+		// Flip the reversed edge, and insert any of the four opposite edges
+		// which are internal and not already in the stack (!marked)
+		while (stack.length > 0) {
+			e = stack.pop();
+			e.mark = e.Sym.mark = false;
+			if (!Geom.edgeIsLocallyDelaunay(e)) {
+				TessMesh.flipEdge(mesh, e);
+				// for each opposite edge
+				edges[0] = e.Lnext;
+				edges[1] = e.Lprev;
+				edges[2] = e.Sym.Lnext;
+				edges[3] = e.Sym.Lprev;
+				//NOTE: check upper bound
+				for (i in 0...3) {
+					if (!edges[i].mark && Geom.edgeIsInternal(edges[i])) {
+						edges[i].mark = edges[i].Sym.mark = true;
+						stack.push(edges[i]);
+					}
+				}
+			}
+		}
+		
+		for (e in stack) stack.pop();
+		stack = null;
+	}
+
 	/* tessMeshDiscardExterior( mesh ) zaps (ie. sets to NULL) all faces
 	* which are not marked "inside" the polygon.  Since further mesh operations
 	* on NULL faces are not allowed, the main purpose is to clean up the
@@ -3662,6 +3842,11 @@ class Tesselator
 			this.setWindingNumber_(mesh, 1, true);
 		} else {
 			this.tessellateInterior_(mesh); 
+			if (resultType == ResultType.EXPERIMENTAL_DELAUNAY) {
+				this.refineDelaunay_(mesh);
+				//resultType = ResultType.POLYGONS; //NOTE: check this overridden var
+				polySize = 3;
+			}
 		}
 //		if (rc == 0) longjmp(tess->env,1);  /* could've used a label */
 
