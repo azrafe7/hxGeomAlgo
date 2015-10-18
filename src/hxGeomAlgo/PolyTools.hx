@@ -375,4 +375,16 @@ class PolyTools
 		
 		return out;
 	}
+	
+	/** Expands a line into a rectangular poly, offsetting it by half-`thickness` along its normals. */
+	@:noUsing static public function inflateLine(start:HxPoint, end:HxPoint, thickness:Float):Poly {
+		var halfWidth = thickness / 2;
+		var dx = end.x - start.x;
+		var dy = end.y - start.y;
+		var len = Math.sqrt(sqr(dx) + sqr(dy));
+		var nx = (dx / len) * halfWidth;
+		var ny = (dy / len) * halfWidth;
+		return [new HxPoint(start.x - ny, start.y + nx), new HxPoint(end.x - ny, end.y + nx), 
+				new HxPoint(end.x + ny, end.y - nx), new HxPoint(start.x + ny, start.y - nx)];
+	}
 }
