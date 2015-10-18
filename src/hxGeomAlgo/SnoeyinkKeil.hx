@@ -26,7 +26,7 @@ import hxGeomAlgo.SnoeyinkKeil.DecompPoly;
 
 using hxGeomAlgo.PolyTools;
 
-
+@:expose
 class SnoeyinkKeil
 {
 	

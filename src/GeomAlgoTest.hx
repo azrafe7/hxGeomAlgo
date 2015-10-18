@@ -624,7 +624,7 @@ class CustomLabeler extends CCLabeler
 {
 	var pixelInfoMap:Map<Int, PixelInfo>; // cache
 	
-	public function new(pixels:Pixels, alphaThreshold:Int = 1, traceContours:Bool = true, connectivity:Connectivity = Connectivity.EIGHT_CONNECTED, calcArea:Bool = false)
+	public function new(pixels:Pixels, alphaThreshold:Int = 1, traceContours:Bool = true, ?connectivity:Connectivity, calcArea:Bool = false)
 	{
 		super(pixels, alphaThreshold, traceContours, connectivity, calcArea);
 		

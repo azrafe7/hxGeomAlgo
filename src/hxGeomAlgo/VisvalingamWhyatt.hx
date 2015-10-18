@@ -17,6 +17,7 @@ import hxGeomAlgo.Debug;
 
 
 /** Specifies the method to use in the simplification process. */
+@:expose
 enum SimplificationMethod {
 	MaxPoints(n:Int);		// Allow max n points (n > 2).
 	ThresholdArea(a:Float);	// Filter out all triangles with area <= a.
@@ -24,8 +25,15 @@ enum SimplificationMethod {
 }
 
 
+@:expose
 class VisvalingamWhyatt
 {	
+#if js
+	static function __init__() {
+		PolyTools.exposeEnum(SimplificationMethod);
+	}
+#end
+
 	static private var method:SimplificationMethod;
 	static private var minHeap:Heap<Triangle>;
 	

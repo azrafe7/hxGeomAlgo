@@ -17,14 +17,22 @@ import hxGeomAlgo.PolyTools.Poly;
 import hxPixels.Pixels;
 
 
-@:enum abstract Connectivity(Int) {
-	var FOUR_CONNECTED = 4;
-	var EIGHT_CONNECTED = 8;
+@:expose
+enum Connectivity {
+	FOUR_CONNECTED;
+	EIGHT_CONNECTED;
 }
 
 
+@:expose
 class CCLabeler
 {
+#if js
+	static function __init__() {
+		PolyTools.exposeEnum(Connectivity);
+	}
+#end
+	
 	/** Minimum alpha value to consider a pixel opaque (in the range 1-255). */
 	public var alphaThreshold:Int;
 
@@ -90,12 +98,12 @@ class CCLabeler
 	 * @param	connectivity	Type of connectivity to search for (defaults to EIGHT_CONNECTED).
 	 * @param	calcArea		Whether to compute and store components' area (in areaMap) while labeling.
 	 */
-	public function new(pixels:Pixels, alphaThreshold:Int = 1, traceContours:Bool = true, connectivity:Connectivity = Connectivity.EIGHT_CONNECTED, calcArea:Bool = false)
+	public function new(pixels:Pixels, alphaThreshold:Int = 1, traceContours:Bool = true, ?connectivity:Connectivity, calcArea:Bool = false)
 	{
 		setSource(pixels);
 		
 		this.alphaThreshold = alphaThreshold;
-		this.connectivity = connectivity;
+		this.connectivity = connectivity != null ? connectivity : EIGHT_CONNECTED;
 		this.traceContours = traceContours;
 		this.calcArea = calcArea;
 		numComponents = 0;

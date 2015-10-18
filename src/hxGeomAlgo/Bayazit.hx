@@ -25,6 +25,7 @@ import hxGeomAlgo.PolyTools;
 using hxGeomAlgo.PolyTools;
 
 
+@:expose
 class Bayazit
 {
 	

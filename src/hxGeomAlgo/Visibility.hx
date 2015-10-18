@@ -41,6 +41,7 @@ enum VertexType {
 }
 
 
+@:expose
 class Visibility
 {
 	inline static private var NOT_SAVED:Int = -1;

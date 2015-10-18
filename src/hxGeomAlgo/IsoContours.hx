@@ -21,6 +21,7 @@ import hxPixels.Pixels;
 typedef IsoFunction = Pixels->Int->Int->Float;
 
 
+@:expose
 class IsoContours
 {
 

@@ -52,6 +52,7 @@ import hxGeomAlgo.PolyTools.Poly;
 import hxGeomAlgo.Debug;
 
 
+@:expose
 enum WindingRule
 {
 	ODD;
@@ -61,6 +62,7 @@ enum WindingRule
 	ABS_GEQ_TWO;
 }
 
+@:expose
 enum ResultType
 {
 	POLYGONS;
@@ -91,6 +93,13 @@ typedef TessResult = {
 @:expose
 class Tess2
 {
+#if js
+	static function __init__() {
+		PolyTools.exposeEnum(WindingRule);
+		PolyTools.exposeEnum(ResultType);
+	}
+#end
+	
 	/**
 	 * Tesselates the specified `contours`.
 	 * 
@@ -2974,6 +2983,7 @@ private class Sweep
  * 
  * Further reading: http://www.glprogramming.com/red/chapter11.html
  */
+@:expose
 class Tesselator
 {
 	/*** state needed for collecting the input data ***/

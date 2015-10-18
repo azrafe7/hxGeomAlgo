@@ -17,6 +17,7 @@ import hxGeomAlgo.HxPoint;
 typedef Poly = Array<HxPoint>;
 
 
+@:expose
 class PolyTools
 {
 	static private var point:HxPoint = new HxPoint();	// used internally
@@ -386,5 +387,23 @@ class PolyTools
 		var ny = (dy / len) * halfWidth;
 		return [new HxPoint(start.x - ny, start.y + nx), new HxPoint(end.x - ny, end.y + nx), 
 				new HxPoint(end.x + ny, end.y - nx), new HxPoint(start.x + ny, start.y - nx)];
+	}
+	
+	/** Used internally to expose enums in js. */
+	@:noUsing @:noCompletion static public function exposeEnum<T>(enumClass:Enum<T>, ?as:String) {
+	#if js
+		var dotPath = (as != null ? as : enumClass.getName()).split(".");
+		untyped {
+            var exports = $hx_exports;
+            var i = 0;
+            while (i < dotPath.length - 1) {
+				var currPath = dotPath[i];
+				exports[currPath] = exports[currPath] || { };
+				exports = exports[currPath];
+                i++;
+			}
+			exports[dotPath[i]] = enumClass;
+		}
+	#end
 	}
 }
