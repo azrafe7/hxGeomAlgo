@@ -23,6 +23,7 @@ enum StepDirection {
 }
 
 
+@:expose
 class MarchingSquares
 {
 	/** Minimum alpha value to consider a pixel opaque (in the range 0-255). */

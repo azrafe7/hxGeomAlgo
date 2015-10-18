@@ -14,6 +14,7 @@ package hxGeomAlgo;
 
 import hxGeomAlgo.PolyTools;
 
+@:expose
 class RamerDouglasPeucker
 {
 	/**
