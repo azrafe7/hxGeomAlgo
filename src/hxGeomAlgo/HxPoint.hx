@@ -5,6 +5,7 @@ package hxGeomAlgo;
  * 
  * @author azrafe7
  */
+@:expose
 abstract HxPoint(HxPointData) from HxPointData to HxPointData
 {
 	public var x(get, set):Float;
@@ -74,5 +75,10 @@ class HxPointData
 	{
 		this.x = x;
 		this.y = y;
+	}
+	
+	inline public function toString()
+	{
+		return '(${x}, ${y})';
 	}	
 }
