@@ -27,6 +27,12 @@ import hxGeomAlgo.SnoeyinkKeil.DecompPoly;
 using hxGeomAlgo.PolyTools;
 
 @:expose
+typedef Diagonal = {
+	var from:Int;
+	var to:Int;
+}
+
+@:expose
 class SnoeyinkKeil
 {
 	
@@ -34,6 +40,7 @@ class SnoeyinkKeil
 
 	static public var reversed:Bool;	// true if the _internal_ indices have been reversed
 
+	static public var diagonals:Array<Diagonal>;	// stores diagonals' indices (as found by _decompByDiags())
 	
 	/** Decomposes `simplePoly` into a minimum number of convex polygons. */
 	static public function decomposePoly(simplePoly:Poly):Array<Poly> {
@@ -115,6 +122,11 @@ class SnoeyinkKeil
 			for (poly in res) {
 				for (i in 0...poly.length) poly[i] = n - poly[i] - 1;
 			}
+			for (d in diagonals) {
+				var tmp = d.from;
+				d.from = n - d.to - 1;
+				d.to = n - tmp - 1;
+			}
 		}
 		
 		return res;
@@ -140,8 +152,8 @@ class DecompPoly {
 
 	// intermediate and final result
 	private var _indicesSet:IntMap<Bool> = new IntMap<Bool>();
-	private var _indicesCount:Int;
 	private var _polys:Array<Poly> = new Array<Poly>();
+	private var _diags:Array<Diagonal> = [];
 
 	
 	public function new(poly:Poly) { 
@@ -374,6 +386,7 @@ class DecompPoly {
 		if (ijReal) {
 			_indicesSet.set(i, true);
 			_indicesSet.set(j, true);
+			_diags.push( { from:i, to:j } );
 			//trace("diag " + i + "-" + j + "  " + poly.at(i) + " " + poly.at(j));
 			nDiags++;
 		}
@@ -381,6 +394,7 @@ class DecompPoly {
 		if (jkReal) {
 			_indicesSet.set(j, true);
 			_indicesSet.set(k, true);
+			_diags.push( { from:j, to:k } );
 			//trace("diag " + j + "-" + k + "  " + poly.at(j) + " " + poly.at(k));
 			nDiags++;
 		}
@@ -389,20 +403,23 @@ class DecompPoly {
 		Debug.assert(guard >= 0, "Infinite loop diag " + i + "," + k); 
 		
 		if (nDiags > 1) {	// add new decomposing poly
-			var hasInnerDiags = false;
 			var indices:Array<Int> = [for (k in _indicesSet.keys()) k];
 			indices.sort(intCmp);
 			
 			if (indices.length > 0) {
 				outIndices.push(indices);
-				_indicesCount = 0;
 				_indicesSet = new IntMap<Bool>();
-				//trace("poly: " + indices);
 			}
 		}
 
-		_decompByDiags(i, j, outIndices, level + 1);
-		_decompByDiags(j, k, outIndices, level + 1);
+		// if we just found a real i-j diag, follow it first (should fix issue #11)
+		if (ijReal && j - i > 1) {
+			_decompByDiags(j, k, outIndices, level + 1);
+			_decompByDiags(i, j, outIndices, level + 1);
+		} else {
+			_decompByDiags(i, j, outIndices, level + 1);
+			_decompByDiags(j, k, outIndices, level + 1);
+		}
 	}
 
 	private inline function intCmp(a:Int, b:Int):Int {
@@ -417,6 +434,8 @@ class DecompPoly {
 		var res = new Array<Array<Int>>();
 		guard = 3 * n;
 		_decompByDiags(0, poly.length - 1, res);
+		SnoeyinkKeil.diagonals = _diags;
+		
 		return res;
 	}
 	
