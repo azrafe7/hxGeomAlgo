@@ -291,6 +291,32 @@ class PolyTools
 		return distanceSquared(p, point);
 	}
 	
+	static public function getCentroid(poly:Poly):HxPoint {
+		var c = new HxPoint();
+		var len = poly.length;
+		for (i in 0...len) {
+			var p0 = poly[i];
+			var p1 = poly[(i + 1) % len];
+			var m = p0.x * p1.y - p1.x * p0.y;
+			c.x += (p0.x + p1.x) * m;
+			c.y += (p0.y + p1.y) * m;
+		}
+		var area = getArea(poly);
+		c.x /= 6 * area;
+		c.y /= 6 * area;
+		return c;
+	}
+	
+	static public function getArea(poly:Poly):Float {
+		var area = 0.0;
+		var len = poly.length;
+		for (i in 0...len) {
+			var p0 = poly[i];
+			var p1 = poly[(i + 1) % len];
+			area += p0.x * p1.y - p1.x * p0.y;
+		}
+		return area = .5 * area;
+	}
 	
 	static public function meet(p:HxPoint, q:HxPoint):HomogCoord 
 	{
