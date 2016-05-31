@@ -39,6 +39,18 @@ class PolyTools
 		return signedArea < 0;
 	}
 	
+	/** Returns true if `poly` is clockwise (assumes y axis pointing down). */
+	static public function isCW(poly:Poly):Bool {
+		if (poly.length <= 2) return true;
+		
+		var signedArea = 0.;
+		for (i in 0...poly.length) {
+			signedArea += at(poly, i - 1).x * poly[i].y - poly[i].x * at(poly, i - 1).y;
+		}
+		
+		return signedArea > 0;
+	}
+	
 	/** Makes `poly` counterclockwise (in place). Returns true if reversed. */
 	static public function makeCCW(poly:Poly):Bool {
 		var reversed = false;
