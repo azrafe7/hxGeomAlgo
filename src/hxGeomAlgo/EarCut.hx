@@ -33,6 +33,8 @@ class EarCut
 
 		if (outerNode == null) return triangles;
 
+		outerNode = filterPoints(outerNode);
+		
 		var minX, minY, maxX, maxY, x, y, size;
 		minX = minY = maxX = maxY = x = y = size = Math.NaN;
 
