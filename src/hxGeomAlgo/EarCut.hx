@@ -26,22 +26,40 @@ class EarCut
 	/**
 	 * Triangulates a polygon.
 	 * 
-	 * @param	poly			Array of points defining the polygon.
-	 * @param	holeIndices		Optional array of indices forming the holes of the poly
+	 * @param	poly		Array of points defining the polygon.
+	 * @param	holes		Optional array of holes in the poly.
 	 * @return	An array of Triangle resulting from the triangulation.
 	 */
-	static public function triangulate(poly:Poly, ?holeIndices:Array<Int>):Array<Tri> {
+	static public function triangulate(poly:Poly, ?holes:Array<Poly> = null):Array<Tri> {
 		var data = PolyTools.toFloatArray(poly);
+		
+		var holeIndices = null;
+		var allVertices = poly;
+		
+		// concat poly and holes' vertices
+		if (holes != null && holes.length > 0) {
+			
+			allVertices = poly.concat([]);
+			PolyTools.flatten(holes, allVertices);
+			
+			holeIndices = [];
+			var holeIdx = poly.length;
+			for (hole in holes) {
+				for (f in PolyTools.toFloatArray(hole)) data.push(f);
+				holeIndices.push(holeIdx);
+				holeIdx += hole.length;
+			}
+		}
 		
 		var triIndices:Array<Int> = earcut(data, holeIndices);
 		
 		var res:Array<Tri> = [];
 		var i = 0;
 		while (i < triIndices.length) {
-			var tri:Tri = [
-				poly[triIndices[i]], 
-				poly[triIndices[i + 1]], 
-				poly[triIndices[i + 2]]
+			var tri:Tri = [			
+				allVertices[triIndices[i]], 
+				allVertices[triIndices[i + 1]], 
+				allVertices[triIndices[i + 2]]
 			];
 			res.push(tri);
 			i += 3;
