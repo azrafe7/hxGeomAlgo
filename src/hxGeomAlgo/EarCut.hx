@@ -1,11 +1,11 @@
 /**
  * Ear clipping implementation - polygon triangulation and triangles polygonization.
- * NOTE: Should work also for NON-SIMPLE polygons (self-intersecting, with holes).
+ * NOTE: Should work also for non self-intersecting polygons (but holes are supported).
  * 
  * Based on:
  * 
  * @see https://github.com/mapbox/earcut																(JS - by Vladimir Agafonkin)
- * @see http://www.ewjordan.com/earClip/																(Processing - by Eric Jordan)
+ * @see http://www.ewjordan.com/earClip/																(Java - by Eric Jordan)
  * 
  * @author azrafe7
  */
@@ -33,7 +33,7 @@ class EarCut
 	static public function triangulate(poly:Poly, ?holeIndices:Array<Int>):Array<Tri> {
 		var data = PolyTools.toFloatArray(poly);
 		
-		var triIndices = earcut(data, holeIndices);
+		var triIndices:Array<Int> = earcut(data, holeIndices);
 		
 		var res:Array<Tri> = [];
 		var i = 0;
@@ -94,7 +94,7 @@ class EarCut
 	}
 
 	// create a circular doubly linked list from polygon points in the specified winding order
-	static function linkedList(data:Array<Float>, start, end, dim, clockwise):EarNode {
+	static function linkedList(data:Array<Float>, start:Int, end:Int, dim:Int, clockwise:Bool):EarNode {
 		var i, last:EarNode = null;
 
 		if (clockwise == (signedArea(data, start, end, dim) > 0)) {
@@ -120,7 +120,7 @@ class EarCut
 	}
 
 	// eliminate colinear or duplicate points
-	static function filterPoints(start:EarNode, ?end:EarNode = null) {
+	static function filterPoints(start:EarNode, ?end:EarNode = null):EarNode {
 		if (start == null) return start;
 		if (end == null) end = start;
 
@@ -145,7 +145,7 @@ class EarCut
 	}
 
 	// main ear slicing loop which triangulates a polygon (given as a linked list)
-	static function earcutLinked(ear:EarNode, triangles:Array<Int>, dim, minX, minY, size:Float, pass = 0) {
+	static function earcutLinked(ear:EarNode, triangles:Array<Int>, dim:Int, minX:Float, minY:Float, size:Float, pass = 0):Void {
 		if (ear == null) return;
 
 		// interlink polygon nodes in z-order
@@ -217,7 +217,7 @@ class EarCut
 		return true;
 	}
 
-	static function isEarHashed(ear:EarNode, minX:Float, minY:Float, size):Bool {
+	static function isEarHashed(ear:EarNode, minX:Float, minY:Float, size:Float):Bool {
 		var a = ear.prev,
 			b = ear,
 			c = ear.next;
@@ -258,7 +258,7 @@ class EarCut
 	}
 
 	// go through all polygon nodes and cure small local self-intersections
-	static function cureLocalIntersections(start:EarNode, triangles, dim) {
+	static function cureLocalIntersections(start:EarNode, triangles:Array<Int>, dim:Int):EarNode {
 		var p = start;
 		do {
 			var a:EarNode = p.prev,
@@ -283,7 +283,7 @@ class EarCut
 	}
 
 	// try splitting polygon into two and triangulate them independently
-	static function splitEarcut(start:EarNode, triangles, dim, minX, minY, size) {
+	static function splitEarcut(start:EarNode, triangles:Array<Int>, dim:Int, minX:Float, minY:Float, size:Float):Void {
 		// look for a valid diagonal that divides the polygon into two
 		var a = start;
 		do {
@@ -309,8 +309,8 @@ class EarCut
 	}
 
 	// link every hole into the outer loop, producing a single-ring polygon without holes
-	static function eliminateHoles(data:Array<Float>, holeIndices:Array<Int>, outerNode:EarNode, dim) {
-		var queue = [],
+	static function eliminateHoles(data:Array<Float>, holeIndices:Array<Int>, outerNode:EarNode, dim:Int):EarNode {
+		var queue:Array<EarNode> = [],
 			i, len, start, end, list;
 
 		i = 0;
@@ -340,7 +340,7 @@ class EarCut
 	}
 
 	// find a bridge between vertices that connects hole with an outer ring and and link it
-	static function eliminateHole(hole, outerNode):Void {
+	static function eliminateHole(hole:EarNode, outerNode:EarNode):Void {
 		outerNode = findHoleBridge(hole, outerNode);
 		if (outerNode != null) {
 			var b = splitPolygon(outerNode, hole);
@@ -349,7 +349,7 @@ class EarCut
 	}
 
 	// David Eberly's algorithm for finding a bridge between hole and outer polygon
-	static function findHoleBridge(hole:EarNode, outerNode:EarNode) {
+	static function findHoleBridge(hole:EarNode, outerNode:EarNode):EarNode {
 		var p = outerNode,
 			hx = hole.x,
 			hy = hole.y,
@@ -408,7 +408,7 @@ class EarCut
 	}
 
 	// interlink polygon nodes in z-order
-	static function indexCurve(start:EarNode, minX:Float, minY:Float, size:Float) {
+	static function indexCurve(start:EarNode, minX:Float, minY:Float, size:Float):Void {
 		var p:EarNode = start;
 		do {
 			if (p.z == null) p.z = zOrder(p.x, p.y, minX, minY, size);
@@ -425,7 +425,7 @@ class EarCut
 
 	// Simon Tatham's linked list merge sort algorithm
 	// http://www.chiark.greenend.org.uk/~sgtatham/algorithms/listsort.html
-	static function sortLinked(list:EarNode) {
+	static function sortLinked(list:EarNode):EarNode {
 		var i, p:EarNode = null, q:EarNode = null, e:EarNode = null, tail:EarNode = null, numMerges, pSize, qSize,
 			inSize = 1;
 
@@ -505,7 +505,7 @@ class EarCut
 	}
 
 	// find the leftmost node of a polygon ring
-	static function getLeftmost(start:EarNode) {
+	static function getLeftmost(start:EarNode):EarNode {
 		var p = start,
 			leftmost = start;
 		do {
@@ -524,7 +524,7 @@ class EarCut
 	}
 
 	// check if a diagonal between two polygon nodes is valid (lies in polygon interior)
-	static function isValidDiagonal(a:EarNode, b:EarNode) {
+	static function isValidDiagonal(a:EarNode, b:EarNode):Bool {
 		return a.next.i != b.i && a.prev.i != b.i && !intersectsPolygon(a, b) &&
 			   locallyInside(a, b) && locallyInside(b, a) && middleInside(a, b);
 	}
@@ -567,7 +567,7 @@ class EarCut
 	}
 
 	// check if the middle point of a polygon diagonal is inside the polygon
-	static function middleInside(a:EarNode, b:EarNode) {
+	static function middleInside(a:EarNode, b:EarNode):Bool {
 		var p = a,
 			inside = false,
 			px = (a.x + b.x) / 2,
@@ -583,7 +583,7 @@ class EarCut
 
 	// link two polygon vertices with a bridge; if the vertices belong to the same ring, it splits polygon into two;
 	// if one belongs to the outer ring and another to a hole, it merges it into a single ring
-	static function splitPolygon(a:EarNode, b:EarNode) {
+	static function splitPolygon(a:EarNode, b:EarNode):EarNode {
 		var a2 = new EarNode(a.i, a.x, a.y),
 			b2 = new EarNode(b.i, b.x, b.y),
 			an = a.next,
@@ -605,7 +605,7 @@ class EarCut
 	}
 
 	// create a node and optionally link it with previous one (in a circular doubly linked list)
-	static function insertNode(i, x, y, last:EarNode = null) {
+	static function insertNode(i:Int, x:Float, y:Float, last:EarNode = null):EarNode {
 		var p = new EarNode(i, x, y);
 
 		if (last == null) {
@@ -621,7 +621,7 @@ class EarCut
 		return p;
 	}
 
-	static function removeNode(p:EarNode) {
+	static function removeNode(p:EarNode):Void {
 		p.next.prev = p.prev;
 		p.prev.next = p.next;
 
@@ -634,7 +634,7 @@ class EarCut
 	 * Returns a percentage difference between the polygon area and its triangulation area;
 	 * used to verify correctness of triangulation
 	 */ 
-	static public function deviation(data:Array<Float>, holeIndices:Array<Int>, dim, triangles:Array<Int>) {
+	static public function deviation(data:Array<Float>, holeIndices:Array<Int>, dim:Int, triangles:Array<Int>):Float {
 		var hasHoles = (holeIndices != null) && holeIndices.length > 0;
 		var outerLen = hasHoles ? holeIndices[0] * dim : data.length;
 
@@ -666,7 +666,7 @@ class EarCut
 			Math.abs((trianglesArea - polygonArea) / polygonArea);
 	}
 
-	static function signedArea(data:Array<Float>, start, end, dim) {
+	static function signedArea(data:Array<Float>, start:Int, end:Int, dim:Int):Float {
 		var sum = 0.;
 		var i = start;
 		var j = end - dim;
@@ -679,7 +679,10 @@ class EarCut
 		return sum;
 	}
 
-	/** turn a polygon in a multi-dimensional array form (e.g. as in GeoJSON) into a form Earcut accepts */
+	/**
+	 * Turn a polygon in a multi-dimensional array form (e.g. as in GeoJSON) into a form Earcut accepts 
+	 * @return An object of type {vertices:Array<Float>, holes:Array<Int>, dimensions:Int} you can pass to earcut()
+	 */
 	static public function flatten(data:Array<Array<Array<Float>>>) {
 		var dim = data[0][0].length,
 			result = {vertices: [], holes: [], dimensions: dim},
@@ -863,7 +866,7 @@ class EarNode {
 	var steiner:Bool;
 	
 	
-	public function new(i, x, y) {
+	public function new(i:Int, x:Float, y:Float) {
 		// vertice index in coordinates array
 		this.i = i;
 
