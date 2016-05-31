@@ -14,18 +14,22 @@ package hxGeomAlgo;
 
 
 import haxe.ds.ArraySort;
-import hxGeomAlgo.EarClipper.Tri;
-import hxGeomAlgo.EarCut.EarNode;
 import hxGeomAlgo.PolyTools;
 
 
-//typedef Tri = Poly;	// assumes Array<HxPoint> of length 3
+typedef Tri = Poly;	// assumes Array<HxPoint> of length 3
 
 
 @:expose
 class EarCut
 {
-	
+	/**
+	 * Triangulates a polygon.
+	 * 
+	 * @param	poly			Array of points defining the polygon.
+	 * @param	holeIndices		Optional array of indices forming the holes of the poly
+	 * @return	An array of Triangle resulting from the triangulation.
+	 */
 	static public function triangulate(poly:Poly, ?holeIndices:Array<Int>):Array<Tri> {
 		var data = PolyTools.toFloatArray(poly);
 		
@@ -46,7 +50,8 @@ class EarCut
 		return res;
 	}
 
-	
+
+	/** Original API from mapbox (see triangulate() for a wrapper around this) */
 	static public function earcut(data:Array<Float>, ?holeIndices:Array<Int>, dim:Int = 2):Array<Int> {
 
 		var hasHoles:Bool = holeIndices != null && holeIndices.length > 0;
@@ -691,7 +696,153 @@ class EarCut
 		}
 		return result;
 	}
+	
+	
+	/**
+	 * Merges triangles (defining a triangulated concave polygon) into a set of convex polygons.
+	 * 
+	 * @param	triangulation	An array of triangles defining the concave polygon.
+	 * @return	An array of convex polygons being a decomposition of the original concave polygon.
+	 */
+	public static function polygonize(triangulation:Array<Tri>):Array<Poly> 
+	{
+		var polys = new Array<Poly>();
+
+		if (triangulation.length == 0)
+		{
+			return [];
+		}
+		else
+		{
+			var covered = new Array<Bool>();
+			for (i in 0...triangulation.length) covered[i] = false;
+
+			var notDone:Bool = true;
+			while (notDone)
+			{
+				var poly:Poly = null;
+
+				var currTri:Int = -1;
+				for (i in 0...triangulation.length)
+				{
+					if (covered[i]) continue;
+					currTri = i;
+					break;
+				}
+				if (currTri == -1)
+				{
+					notDone = false;
+				}
+				else
+				{
+					poly = triangulation[currTri];
+					covered[currTri] = true;
+					for (i in 0...triangulation.length)
+					{
+						if (covered[i]) continue;
+						var newPoly:Poly = addTriangle(poly, triangulation[i]);
+						if (newPoly == null) continue;
+						if (PolyTools.isConvex(newPoly))
+						{
+							poly = newPoly;
+							covered[i] = true;
+						}
+					}
+
+					polys.push(poly);
+				}
+			}
+		}
+
+		return polys;
+	}
+	
+	/** 
+	 * Tries to add a triangle to the polygon.
+	 * Assumes bitwise equality of join vertices.
+	 * 
+	 * @return null if it can't connect properly.
+	 */
+	static public function addTriangle(poly:Poly, t:Tri):Poly
+	{
+		// first, find vertices that connect
+		var firstP:Int = -1;
+		var firstT:Int = -1;
+		var secondP:Int = -1;
+		var secondT:Int = -1;
+
+		for (i in 0...poly.length)
+		{
+			if (t[0].x == poly[i].x && t[0].y == poly[i].y)
+			{
+				if (firstP == -1)
+				{
+					firstP = i; firstT = 0;
+				}
+				else
+				{
+					secondP = i; secondT = 0;
+				}
+			}
+			else if (t[1].x == poly[i].x && t[1].y == poly[i].y)
+			{
+				if (firstP == -1)
+				{
+					firstP = i; firstT = 1;
+				}
+				else
+				{
+					secondP = i; secondT = 1;
+				}
+			}
+			else if (t[2].x == poly[i].x && t[2].y == poly[i].y)
+			{
+				if (firstP == -1)
+				{
+					firstP = i; firstT = 2;
+				}
+				else
+				{
+					secondP = i; secondT = 2;
+				}
+			}
+			else
+			{
+				//trace(t);
+				//trace(firstP, firstT, secondP, secondT);
+			}
+		}
+
+		// fix ordering if first should be last vertex of poly
+		if (firstP == 0 && secondP == poly.length - 1)
+		{
+			firstP = poly.length - 1;
+			secondP = 0;
+		}
+
+		// didn't find it
+		if (secondP == -1)
+			return null;
+
+		// find tip index on triangle
+		var tipT:Int = 0;
+		if (tipT == firstT || tipT == secondT) tipT = 1;
+		if (tipT == firstT || tipT == secondT) tipT = 2;
+
+		var newPoints:Array<HxPoint> = new Array<HxPoint>();
+
+		for (i in 0...poly.length)
+		{
+			newPoints.push(poly[i]);
+
+			if (i == firstP)
+				newPoints.push(t[tipT]);
+		}
+
+		return newPoints;
+	}
 }
+
 
 @:allow(hxGeomAlgo.EarCut)
 class EarNode {
