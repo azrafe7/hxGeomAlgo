@@ -1,6 +1,6 @@
 /**
  * Ear clipping implementation - polygon triangulation and triangles polygonization.
- * NOTE: Should work also for non self-intersecting polygons (but holes are supported).
+ * NOTE: Should work only for non self-intersecting polygons (but holes are supported).
  * 
  * Based on:
  * 

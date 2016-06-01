@@ -54,6 +54,12 @@
  - Tess2: shortcut methods for boolean ops on polygons
  - MarchingSquares: force output inside source boundaries, and fix findStartPoint()
  - IsoContours: initial implementation
+ - Add hxPixels dependency
  - Add some interactivity to openfl demo (and more test images)
  - IsoContours: improve performance (esp. AdjacencyMap)
- 
+ - Tess2: experimental Delaunay refinement
+ - Snoeyink-Keil: fix issue #11 (related to polygon reconstruction by diagonals)
+ - PolyTools: some additions and small changes
+ - EarCut: ported from mapbox/earcut
+ - EarClipper: ditched in favor of EarCut
+ - 
