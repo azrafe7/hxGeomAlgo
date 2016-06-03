@@ -26,11 +26,6 @@ import hxGeomAlgo.SnoeyinkKeil.DecompPoly;
 
 using hxGeomAlgo.PolyTools;
 
-@:expose
-typedef Diagonal = {
-	var from:Int;
-	var to:Int;
-}
 
 @:expose
 class SnoeyinkKeil

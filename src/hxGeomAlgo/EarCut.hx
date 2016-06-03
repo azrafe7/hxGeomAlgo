@@ -17,9 +17,6 @@ import haxe.ds.ArraySort;
 import hxGeomAlgo.PolyTools;
 
 
-typedef Tri = Poly;	// assumes Array<HxPoint> of length 3
-
-
 @:expose
 class EarCut
 {
