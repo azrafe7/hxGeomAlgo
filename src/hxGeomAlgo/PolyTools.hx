@@ -284,7 +284,7 @@ class PolyTools
 	}
 	
 	/**
-	 * Returns true if the vertex at index i can see the vertex at index j.
+	 * Returns true if the vertex at index i can see the vertex at index j (assumes CW ordering - with y-axis pointing down).
 	 */
 	static public function isVisible(poly:Poly, i:Int, j:Int) {
 		var len = poly.length;
