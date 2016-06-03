@@ -16,6 +16,14 @@ import hxGeomAlgo.HxPoint;
 
 typedef Poly = Array<HxPoint>;
 
+typedef Tri = Poly;	// assumes Array<HxPoint> of length 3
+
+@:expose
+typedef Diagonal = {
+	var from:Int;
+	var to:Int;
+}
+
 
 @:expose
 class PolyTools
