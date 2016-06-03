@@ -62,4 +62,5 @@
  - PolyTools: some additions and small changes
  - EarCut: ported from mapbox/earcut
  - EarClipper: ditched in favor of EarCut
+ - Bayazit: fixed bug with some polys (by looking at how dyn4j solved it)
  - 

@@ -14,6 +14,7 @@
  - Bayazit (Poly Decomposition)
     - [http://mnbayazit.com/406/bayazit]()	(Mark Bayazit)
     - [http://mnbayazit.com/406/credit]()
+    - [http://www.dyn4j.org/]() (Java - by William Bittle)
  - Visibilty Polygon and Homogeneous Coords (2D)
    - [http://www.cs.ubc.ca/~snoeyink/demos/convdecomp/VPDemo.html]()	(Jack Snoeyink)
  - Snoeyink-Keil (Minimum Convex Decomposition)

@@ -6,6 +6,7 @@
  * 
  * @see http://mnbayazit.com/406/bayazit							(C - by Mark Bayazit)
  * @see http://mnbayazit.com/406/credit
+ * @see http://www.dyn4j.org/										(Java - by William Bittle)
  * 
  * Other credits should go to papers/work of: 
  * 
@@ -135,9 +136,12 @@ class Bayazit
 						{
 							d = poly.at(i).distanceSquared(poly.at(j));
 							if (d < closestDist) {
-								closestDist = d;
-								closestVert = poly.at(j);
-								closestIdx = j % poly.length;
+								var ijVisible = poly.isVisible(i, j);
+								if (ijVisible) {
+									closestDist = d;
+									closestVert = poly.at(j);
+									closestIdx = j % poly.length;
+								}
 							}
 						}
 					}
