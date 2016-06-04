@@ -31,6 +31,7 @@ class Bayazit
 {
 	
 	static private var poly:Poly;		// cw version of simplePoly - used internally
+	static private var visibility:Map<Int, Array<Int>>;		// maps vertices' indices to visible ones - used internally
 	
 	static public var reflexVertices:Array<HxPoint> = new Array<HxPoint>();
 	static public var steinerPoints:Array<HxPoint> = new Array<HxPoint>();
@@ -50,6 +51,7 @@ class Bayazit
 		
 		reflexVertices.clear();
 		steinerPoints.clear();
+		visibility = new Map();
 		
 		_decomposePoly(poly, res);
 		
@@ -66,6 +68,7 @@ class Bayazit
 		
 		for (i in 0...poly.length) {
 			if (poly.isReflex(i)) {
+				visibility[i] = Visibility.getVisibleIndicesFrom(poly, i);
 				reflexVertices.push(poly[i]);
 				upperDist = lowerDist = Math.POSITIVE_INFINITY;
 				for (j in 0...poly.length) {
@@ -136,7 +139,7 @@ class Bayazit
 						{
 							d = poly.at(i).distanceSquared(poly.at(j));
 							if (d < closestDist) {
-								var ijVisible = poly.isVisible(i, j);
+								var ijVisible = visibility[i].indexOf(j % poly.length) >= 0;
 								if (ijVisible) {
 									closestDist = d;
 									closestVert = poly.at(j);

@@ -291,48 +291,6 @@ class PolyTools
 		return side(p, a, b) == 0;
 	}
 	
-	/**
-	 * Returns true if the vertex at index i can see the vertex at index j (assumes CW ordering - with y-axis pointing down).
-	 */
-	static public function isVisible(poly:Poly, i:Int, j:Int) {
-		var len = poly.length;
-		var iv0, iv, iv1;
-		var jv0, jv, jv1;
-		
-		iv0 = at(poly, i - 1);
-		iv = at(poly, i);
-		iv1 = at(poly, i + 1);
-		
-		jv0 = at(poly, j - 1);
-		jv = at(poly, j);
-		jv1 = at(poly, j + 1);
-		
-		// can i see j
-		if (isReflex(poly, i)) {
-			if (isLeftOrOn(iv, iv0, jv) && isRightOrOn(iv, iv1, jv)) return false;
-		} else {
-			if (isRightOrOn(iv, iv1, jv) || isLeftOrOn(iv, iv0, jv)) return false;
-		}
-		// can j see i
-		if (isReflex(poly, j)) {
-			if (isLeftOrOn(jv, jv0, iv) && isRightOrOn(jv, jv1, iv)) return false;
-		} else {
-			if (isRightOrOn(jv, jv1, iv) || isLeftOrOn(jv, jv0, iv)) return false;
-		}
-		// make sure the segment from i to j doesn't intersect any edges
-		for (k in 0...len) {
-			var ki1 = (k + 1 == len ? 0 : k + 1);
-			if (k == i || k == j || ki1 == i || ki1 == j) continue;
-			var k1 = at(poly, k);
-			var k2 = at(poly, ki1);
-			
-			var intersect = segmentIntersect(iv, jv, k1, k2);
-			if (intersect != null) return false;
-		}
-		
-		return true;
-	}
-	
 	/** Distance from `v` to `w`. */
 	inline static public function distance(v:HxPoint, w:HxPoint) { return Math.sqrt(distanceSquared(v, w)); }
 	
