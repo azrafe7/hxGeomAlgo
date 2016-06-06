@@ -250,36 +250,43 @@ class PolyTools
 	/** Gets `poly` vertex at `idx` (wrapping around if needed). */
 	static inline public function at(poly:Poly, idx:Int):HxPoint 
 	{
-		var len:Int = poly.length;
-		while (idx < 0) idx += len;
-		return poly[idx % len];
+		idx = wrappedIdx(poly, idx);
+		return poly[idx];
 	}
 	
-	/** Gets the side (signed area) of `p` relative to the line extending `a`-`b` (> 0 -> left, < 0 -> right, == 0 -> collinear). */
+	/** Gets usable `idx` from `poly` (wrapping around if needed). */
+	static inline public function wrappedIdx(poly:Poly, idx:Int):Int
+	{
+		var len:Int = poly.length;
+		if (idx < 0) idx += len;
+		return idx % len;
+	}
+	
+	/** Gets the side (signed area) of `p` relative to the line extending `b`-`a` (> 0 -> left, < 0 -> right, == 0 -> collinear). */
 	static inline public function side(p:HxPoint, a:HxPoint, b:HxPoint):Float
 	{
 		return (((a.x - p.x) * (b.y - p.y)) - ((b.x - p.x) * (a.y - p.y)));
 	}
 	
-	/** Returns true if `p` is on the left of the line extending `a`-`b`. */
+	/** Returns true if `p` is on the left of the line extending `b`-`a`. */
 	static inline public function isLeft(p:HxPoint, a:HxPoint, b:HxPoint):Bool
 	{
 		return side(p, a, b) > 0;
 	}
 	
-	/** Returns true if `p` is on the left or collinear to the line extending `a`-`b`. */
+	/** Returns true if `p` is on the left or collinear to the line extending `b`-`a`. */
 	static inline public function isLeftOrOn(p:HxPoint, a:HxPoint, b:HxPoint):Bool
 	{
 		return side(p, a, b) >= 0;
 	}
 	
-	/** Returns true if `p` is on the right of the line extending `a`-`b`. */
+	/** Returns true if `p` is on the right of the line extending `b`-`a`. */
 	static inline public function isRight(p:HxPoint, a:HxPoint, b:HxPoint):Bool
 	{
 		return side(p, a, b) < 0;
 	}
 	
-	/** Returns true if `p` is on the right or collinear to the line extending `a`-`b`. */
+	/** Returns true if `p` is on the right or collinear to the line extending `b`-`a`. */
 	static inline public function isRightOrOn(p:HxPoint, a:HxPoint, b:HxPoint):Bool
 	{
 		return side(p, a, b) <= 0;
