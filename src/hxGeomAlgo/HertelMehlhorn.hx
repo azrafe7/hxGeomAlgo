@@ -35,8 +35,8 @@ class HertelMehlhorn
 		diagonals = [];
 		
 		var poly:Poly, qoly:Poly, newPoly:Poly;
-		var p1:HxPoint, p2:HxPoint, p3:HxPoint;
 		var d1:HxPoint, d2:HxPoint;
+		var pTest:Poly, qTest:Poly;
 		var p:HxPoint, q:HxPoint;
 		var isDiagonal:Bool;
 		
@@ -93,29 +93,29 @@ class HertelMehlhorn
 				p = poly.at(polyIt + 2);
 				q = qoly.at(qolyIt - 1);
 				
-				var pTest = [
+				pTest = [
 					poly.at(polyIt),
 					q,
 					p,
 				];
 				
-				var qTest = [
+				qTest = [
 					qoly.at(qolyIt),
 					p,
 					q,
 				];
 				
+				// check if reflex
 				if (PolyTools.isRightOrOn(pTest[0], pTest[1], pTest[2])) {
 					polyIt++;
 					continue;
 				}
-				
 				if (PolyTools.isRightOrOn(qTest[0], qTest[1], qTest[2])) {
 					polyIt++;
 					continue;
 				}
 				
-				// merge triangles/polys
+				// merge into newPoly
 				newPoly = [];
 				var j = polyIt + 1;
 				while (poly.wrappedIdx(j) != polyIt) {
@@ -128,15 +128,13 @@ class HertelMehlhorn
 					j++;
 				}
 				
+				// add only if merged poly is convex (otherwise move to next triangle)
 				if (PolyTools.isConvex(newPoly)) {
 					res.splice(innerIt, 1);
 					res[outerIt] = newPoly;
 					poly = newPoly;
 					
-					polyIt = -1;	// restart
-				} else {
-					polyIt++;
-					continue;
+					polyIt = -1; // restart with newPoly
 				}
 				
 				polyIt++;
