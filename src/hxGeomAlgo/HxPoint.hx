@@ -8,6 +8,8 @@ package hxGeomAlgo;
 @:expose
 abstract HxPoint(HxPointData) from HxPointData to HxPointData
 {
+	static public var EMPTY(default, never) = new HxPoint(Math.NaN, Math.NaN);
+	
 	public var x(get, set):Float;
 	inline private function get_x():Float { return this.x; }
 	inline private function set_x(value:Float):Float { return this.x = value; }
