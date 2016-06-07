@@ -90,11 +90,11 @@ class HertelMehlhorn
 				q = qoly.at(qolyIt - 1);
 				
 				// check if reflex
-				if (PolyTools.isRightOrOn(d1, q, p)) {
+				if (PolyTools.isRight(d1, q, p)) {
 					polyIt++;
 					continue;
 				}
-				if (PolyTools.isRightOrOn(d2, p, q)) {
+				if (PolyTools.isRight(d2, p, q)) {
 					polyIt++;
 					continue;
 				}
