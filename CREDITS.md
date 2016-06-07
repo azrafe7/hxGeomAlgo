@@ -34,4 +34,6 @@
     - http://en.wikipedia.org/wiki/Marching_squares
     - https://github.com/deltaluca/nape (Luca Deltodesco)
     - https://github.com/scikit-image/scikit-image (scikit-image team)
- 
+ - Hertel-Mehlhorn (Convex Polygons from Arbitrary Triangulation) 
+    - https://github.com/ivanfratric/polypartition (Ivan Fratric)
+    - http://www.philvaz.com/compgeom (Phil Porvaznik)

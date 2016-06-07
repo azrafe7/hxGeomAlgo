@@ -78,6 +78,14 @@ Based on:
  - https://github.com/deltaluca/nape (Haxe - by Luca Deltodesco)
  - https://github.com/scikit-image/scikit-image	(Python - by scikit-image team)
 
+#### [Hertel-Mehlhorn (Convex Polygons from Arbitrary Triangulation)](https://www8.cs.umu.se/kurser/TDBA77/VT06/algorithms/BOOK/BOOK5/NODE194.HTM)
+
+Based on:
+
+ - https://github.com/ivanfratric/polypartition (CPP - by Ivan Fratric)
+ - http://www.philvaz.com/compgeom (by Phil Porvaznik)
+
+
 ## Dependencies
 The only dependency is [hxPixels](https://github.com/azrafe7/hxPixels), and only for the algorithms needing access to pixels.
 
