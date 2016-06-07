@@ -115,6 +115,8 @@ class GeomAlgoTest extends Sprite {
 		originalBMD = openfl.Assets.getBitmapData(asset);
 		WIDTH = originalBMD.width;
 		HEIGHT = originalBMD.height + 80;
+		if (WIDTH < 100) WIDTH = 100;
+		if (HEIGHT < 100 + 80) HEIGHT = 100 + 80;
 
 		//  ASSET IMAGE
 		var assetTF = getTextField("move: ARROWS/GHJY  |  cycle: CTRL+ARROWS  |  zoom: +/-  |  [" + asset + "]", 0, 5 * TEXT_SIZE);
@@ -127,7 +129,7 @@ class GeomAlgoTest extends Sprite {
 		versionTF.autoSize = TextFieldAutoSize.LEFT;
 		versionTF.x = flash.Lib.current.stage.stageWidth - 140;
 		addChild(versionTF);
-		
+	
 		// ORIGINAL IMAGE
 		setSlot(0, 0);
 		addChildAt(originalBitmap = new Bitmap(originalBMD), 0);	// add it underneath sprite
@@ -169,14 +171,16 @@ class GeomAlgoTest extends Sprite {
 		var isoContours = new IsoContours(originalBMD);
 		startTime = Timer.stamp();
 		var contours = isoContours.find(0, true);
-		//isoContours.isoFunction = customIsoFunction;
-		//contours = contours.concat(isoContours.find(0x80);
+		if (asset.indexOf("py_figure") >= 0) {
+			isoContours.isoFunction = customIsoFunction;
+			contours = /*contours.concat*/(isoContours.find(0x80));
+		}
 		var pts = 0;
 		for (c in contours) pts += c.length;
 		trace('IsoContours   : ${Timer.stamp() - startTime}');
 		drawPaths(contours, X, Y, DEFAULT_DRAW_SETTINGS);
 		addChild(getTextField("IsoContours\n" + pts + " pts\n" + contours.length + " cntrs", X, Y));
-		
+	
 		// CONNECTED COMPONENTS LABELING
 		setSlot(0, 3);
 		startTime = Timer.stamp();
@@ -205,7 +209,7 @@ class GeomAlgoTest extends Sprite {
 		trace('Doug-Peuck    : ${Timer.stamp() - startTime}');
 		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
 		addChild(getTextField("Doug-Peuck\n" + simplifiedPolyRDP.length + " pts", X, Y));
-		
+
 		// VISVALINGAM-WHYATT SIMPLIFICATION
 		setSlot(0, 5);
 		startTime = Timer.stamp();
@@ -213,7 +217,7 @@ class GeomAlgoTest extends Sprite {
 		trace('Visv-Whyatt   : ${Timer.stamp() - startTime}');
 		drawPoly(simplifiedPolyVW, X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
 		addChild(getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts", X, Y));		
-		
+
 		// EARCUT TRIANGULATION
 		setSlot(1, 1);
 		startTime = Timer.stamp();
@@ -266,7 +270,7 @@ class GeomAlgoTest extends Sprite {
 		}
 		g.lineStyle(THICKNESS, COLOR, ALPHA);*/
 		addChild(getTextField("Snoeyink-Keil\nMin Decomp\n" + decomposition.length + " polys", X, Y));
-		
+
 		// VISIBILITY
 		setSlot(1, 5);
 		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y, set({showPoints:true}));
@@ -325,15 +329,18 @@ class GeomAlgoTest extends Sprite {
 
 		// TESS2 + EC (DECOMP)
 		setSlot(3, 0);
+		startTime = Timer.stamp();
 		var polygonized = EarCut.polygonize(polys);
+		trace('ECTess2Del   : ${Timer.stamp() - startTime}');
+		trace("  " + testOrientation(polys), testSimple(polys), testConvex(polys));
 		drawPolys(polygonized, X + clipRect.x, Y + clipRect.y, set({showCentroids:true}));
-		addChild(getTextField("Tess2 + EC\nDecomp\n" + polygonized.length + " polys", X, Y));
+		addChild(getTextField("EC Decomp\n(Tess2Del)\n" + polygonized.length + " polys", X, Y));
 
 		// TESS2 DELAUNAY + HERTEL-MEHLHORN (DECOMPOSITION)
 		setSlot(3, 3);
 		startTime = Timer.stamp();
 		decomposition = HertelMehlhorn.polygonize(polys);
-		trace('HMTess2D     : ${Timer.stamp() - startTime}');
+		trace('HMTess2Del   : ${Timer.stamp() - startTime}');
 		trace("  " + testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
 		drawPolys(decomposition, X + clipRect.x, Y + clipRect.y, set({showCentroids:true}));
 		addChild(getTextField("Hert-Mehl\n(Tess2Del)\n" + decomposition.length + " polys", X, Y));
@@ -349,7 +356,7 @@ class GeomAlgoTest extends Sprite {
 		trace("  " + testOrientation(polys), testSimple(polys), testConvex(polys));
 		drawPolys(polys, X + clipRect.x, Y + clipRect.y, set({showCentroids:true}));
 		addChild(getTextField("Tess2\nDecomp\n" + res.elementCount + " polys", X, Y));
-		
+
 		// TESS2 - CONTOURS
 		/*
 		setSlot(2, 7);
@@ -389,7 +396,7 @@ class GeomAlgoTest extends Sprite {
 		trace('Tess2Union    : ${Timer.stamp() - startTime}');
 		drawPaths(polys, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
 		addChild(getTextField("Tess2\nUnion\n" + res.elementCount + " polys", X, Y));
-		
+	
 		// TESS2 - INTERSECTION
 		setSlot(2, 4);
 		startTime = Timer.stamp();
@@ -398,7 +405,7 @@ class GeomAlgoTest extends Sprite {
 		trace('Tess2Intersect: ${Timer.stamp() - startTime}');
 		drawPaths(polys, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
 		addChild(getTextField("Tess2\nIntersection\n" + res.elementCount + " polys", X, Y));
-		
+	
 		// TESS2 - DIFFERENCE
 		setSlot(2, 5);
 		startTime = Timer.stamp();
@@ -411,7 +418,7 @@ class GeomAlgoTest extends Sprite {
 		//flash.Lib.current.stage.addChild(new openfl.FPS(5, 5, 0xFFFFFF));
 
 		dumpPoly(simplifiedPolyRDP, false);
-		
+	
 		// Tess2.js parsable poly string (https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html)
 		/*
 		var str = "";
@@ -423,7 +430,7 @@ class GeomAlgoTest extends Sprite {
 		}
 		trace(str);
 		*/
-		
+	
 		// test CCW and duplicate points
 		trace("\n");
 		polys = [perimeter, simplifiedPolyRDP, simplifiedPolyVW, visPoints].concat(labeler.contours).concat(contours);
