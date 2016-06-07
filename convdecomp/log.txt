@@ -1,0 +1,185 @@
+ 2 2 3 5 5 7 7 10 10 10 12 12 14 14 15 17 17
+ERROR: We never exited RBay  (66.0, 6.0)   (1.0; 0.0, 0.0)  0
+VP 12: 2RW 3RW 4RL 5RW 6RW 7RW 8RL 9RW 10RW 11LL 14LW 15RW 16RW 
+VP: (38.0, 22.0)   (38.0, 26.0)   (54.0, 36.0)   (36.0, 32.0)   (16.0, 44.0)   (20.0, 26.0)   (0.0, 32.0)   (0.0, 24.0)   (14.0, 20.0)   (14.0, 10.0)   (28.0, 20.0)   (32.0, 20.0)   (66.0, 6.0)  
+SP: (66.0, 6.0)   (64.0, 14.0)   (38.0, 22.0)   (38.0, 26.0)   (54.0, 36.0)   (36.0, 32.0)   (16.0, 44.0)   (20.0, 26.0)   (0.0, 32.0)   (0.0, 24.0)   (14.0, 20.0)   (14.0, 10.0)   (24.0, 18.0)   (30.0, 14.0)   (28.0, 20.0)   (32.0, 20.0)   (66.0, 6.0)  
+V:234567891011141516
+
+ERROR: We never exited RBay  (66.0, 6.0)   (1.0; 0.0, 0.0)  0
+VP 13: 3RW 4RW 5RW 6RW 7RW 8RL 9RW 10RW 11LL 12LW 13LL 14LW 15RW 16RW 
+VP: (38.0, 26.0)   (54.0, 36.0)   (36.0, 32.0)   (16.0, 44.0)   (20.0, 26.0)   (0.0, 32.0)   (0.0, 24.0)   (14.0, 20.0)   (14.0, 10.0)   (24.0, 18.0)   (30.0, 14.0)   (28.0, 20.0)   (32.0, 20.0)   (66.0, 6.0)  
+SP: (66.0, 6.0)   (64.0, 14.0)   (38.0, 22.0)   (38.0, 26.0)   (54.0, 36.0)   (36.0, 32.0)   (16.0, 44.0)   (20.0, 26.0)   (0.0, 32.0)   (0.0, 24.0)   (14.0, 20.0)   (14.0, 10.0)   (24.0, 18.0)   (30.0, 14.0)   (28.0, 20.0)   (32.0, 20.0)   (66.0, 6.0)  
+V:345678910111213141516
+
+ERROR: We never exited RBay  (66.0, 6.0)   (1.0; 0.0, 0.0)  0
+VP 10: 5RW 6RW 7RW 9RL 10RW 11RW 12RW 13LL 14LW 15RW 16RW 
+VP: (36.0, 32.0)   (16.0, 44.0)   (20.0, 26.0)   (0.0, 24.0)   (14.0, 20.0)   (14.0, 10.0)   (24.0, 18.0)   (30.0, 14.0)   (28.0, 20.0)   (32.0, 20.0)   (66.0, 6.0)  
+SP: (66.0, 6.0)   (64.0, 14.0)   (38.0, 22.0)   (38.0, 26.0)   (54.0, 36.0)   (36.0, 32.0)   (16.0, 44.0)   (20.0, 26.0)   (0.0, 32.0)   (0.0, 24.0)   (14.0, 20.0)   (14.0, 10.0)   (24.0, 18.0)   (30.0, 14.0)   (28.0, 20.0)   (32.0, 20.0)   (66.0, 6.0)  
+V:567910111213141516
+
+ERROR: We never exited RBay  (66.0, 6.0)   (1.0; 0.0, 0.0)  0
+VP 9: 7RW 8RW 9RW 10RW 11RW 12RW 13RW 14RW 15RW 16RW 
+VP: (20.0, 26.0)   (0.0, 32.0)   (0.0, 24.0)   (14.0, 20.0)   (14.0, 10.0)   (24.0, 18.0)   (30.0, 14.0)   (28.0, 20.0)   (32.0, 20.0)   (66.0, 6.0)  
+SP: (66.0, 6.0)   (64.0, 14.0)   (38.0, 22.0)   (38.0, 26.0)   (54.0, 36.0)   (36.0, 32.0)   (16.0, 44.0)   (20.0, 26.0)   (0.0, 32.0)   (0.0, 24.0)   (14.0, 20.0)   (14.0, 10.0)   (24.0, 18.0)   (30.0, 14.0)   (28.0, 20.0)   (32.0, 20.0)   (66.0, 6.0)  
+V:78910111213141516
+
+ERROR: We never exited RBay  (66.0, 6.0)   (1.0; 0.0, 0.0)  2
+VP 1: 15RW 16RW 
+VP: (32.0, 20.0)   (66.0, 6.0)  
+SP: (66.0, 6.0)   (64.0, 14.0)   (38.0, 22.0)   (38.0, 26.0)   (54.0, 36.0)   (36.0, 32.0)   (16.0, 44.0)   (20.0, 26.0)   (0.0, 32.0)   (0.0, 24.0)   (14.0, 20.0)   (14.0, 10.0)   (24.0, 18.0)   (30.0, 14.0)   (28.0, 20.0)   (32.0, 20.0)   (66.0, 6.0)  
+V:1516
+
+reflex: 0 vis: false  (66.0, 6.0)  
+reflex: 2 vis: true  (38.0, 22.0)  
+reflex: 3 vis: true  (38.0, 26.0)  
+reflex: 5 vis: false  (36.0, 32.0)  
+reflex: 7 vis: true  (20.0, 26.0)  
+reflex: 10 vis: false  (14.0, 20.0)  
+reflex: 12 vis: false  (24.0, 18.0)  
+reflex: 0 vis: false  (66.0, 6.0)  
+reflex: 2 vis: true  (38.0, 22.0)  
+reflex: 3 vis: true  (38.0, 26.0)  
+reflex: 5 vis: false  (36.0, 32.0)  
+reflex: 7 vis: true  (20.0, 26.0)  
+reflex: 10 vis: true  (14.0, 20.0)  
+reflex: 12 vis: false  (24.0, 18.0)  
+reflex: 0 vis: false  (66.0, 6.0)  
+reflex: 2 vis: true  (38.0, 22.0)  
+reflex: 3 vis: false  (38.0, 26.0)  
+reflex: 5 vis: true  (36.0, 32.0)  
+reflex: 7 vis: true  (20.0, 26.0)  
+reflex: 10 vis: false  (14.0, 20.0)  
+reflex: 0 vis: false  (66.0, 6.0)  
+reflex: 2 vis: false  (38.0, 22.0)  
+reflex: 3 vis: true  (38.0, 26.0)  
+reflex: 5 vis: true  (36.0, 32.0)  
+reflex: 7 vis: true  (20.0, 26.0)  
+reflex: 10 vis: false  (14.0, 20.0)  
+reflex: 0 vis: true  (66.0, 6.0)  
+reflex: 2 vis: true  (38.0, 22.0)  
+reflex: 3 vis: true  (38.0, 26.0)  
+reflex: 5 vis: true  (36.0, 32.0)  
+reflex: 7 vis: true  (20.0, 26.0)  
+reflex: 0 vis: false  (66.0, 6.0)  
+reflex: 2 vis: true  (38.0, 22.0)  
+reflex: 3 vis: false  (38.0, 26.0)  
+reflex: 5 vis: false  (36.0, 32.0)  
+reflex: 7 vis: true  (20.0, 26.0)  
+reflex: 0 vis: false  (66.0, 6.0)  
+reflex: 2 vis: false  (38.0, 22.0)  
+reflex: 3 vis: true  (38.0, 26.0)  
+reflex: 5 vis: true  (36.0, 32.0)  
+reflex: 7 vis: true  (20.0, 26.0)  
+reflex: 0 vis: false  (66.0, 6.0)  
+reflex: 2 vis: false  (38.0, 22.0)  
+reflex: 3 vis: false  (38.0, 26.0)  
+reflex: 5 vis: true  (36.0, 32.0)  
+reflex: 0 vis: false  (66.0, 6.0)  
+reflex: 2 vis: false  (38.0, 22.0)  
+reflex: 3 vis: true  (38.0, 26.0)  
+reflex: 5 vis: true  (36.0, 32.0)  
+reflex: 0 vis: false  (66.0, 6.0)  
+reflex: 2 vis: true  (38.0, 22.0)  
+reflex: 3 vis: true  (38.0, 26.0)  
+reflex: 0 vis: false  (66.0, 6.0)  
+reflex: 2 vis: true  (38.0, 22.0)  
+reflex: 3 vis: true  (38.0, 26.0)  
+reflex: 0 vis: false  (66.0, 6.0)  
+reflex: 2 vis: true  (38.0, 22.0)  
+reflex: 0 vis: true  (66.0, 6.0)  
+reflex: 0 vis: true  (66.0, 6.0)  
+0,16  0,0,0: 1,15  
+0,15  0,0,0: 1,2  
+2,15  0,0,0: 3,14  
+2,14  0,0,0: 3,6  
+6,14  0,0,0: 7,13  
+7,14  1,0,1: 8,12  12,13  
+12,14  0,0,0: 13,13  
+7,12  1,0,1: 8,10  10,11  
+10,12  0,0,0: 11,11  
+7,10  0,0,0: 8,9  
+7,9  0,0,0: 8,8  
+2,6  0,0,0: 3,5  
+2,5  0,0,0: 3,3  
+3,5  0,0,0: 4,4  
+0,2  0,0,0: 1,1  
+
+Elapsed Time (ms)51
+     Comparisons 0
+ Sidedness Tests 252
+    Online Tests 0
+    Square roots 0
+diag 0-16
+diag 16-15
+diag 15-2
+diag 0-1
+diag 2-1
+poly
+poly
+diag 15-14
+diag 14-6
+diag 6-5
+diag 2-3
+diag 5-3
+poly
+diag 3-4
+diag 5-4
+poly
+poly
+poly
+diag 6-7
+poly
+diag 14-12
+diag 12-10
+diag 10-9
+diag 7-8
+diag 9-8
+poly
+poly
+poly
+diag 10-11
+diag 12-11
+poly
+poly
+diag 12-13
+diag 14-13
+poly
+poly
+poly
+diag 0-16
+diag 16-15
+diag 15-2
+diag 0-1
+diag 2-1
+poly
+poly
+diag 15-14
+diag 14-6
+diag 6-5
+diag 2-3
+diag 5-3
+poly
+diag 3-4
+diag 5-4
+poly
+poly
+poly
+diag 6-7
+poly
+diag 14-12
+diag 12-10
+diag 10-9
+diag 7-8
+diag 9-8
+poly
+poly
+poly
+diag 10-11
+diag 12-11
+poly
+poly
+diag 12-13
+diag 14-13
+poly
+poly
+poly
