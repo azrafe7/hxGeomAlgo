@@ -320,17 +320,22 @@ class PolyTools
 	
 	static public function getCentroid(poly:Poly):HxPoint {
 		var c = new HxPoint();
-		var len = poly.length;
-		for (i in 0...len) {
-			var p0 = poly[i];
-			var p1 = poly[(i + 1) % len];
-			var m = p0.x * p1.y - p1.x * p0.y;
-			c.x += (p0.x + p1.x) * m;
-			c.y += (p0.y + p1.y) * m;
-		}
 		var area = getArea(poly);
-		c.x /= 6 * area;
-		c.y /= 6 * area;
+		if (area != 0) {
+			var len = poly.length;
+			for (i in 0...len) {
+				var p0 = poly[i];
+				var p1 = poly[(i + 1) % len];
+				var m = p0.x * p1.y - p1.x * p0.y;
+				c.x += (p0.x + p1.x) * m;
+				c.y += (p0.y + p1.y) * m;
+			}
+			
+			c.x /= 6 * area;
+			c.y /= 6 * area;
+		} else { // avoid division by zero and return an empty Point
+			c = HxPoint.EMPTY;
+		}
 		return c;
 	}
 	
