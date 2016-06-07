@@ -36,10 +36,10 @@ class HertelMehlhorn
 		
 		var poly:Poly, qoly:Poly, newPoly:Poly;
 		var d1:HxPoint, d2:HxPoint;
-		var pTest:Poly, qTest:Poly;
 		var p:HxPoint, q:HxPoint;
 		var isDiagonal:Bool;
 		
+		var polyIt, qolyIt, j;
 		var outerIt = 0;
 		var innerIt = 0;
 		while (outerIt < res.length) {
@@ -47,25 +47,21 @@ class HertelMehlhorn
 			poly = res[outerIt];
 			qoly = res[0];
 			
-			var polyIt = 0;
-			var qolyIt = 0;
+			polyIt = 0;
+			qolyIt = 0;
 			while (polyIt < poly.length) {
-				d1 = poly.at(polyIt);
+				d1 = poly[polyIt];
 				d2 = poly.at(polyIt + 1);
 				
 				isDiagonal = false;
 				
-				innerIt = outerIt;
+				innerIt = outerIt + 1;
 				while (innerIt < res.length) {
-					if (innerIt == outerIt) {
-						innerIt++;
-						continue;
-					}
 					qoly = res[innerIt];
 				
 					qolyIt = 0;
 					while (qolyIt < qoly.length) {
-						q = qoly.at(qolyIt);
+						q = qoly[qolyIt];
 						if (d2.x != q.x || d2.y != q.y) {
 							qolyIt++;
 							continue;
@@ -87,37 +83,25 @@ class HertelMehlhorn
 					continue;
 				}
 				
-				var d = ( { from:d1, to:d2 } );
+				var d = ( { from:d1, to:d2 } ); // d1 == poly[polyIt] and d2 == qoly[qolyIt]
 				diagonals.push(d);
 				
 				p = poly.at(polyIt + 2);
 				q = qoly.at(qolyIt - 1);
 				
-				pTest = [
-					poly.at(polyIt),
-					q,
-					p,
-				];
-				
-				qTest = [
-					qoly.at(qolyIt),
-					p,
-					q,
-				];
-				
 				// check if reflex
-				if (PolyTools.isRightOrOn(pTest[0], pTest[1], pTest[2])) {
+				if (PolyTools.isRightOrOn(d1, q, p)) {
 					polyIt++;
 					continue;
 				}
-				if (PolyTools.isRightOrOn(qTest[0], qTest[1], qTest[2])) {
+				if (PolyTools.isRightOrOn(d2, p, q)) {
 					polyIt++;
 					continue;
 				}
 				
 				// merge into newPoly
 				newPoly = [];
-				var j = polyIt + 1;
+				j = polyIt + 1;
 				while (poly.wrappedIdx(j) != polyIt) {
 					newPoly.push(poly.at(j));
 					j++;
