@@ -33,8 +33,8 @@ class Bayazit
 	static private var poly:Poly;		// cw version of simplePoly - used internally
 	static private var visibility:Map<Int, Array<Int>>;		// maps vertices' indices to visible ones - used internally
 	
-	static public var reflexVertices:Array<HxPoint> = new Array<HxPoint>();
-	static public var steinerPoints:Array<HxPoint> = new Array<HxPoint>();
+	static public var reflexVertices:Array<HxPoint>;
+	static public var steinerPoints:Array<HxPoint>;
 
 	static public var reversed:Bool;	// true if the _internal_ indices have been reversed
 
@@ -43,15 +43,16 @@ class Bayazit
 	 */
 	static public function decomposePoly(simplePoly:Poly):Array<Poly> {
 		var res = new Array<Poly>();
+		
+		reflexVertices = [];
+		steinerPoints = [];
+		visibility = new Map();
+		
 		if (simplePoly.length < 3) return res;
 		
 		poly = new Poly();
 		for (p in simplePoly) poly.push(new HxPoint(p.x, p.y));
 		reversed = poly.makeCW();	// make poly cw (in place)
-		
-		reflexVertices.clear();
-		steinerPoints.clear();
-		visibility = new Map();
 		
 		_decomposePoly(poly, res);
 		
