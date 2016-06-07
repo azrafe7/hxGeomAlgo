@@ -17,12 +17,13 @@ class OpenflDemo extends Sprite {
 		"assets/text.png",
 		"assets/transparent.png",
 		"assets/opaque_black.png",
-		"assets/complex.png",		// Bayazit doesn't play well with this one
-		"assets/big.png",			// Bayazit doesn't play well with this one
+		"assets/complex.png",
+		"assets/big.png",
 		"assets/bord.png",
 		"assets/line.png",
 		"assets/opaque_white.png",
 		"assets/py_figure.png",
+		"assets/issue11.png",
 	];
 	
 	static var currAssetIdx:Int = 0;
@@ -70,19 +71,27 @@ class OpenflDemo extends Sprite {
 	#end
 		
 		var deltaIdx = 0;
-
+		var moveDelta = 12;
+		var moveMult = e.shiftKey ? 4 : 1;
+		
+		moveDelta *= moveMult;
+		
 		// keys to move camera around and cycle through assets
-		if (e.charCode == "j".code || e.keyCode == 39) { // right
-			geomAlgoTest.x -= 12;
+		if (e.charCode == "j".code || e.charCode == "J".code || e.keyCode == 39) { // right
+			geomAlgoTest.x -= moveDelta;
 			if (e.ctrlKey) deltaIdx = 1;
 		}
-		if (e.charCode == "g".code || e.keyCode == 37) { // left
-			geomAlgoTest.x += 12;
+		if (e.charCode == "g".code || e.charCode == "G".code || e.keyCode == 37) { // left
+			geomAlgoTest.x += moveDelta;
 			if (e.ctrlKey) deltaIdx = -1;
 		}
-		if (e.charCode == "h".code || e.keyCode == 40) geomAlgoTest.y -= 12; // down
-		if (e.charCode == "y".code || e.keyCode == 38) geomAlgoTest.y += 12; // up
+		if (e.charCode == "h".code || e.charCode == "H".code || e.keyCode == 40) geomAlgoTest.y -= moveDelta; // down
+		if (e.charCode == "y".code || e.charCode == "Y".code || e.keyCode == 38) geomAlgoTest.y += moveDelta; // up
 		
+		if (e.charCode >= "0".code && e.charCode <= "9".code) {
+			currAssetIdx = -1;
+			deltaIdx = e.charCode - "0".code + 1;
+		}
 		
 		if (deltaIdx != 0) {
 			currAssetIdx = (currAssetIdx + deltaIdx + assets.length) % assets.length;

@@ -23,7 +23,7 @@ import haxe.Timer;
 import hxPixels.Pixels;
 
 import hxGeomAlgo.Version;
-import hxGeomAlgo.EarClipper;
+import hxGeomAlgo.EarCut;
 import hxGeomAlgo.HxPoint;
 import hxGeomAlgo.MarchingSquares;
 import hxGeomAlgo.IsoContours;
@@ -37,6 +37,7 @@ import hxGeomAlgo.SnoeyinkKeil;
 import hxGeomAlgo.CCLabeler;
 import hxGeomAlgo.VisvalingamWhyatt;
 import hxGeomAlgo.Tess2;
+import hxGeomAlgo.HertelMehlhorn;
 
 #if (sys)
 import sys.io.File;
@@ -44,40 +45,63 @@ import sys.io.FileOutput;
 #end
 
 
+typedef DrawSettings = {
+	@:optional var showPoints:Bool;
+	@:optional var showLabels:Bool;
+	@:optional var showCentroids:Bool;
+	@:optional var showSteinerPoints:Bool;
+	@:optional var showReflexPoints:Bool;
+	@:optional var showArrows:Bool;
+	@:optional var fill:Bool;
+}
+
 class GeomAlgoTest extends Sprite {
 
-	private var g:Graphics;
+	var g:Graphics;
 	
-	private var THICKNESS:Float = .5;
-	private var COLOR:Int = 0xFF0000;
-	private var ALPHA:Float = 1.;
-	private var X_GAP:Int = 10;
-	private var Y_GAP:Int = 25;
+	var THICKNESS:Float = .5;
+	var COLOR:Int = 0xFF0000;
+	var CENTROID_COLOR:Int = 0x00FF00;
+	var ALPHA:Float = 1.;
+	var X_GAP:Int = 10;
+	var Y_GAP:Int = 15;
 
-	private var TEXT_COLOR:Int = 0xFFFFFF;
-	private var TEXT_FONT:String = "_typewriter";
-	private var TEXT_SIZE:Int = 12;
-	private var TEXT_OFFSET:Float = -60;
-	private var TEXT_OUTLINE:GlowFilter = new GlowFilter(0xFF000000, 1, 2, 2, 6);
+	var TEXT_COLOR:Int = 0xFFFFFF;
+	var TEXT_FONT:String = "_typewriter";
+	var TEXT_SIZE:Int = 12;
+	var TEXT_OFFSET:Float = -60;
+	var TEXT_OUTLINE:GlowFilter = new GlowFilter(0xFF000000, 1, 2, 2, 6);
 
-	private var START_POINT:HxPoint = new HxPoint(20, 90);
+	var START_POINT:HxPoint = new HxPoint(20, 90);
 
+	var DEFAULT_DRAW_SETTINGS:DrawSettings = {
+		showPoints: false,
+		showLabels: false,
+		showCentroids: false,
+		showSteinerPoints: true,
+		showReflexPoints: false,
+		showArrows: false,
+		fill: true,
+	};
+	
 	var X:Float;
 	var Y:Float;
 	var WIDTH:Int;
 	var HEIGHT:Int;
 
-	private var originalBMD:BitmapData;
-	private var originalBitmap:Bitmap;
+	var originalBMD:BitmapData;
+	var originalBitmap:Bitmap;
 
-	private var marchingSquares:MarchingSquares;
-	private var clipRect:Rectangle;
-	private var perimeter:Array<HxPoint>;
+	var marchingSquares:MarchingSquares;
+	var clipRect:Rectangle;
+	var perimeter:Array<HxPoint>;
 
-	private var simplifiedPolyRDP:Array<HxPoint>;
-	private var triangulation:Array<Tri>;
-	private var decomposition:Array<Poly>;
+	var simplifiedPolyRDP:Array<HxPoint>;
+	var triangulation:Array<Tri>;
+	var decomposition:Array<Poly>;
 
+	var color:Int;
+	
 	var text:TextField;
 	var labelBMP:Bitmap;
 	
@@ -87,7 +111,7 @@ class GeomAlgoTest extends Sprite {
 		var sprite = new Sprite();
 		addChild(sprite);
 		g = sprite.graphics;
-		g.lineStyle(THICKNESS, COLOR, ALPHA);
+		g.lineStyle(THICKNESS, color = COLOR, ALPHA);
 		originalBMD = openfl.Assets.getBitmapData(asset);
 		WIDTH = originalBMD.width;
 		HEIGHT = originalBMD.height + 80;
@@ -99,9 +123,9 @@ class GeomAlgoTest extends Sprite {
 		addChild(assetTF);
 
 		//  VERSION
-		var versionTF = getTextField("hxGeomAlgo v" + Version.toString(), 0, 0);
+		var versionTF = getTextField("hxGeomAlgo v" + Version.toString(), 0, 5 * TEXT_SIZE);
 		versionTF.autoSize = TextFieldAutoSize.LEFT;
-		versionTF.y = flash.Lib.current.stage.stageHeight - 17;
+		versionTF.x = flash.Lib.current.stage.stageWidth - 140;
 		addChild(versionTF);
 		
 		// ORIGINAL IMAGE
@@ -119,7 +143,7 @@ class GeomAlgoTest extends Sprite {
 		marchingSquares = new MarchingSquares(originalBMD, 1);
 		perimeter = marchingSquares.march();
 		trace('MarchSqrs     : ${Timer.stamp() - startTime}');
-		drawPoly(perimeter, X + clipRect.x, Y + clipRect.y, false);
+		drawPoly(perimeter, X + clipRect.x, Y + clipRect.y, set({fill:false}));
 		// draw perimeter pixels: in green if on solid pixels, in blue if not
 		/*var perimeterBitmap = new Bitmap(new BitmapData(WIDTH, HEIGHT, true, 0));
 		for (p in perimeter) {
@@ -150,7 +174,7 @@ class GeomAlgoTest extends Sprite {
 		var pts = 0;
 		for (c in contours) pts += c.length;
 		trace('IsoContours   : ${Timer.stamp() - startTime}');
-		drawPaths(contours, X, Y);
+		drawPaths(contours, X, Y, DEFAULT_DRAW_SETTINGS);
 		addChild(getTextField("IsoContours\n" + pts + " pts\n" + contours.length + " cntrs", X, Y));
 		
 		// CONNECTED COMPONENTS LABELING
@@ -179,7 +203,7 @@ class GeomAlgoTest extends Sprite {
 		startTime = Timer.stamp();
 		simplifiedPolyRDP = RamerDouglasPeucker.simplify(perimeter, 1.5);
 		trace('Doug-Peuck    : ${Timer.stamp() - startTime}');
-		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y);
+		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
 		addChild(getTextField("Doug-Peuck\n" + simplifiedPolyRDP.length + " pts", X, Y));
 		
 		// VISVALINGAM-WHYATT SIMPLIFICATION
@@ -187,26 +211,35 @@ class GeomAlgoTest extends Sprite {
 		startTime = Timer.stamp();
 		var simplifiedPolyVW = VisvalingamWhyatt.simplify(perimeter, SimplificationMethod.MaxPoints(simplifiedPolyRDP.length));
 		trace('Visv-Whyatt   : ${Timer.stamp() - startTime}');
-		drawPoly(simplifiedPolyVW, X + clipRect.x, Y + clipRect.y);
+		drawPoly(simplifiedPolyVW, X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
 		addChild(getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts", X, Y));		
 		
-		// EARCLIPPER TRIANGULATION
+		// EARCUT TRIANGULATION
 		setSlot(1, 1);
 		startTime = Timer.stamp();
-		triangulation = EarClipper.triangulate(simplifiedPolyRDP);
+		triangulation = EarCut.triangulate(simplifiedPolyRDP);
 		trace('ECTriang      : ${Timer.stamp() - startTime}');
 		trace("  " + testOrientation(triangulation), testSimple(triangulation), testConvex(triangulation));
-		drawTriangulation(triangulation, X + clipRect.x, Y + clipRect.y);
-		addChild(getTextField("EC-Triang\n" + triangulation.length + " tris", X, Y));
+		drawPolys(triangulation, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
+		addChild(getTextField("EarCut\nTriang\n" + triangulation.length + " tris", X, Y));
 
-		// EARCLIPPER DECOMPOSITION
+		// EARCUT DECOMPOSITION
 		setSlot(1, 2);
 		startTime = Timer.stamp();
-		decomposition = EarClipper.polygonizeTriangles(triangulation);
+		decomposition = EarCut.polygonize(triangulation);
 		trace('ECDecomp      : ${Timer.stamp() - startTime}');
 		trace("  " + testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
-		drawDecomposition(decomposition, X + clipRect.x, Y + clipRect.y);
-		addChild(getTextField("EarClipper\nDecomp\n" + decomposition.length + " polys", X, Y));
+		drawPolys(decomposition, X + clipRect.x, Y + clipRect.y, set({showCentroids:true}));
+		addChild(getTextField("EarCut\nDecomp\n" + decomposition.length + " polys", X, Y));
+
+		// EC + HERTEL-MEHLHORN (DECOMPOSITION)
+		setSlot(3, 1);
+		startTime = Timer.stamp();
+		decomposition = HertelMehlhorn.polygonize(triangulation);
+		trace('HMEarCut      : ${Timer.stamp() - startTime}');
+		trace("  " + testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
+		drawPolys(decomposition, X + clipRect.x, Y + clipRect.y, set({showCentroids:true}));
+		addChild(getTextField("Hert-Mehl\n(EarCut)\n" + decomposition.length + " polys", X, Y));
 
 		// BAYAZIT DECOMPOSITION
 		setSlot(1, 3);
@@ -214,7 +247,7 @@ class GeomAlgoTest extends Sprite {
 		decomposition = Bayazit.decomposePoly(simplifiedPolyRDP);
 		trace('BayazDecomp   : ${Timer.stamp() - startTime}');
 		trace("  " + testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
-		drawDecompositionBayazit(decomposition, X + clipRect.x, Y + clipRect.y);
+		drawDecompositionBayazit(decomposition, X + clipRect.x, Y + clipRect.y, set({showCentroids:true}));
 		addChild(getTextField("Bayazit\nDecomp\n" + decomposition.length + " polys", X, Y));
 
 		// SNOEYINK-KEIL DECOMPOSITION
@@ -223,30 +256,38 @@ class GeomAlgoTest extends Sprite {
 		decomposition = SnoeyinkKeil.decomposePoly(simplifiedPolyRDP);
 		trace('SnoeKeilDecomp: ${Timer.stamp() - startTime}');
 		trace("  " + testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
-		drawDecomposition(decomposition, X + clipRect.x, Y + clipRect.y);
+		drawPolys(decomposition, X + clipRect.x, Y + clipRect.y, set({showCentroids:true}));
+		/*g.lineStyle(THICKNESS, 0xFFFFFF, ALPHA);
+		for (d in SnoeyinkKeil.diagonals) {
+			var p = simplifiedPolyRDP[d.from];
+			var q = simplifiedPolyRDP[d.to];
+			g.moveTo(X + p.x, Y + p.y);
+			g.lineTo(X + q.x, Y + q.y);
+		}
+		g.lineStyle(THICKNESS, COLOR, ALPHA);*/
 		addChild(getTextField("Snoeyink-Keil\nMin Decomp\n" + decomposition.length + " polys", X, Y));
 		
 		// VISIBILITY
 		setSlot(1, 5);
-		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y);
+		drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y, set({showPoints:true}));
 		var origIdx = Std.int(Math.random() * simplifiedPolyRDP.length);
 		var origPoint = simplifiedPolyRDP[origIdx];
 		// visible points
 		startTime = Timer.stamp();
 		var visPoints = Visibility.getVisiblePolyFrom(simplifiedPolyRDP, origIdx);
-		g.lineStyle(THICKNESS, 0xFFFF00);
-		drawPoly(visPoints, X + clipRect.x, Y + clipRect.y);
+		g.lineStyle(THICKNESS, color = 0xFFFF00);
+		drawPoly(visPoints, X + clipRect.x, Y + clipRect.y, set({showPoints:true}));
 		// visible vertices
 		var visIndices = Visibility.getVisibleIndicesFrom(simplifiedPolyRDP, origIdx);
 		var visVertices = [for (i in 0...visIndices.length) simplifiedPolyRDP[visIndices[i]]];
 		trace('Visisibility  : ${Timer.stamp() - startTime}');
-		g.lineStyle(THICKNESS, 0x00FF00);
+		g.lineStyle(THICKNESS, color = 0x00FF00);
 		drawPoints(visVertices, X + clipRect.x, Y + clipRect.y);
 		// draw origPoint
-		g.lineStyle(THICKNESS, 0x0000FF);
+		g.lineStyle(THICKNESS, color = 0x0000FF);
 		if (origPoint != null) g.drawCircle(X + origPoint.x + clipRect.x, Y + origPoint.y + clipRect.y, 3);
 		addChild(getTextField("Visibility\n" + visVertices.length + " vts\n" + visPoints.length + " pts", X, Y));
-		g.lineStyle(THICKNESS, COLOR, ALPHA);
+		g.lineStyle(THICKNESS, color = COLOR, ALPHA);
 
 		// TESS2 - TRIANGULATION
 		setSlot(2, 1);
@@ -258,11 +299,20 @@ class GeomAlgoTest extends Sprite {
 		trace('Tess2Triang   : ${Timer.stamp() - startTime}');
 		var polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace("  " + testOrientation(polys), testSimple(polys), testConvex(polys));
-		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
-		addChild(getTextField("Tess2-Triang\n" + res.elementCount + " tris", X, Y));
+		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
+		addChild(getTextField("Tess2\nTriang\n" + res.elementCount + " tris", X, Y));
+
+		// TESS2 + HERTEL-MEHLHORN (DECOMPOSITION)
+		setSlot(3, 2);
+		startTime = Timer.stamp();
+		decomposition = HertelMehlhorn.polygonize(polys);
+		trace('HMTess2      : ${Timer.stamp() - startTime}');
+		trace("  " + testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
+		drawPolys(decomposition, X + clipRect.x, Y + clipRect.y, set({showCentroids:true}));
+		addChild(getTextField("Hert-Mehl\n(Tess2)\n" + decomposition.length + " polys", X, Y));
 
 		// TESS2 - EXPERIMENTAL DELAUNAY TRIANGULATION
-		setSlot(1, 0);
+		setSlot(2, 0);
 		polySize = 3;
 		resultType = ResultType.EXPERIMENTAL_DELAUNAY;
 		startTime = Timer.stamp();
@@ -270,16 +320,23 @@ class GeomAlgoTest extends Sprite {
 		trace('Tess2Delaunay : ${Timer.stamp() - startTime}');
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace("  " + testOrientation(polys), testSimple(polys), testConvex(polys));
-		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
-		addChild(getTextField("Tess2-Delaunay\n" + res.elementCount + " tris", X, Y));
+		drawPolys(polys, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
+		addChild(getTextField("Tess2\nExp. Delaunay\n" + res.elementCount + " tris", X, Y));
 
-		// TESS2 + EC - DECOMP
-		/*
-		setSlot(2, 6);
-		var polygonized = EarClipper.polygonizeTriangles(polys);
-		for (p in polygonized) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
+		// TESS2 + EC (DECOMP)
+		setSlot(3, 0);
+		var polygonized = EarCut.polygonize(polys);
+		drawPolys(polygonized, X + clipRect.x, Y + clipRect.y, set({showCentroids:true}));
 		addChild(getTextField("Tess2 + EC\nDecomp\n" + polygonized.length + " polys", X, Y));
-		*/
+
+		// TESS2 DELAUNAY + HERTEL-MEHLHORN (DECOMPOSITION)
+		setSlot(3, 3);
+		startTime = Timer.stamp();
+		decomposition = HertelMehlhorn.polygonize(polys);
+		trace('HMTess2D     : ${Timer.stamp() - startTime}');
+		trace("  " + testOrientation(decomposition), testSimple(decomposition), testConvex(decomposition));
+		drawPolys(decomposition, X + clipRect.x, Y + clipRect.y, set({showCentroids:true}));
+		addChild(getTextField("Hert-Mehl\n(Tess2Del)\n" + decomposition.length + " polys", X, Y));
 
 		// TESS2 - DECOMP
 		setSlot(2, 2);
@@ -290,7 +347,7 @@ class GeomAlgoTest extends Sprite {
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace('Tess2Decomp   : ${Timer.stamp() - startTime}');
 		trace("  " + testOrientation(polys), testSimple(polys), testConvex(polys));
-		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
+		drawPolys(polys, X + clipRect.x, Y + clipRect.y, set({showCentroids:true}));
 		addChild(getTextField("Tess2\nDecomp\n" + res.elementCount + " polys", X, Y));
 		
 		// TESS2 - CONTOURS
@@ -299,7 +356,7 @@ class GeomAlgoTest extends Sprite {
 		resultType = ResultType.BOUNDARY_CONTOURS;
 		res = Tess2.tesselate(flatContours, null, resultType, polySize);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
-		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, false);
+		for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
 		addChild(getTextField("Tess2\nContours\n" + res.elementCount + " polys", X, Y));
 		*/
 	
@@ -330,7 +387,7 @@ class GeomAlgoTest extends Sprite {
 		res = Tess2.union(flatContours, flatRing, resultType, polySize, 2);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace('Tess2Union    : ${Timer.stamp() - startTime}');
-		drawPaths(polys, X + clipRect.x, Y + clipRect.y, true);
+		drawPaths(polys, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
 		addChild(getTextField("Tess2\nUnion\n" + res.elementCount + " polys", X, Y));
 		
 		// TESS2 - INTERSECTION
@@ -339,7 +396,7 @@ class GeomAlgoTest extends Sprite {
 		res = Tess2.intersection(flatContours, flatRing, resultType, polySize, 2);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace('Tess2Intersect: ${Timer.stamp() - startTime}');
-		drawPaths(polys, X + clipRect.x, Y + clipRect.y, true);
+		drawPaths(polys, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
 		addChild(getTextField("Tess2\nIntersection\n" + res.elementCount + " polys", X, Y));
 		
 		// TESS2 - DIFFERENCE
@@ -348,7 +405,7 @@ class GeomAlgoTest extends Sprite {
 		res = Tess2.difference(flatContours, flatRing, resultType, polySize, 2);
 		polys = Tess2.convertResult(res.vertices, res.elements, resultType, polySize);
 		trace('Tess2Diff     : ${Timer.stamp() - startTime}');
-		drawPaths(polys, X + clipRect.x, Y + clipRect.y, true);
+		drawPaths(polys, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
 		addChild(getTextField("Tess2\nDifference\n" + res.elementCount + " polys", X, Y));
 		
 		//flash.Lib.current.stage.addChild(new openfl.FPS(5, 5, 0xFFFFFF));
@@ -356,20 +413,22 @@ class GeomAlgoTest extends Sprite {
 		dumpPoly(simplifiedPolyRDP, false);
 		
 		// Tess2.js parsable poly string (https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html)
-		/*var str = "";
+		/*
+		var str = "";
 		for (poly in flatContours) {
 			for (i in 0...poly.length >> 1) {
 				str += '${poly[i * 2]} ${poly[i * 2 + 1]}\n';
 			}
 			str += "\n";
 		}
-		trace(str);*/
+		trace(str);
+		*/
 		
 		// test CCW and duplicate points
 		trace("\n");
-		var polys = [perimeter, simplifiedPolyRDP, simplifiedPolyVW, visPoints].concat(labeler.contours).concat(contours);
+		polys = [perimeter, simplifiedPolyRDP, simplifiedPolyVW, visPoints].concat(labeler.contours).concat(contours);
 		var labelerHeaders = [for (i in 0...labeler.contours.length) 'labeler[$i]   '];
-		var isoHeaders = [for (i in 0...labeler.contours.length) 'isoCntr[$i]   '];
+		var isoHeaders = [for (i in 0...contours.length) 'isoCntr[$i]   '];
 		var headers = ["perimeter    ", "simplifiedRDP", "simplifiedVW ", "visPoints    "].concat(labelerHeaders).concat(isoHeaders);
 		for (i in 0...polys.length) {
 			var poly = polys[i];
@@ -380,12 +439,23 @@ class GeomAlgoTest extends Sprite {
 		}
 	}
 	
-	static public function testOrientation(polys:Array<Poly>):String {
+	public function set(extra:DrawSettings):DrawSettings {
+		var newSettings:DrawSettings = {};
+		for (f in Reflect.fields(DEFAULT_DRAW_SETTINGS)) {
+			Reflect.setField(newSettings, f, Reflect.field(DEFAULT_DRAW_SETTINGS, f));
+		}
+		for (f in Reflect.fields(extra)) {
+			Reflect.setField(newSettings, f, Reflect.field(extra, f));
+		}
+		return newSettings;
+	}
+	
+	public function testOrientation(polys:Array<Poly>):String {
 		var res = "none";
 		
 		for (i in 0...polys.length) {
 			var poly = polys[i];
-			var orientation = PolyTools.isCCW(poly) ? "CCW" : "CW";
+			var orientation = PolyTools.isCCW(poly) ? "CCW" : " CW";
 			
 			if (i == 0) {
 				res = orientation;
@@ -398,7 +468,7 @@ class GeomAlgoTest extends Sprite {
 		return res;
 	}
 	
-	static public function testConvex(polys:Array<Poly>):String {
+	public function testConvex(polys:Array<Poly>):String {
 		var res = "none";
 		
 		for (i in 0...polys.length) {
@@ -416,7 +486,7 @@ class GeomAlgoTest extends Sprite {
 		return res;
 	}
 	
-	static public function testSimple(polys:Array<Poly>):String {
+	public function testSimple(polys:Array<Poly>):String {
 		var res = "none";
 		
 		for (i in 0...polys.length) {
@@ -469,22 +539,22 @@ class GeomAlgoTest extends Sprite {
 	}
 	
 	// Draw arrow head at `q`
-	public function drawArrowHead(p:HxPoint, q:HxPoint, x:Float, y:Float, factor:Float = 2.5, angleDeg:Float = 30):Void 
+	public function drawArrowHead(p:HxPoint, q:HxPoint, x:Float, y:Float, length:Float = 7, angleDeg:Float = 15):Void 
 	{
 		var dx = p.x - q.x;
 		var dy = p.y - q.y;
-		var l = Math.sqrt(dx * dx + dy * dy) * factor;
+		var l = Math.sqrt(dx * dx + dy * dy);
 		var cos = Math.cos(Math.PI * angleDeg / 180);
 		var sin = Math.sin(Math.PI * angleDeg / 180);
-		dx = dx / l;
-		dy = dy / l;
+		dx = (dx / l) * length;
+		dy = (dy / l) * length;
 		var end1 = new HxPoint(q.x + (dx * cos + dy * -sin), q.y + (dx * sin + dy * cos));
 		var end2 = new HxPoint(q.x + (dx * cos + dy * sin), q.y + (dx * -sin + dy * cos));
 		g.moveTo(end1.x + x, end1.y + y);
 		g.lineTo((X + q.x), (Y + q.y));
 		g.lineTo(end2.x + x, end2.y + y);
 		//g.lineTo(end1.x + x, end1.y + y); // close head
-		g.moveTo((X + q.x), (Y + q.y));
+		//g.moveTo((X + q.x), (Y + q.y));
 	}
 	
 	public function drawPointsLabels(points:Array<HxPoint>, x:Float, y:Float):Void 
@@ -504,29 +574,48 @@ class GeomAlgoTest extends Sprite {
 		}
 	}
 	
-	public function drawPoly(points:Array<HxPoint>, x:Float, y:Float, showPoints:Bool = true, showLabels:Bool = false, fill:Bool = false):Void 
+	public function drawPoly(points:Array<HxPoint>, x:Float, y:Float, settings:DrawSettings):Void 
 	{
 		if (points.length <= 0) return;
 		
 		// points
-		if (showPoints) drawPoints(points, x, y);
+		if (settings.showPoints) drawPoints(points, x, y);
 		
 		// lines
-		if (fill) g.beginFill(COLOR, .5);
+		if (settings.fill) g.beginFill(COLOR, .5);
 		g.moveTo(x + points[0].x, y + points[0].y);
 		for (i in 1...points.length) {
 			var p = points[i];
 			g.lineTo(x + p.x, y + p.y);
-			//drawArrowHead(points[i - 1], p, x, y, 1.25);
 		}
 		g.lineTo(x + points[0].x, y + points[0].y);
-		if (fill) g.endFill();
+		if (settings.fill) g.endFill();
+		
+		if (settings.showArrows) {
+			g.lineStyle(THICKNESS, color, ALPHA);
+			if (settings.fill) g.beginFill(color, .3);
+			for (i in 1...points.length) {
+				var p = points[i - 1];
+				var q = points[i];
+				drawArrowHead(p, q, x, y);
+			}
+			if (settings.fill) g.endFill();
+			g.lineStyle(THICKNESS, color, ALPHA);
+		}
 		
 		// labels
-		if (showLabels) drawPointsLabels(points, x, y);
+		if (settings.showLabels) drawPointsLabels(points, x, y);
+		
+		// centroids
+		if (settings.showCentroids) {
+			var c = PolyTools.getCentroid(points);
+			g.lineStyle(THICKNESS, CENTROID_COLOR);
+			g.drawCircle(x + c.x, y + c.y, 2);
+			g.lineStyle(THICKNESS, COLOR);
+		}
 	}
 
-	public function drawPaths(paths:Array<Array<HxPoint>>, x:Float, y:Float, fill:Bool = false):Void 
+	public function drawPaths(paths:Array<Array<HxPoint>>, x:Float, y:Float, settings:DrawSettings):Void 
 	{
 		if (paths.length <= 0) return;
 		
@@ -544,49 +633,36 @@ class GeomAlgoTest extends Sprite {
 				data.push(y + path[i].y);
 			}
 			// close
-			if (fill) {
+			if (settings.fill) {
 				commands.push(2);
 				data.push(x + path[0].x);
 				data.push(y + path[0].y);
 			}
 		}
 		
-		if (fill) g.beginFill(COLOR, .5);
+		if (settings.fill) g.beginFill(COLOR, .5);
 		g.drawPath(commands, data, flash.display.GraphicsPathWinding.EVEN_ODD);
-		if (fill) g.endFill();
+		if (settings.fill) g.endFill();
 	}
 
-	public function drawTriangulation(tris:Array<Tri>, x:Float, y:Float):Void 
-	{
-		for (tri in tris) {
-			var points = tri;
-			g.moveTo(x + points[0].x, y + points[0].y);
-
-			for (i in 1...points.length + 1) {
-				var p = points[i % points.length];
-				g.lineTo(x + p.x, y + p.y);
-			}
-		}
-	}
-
-	public function drawDecomposition(polys:Array<Poly>, x:Float, y:Float, showPoints:Bool = false, showLabels:Bool = false):Void 
+	public function drawPolys(polys:Array<Poly>, x:Float, y:Float, settings:DrawSettings):Void 
 	{
 		for (poly in polys) {
-			drawPoly(poly, x, y, showPoints, showLabels);
+			drawPoly(poly, x, y, settings);
 		}
 	}
 
-	public function drawDecompositionBayazit(polys:Array<Poly>, x:Float, y:Float, showPoints:Bool = false, showLabels:Bool = false, showReflex:Bool = false, showSteiner:Bool = false):Void 
+	public function drawDecompositionBayazit(polys:Array<Poly>, x:Float, y:Float, settings:DrawSettings):Void 
 	{
-		drawDecomposition(polys, x, y, showPoints, showLabels);
+		drawPolys(polys, x, y, settings);
 		
 		// draw Reflex and Steiner points
-		if (showReflex) {
+		if (settings.showReflexPoints) {
 			g.lineStyle(THICKNESS, (COLOR >> 1) | COLOR, ALPHA);
 			for (p in Bayazit.reflexVertices) g.drawCircle(x + p.x, y + p.y, 2);
 		}
 		
-		if (showSteiner) {
+		if (settings.showSteinerPoints) {
 			g.lineStyle(THICKNESS, (COLOR >> 2) | COLOR, ALPHA);
 			for (p in Bayazit.steinerPoints) g.drawCircle(x + p.x, y + p.y, 2);
 		}
