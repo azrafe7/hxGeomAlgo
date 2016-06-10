@@ -74,7 +74,12 @@ class MarchingSquares
 		if (startPoint == null) startPoint = findStartPoint();
 		if (startPoint == null) return [];
 		
-		return walkPerimeter(Std.int(startPoint.x), Std.int(startPoint.y));
+		var perimeter = walkPerimeter(Std.int(startPoint.x), Std.int(startPoint.y));
+		
+		// remove end point if start == end
+		if (perimeter.length > 1 && perimeter[0].equals(perimeter[perimeter.length - 1])) perimeter.pop();
+		
+		return perimeter;
 	}
 	
 	/** 
