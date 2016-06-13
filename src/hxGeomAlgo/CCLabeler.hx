@@ -122,8 +122,10 @@ class CCLabeler
 		width = this.sourcePixels.width;
 		height = this.sourcePixels.height;
 		labelMap = new Pixels(width, height);
+		labelMap.format = pixels.format;
 		labelMap.fillRect(0, 0, width, height, UNLABELED);
 		markedPixels = new Pixels(width, height);
+		markedPixels.format = pixels.format;
 		markedPixels.fillRect(0, 0, width, height, 0);
 	}
 	
