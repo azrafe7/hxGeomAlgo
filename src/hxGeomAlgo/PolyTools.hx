@@ -447,6 +447,57 @@ class PolyTools
 				new HxPoint(end.x + ny, end.y - nx), new HxPoint(start.x + ny, start.y - nx)];
 	}
 	
+	/**
+	 * Clips `subjPoly` with `clipPoly` (using the Sutherland-Hodgman algorithm).
+	 * 
+	 * NOTE: expects simple polygons, and `clipPoly` MUST be convex.
+	 * 
+	 * @see https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm
+	 */
+	static public function clip(subjPoly:Poly, clipPoly:Poly):Array<Poly> {
+		Debug.assert(clipPoly.length >= 3 || isConvex(clipPoly), "`clipPoly` must be a convex poly");
+		
+		var res = [];
+		var output = subjPoly;
+		
+		var isInside = isCCW(clipPoly) ? isRight : isLeft;
+		
+		var clipEdgeStart:HxPoint;
+		var clipEdgeEnd:HxPoint;
+		var inputEdgeStart:HxPoint;
+		var inputEdgeEnd:HxPoint;
+		
+		var clipLen = clipPoly.length;
+		
+		var i = 0;
+		for (i in 0...clipLen) {
+			clipEdgeStart = clipPoly[i];
+			clipEdgeEnd = clipPoly[wrappedIdx(clipPoly, i + 1)];
+			
+			var input = output;
+			output = [];
+			inputEdgeStart = input[input.length - 1];
+			for (j in 0...input.length) {
+				inputEdgeEnd = input[j];
+				
+				if (isInside(inputEdgeEnd, clipEdgeStart, clipEdgeEnd)) {
+					if (!isInside(inputEdgeStart, clipEdgeStart, clipEdgeEnd)) {
+						var intersectionPoint = intersection(inputEdgeStart, inputEdgeEnd, clipEdgeStart, clipEdgeEnd);
+						if (intersectionPoint != null) output.push(intersectionPoint);
+					}
+					output.push(inputEdgeEnd);
+				} else if (isInside(inputEdgeStart, clipEdgeStart, clipEdgeEnd)) {
+						var intersectionPoint = intersection(inputEdgeStart, inputEdgeEnd, clipEdgeStart, clipEdgeEnd);
+						if (intersectionPoint != null) output.push(intersectionPoint);
+				}
+				inputEdgeStart = inputEdgeEnd;
+			}
+			res.push(output);
+		}
+		
+		return res;
+	}
+	
 	/** Used internally to expose enums in js. */
 	@:noUsing @:noCompletion static public function exposeEnum<T>(enumClass:Enum<T>, ?as:String) {
 	#if js
