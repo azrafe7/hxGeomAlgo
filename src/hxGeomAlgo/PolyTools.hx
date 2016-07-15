@@ -455,7 +455,7 @@ class PolyTools
 	 * @see https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm
 	 */
 	static public function clip(subjPoly:Poly, clipPoly:Poly):Array<Poly> {
-		Debug.assert(clipPoly.length >= 3 || isConvex(clipPoly), "`clipPoly` must be a convex poly");
+		Debug.assert(clipPoly.length >= 3 && isConvex(clipPoly), "`clipPoly` must be a valid convex poly");
 		
 		var res = [];
 		var output = subjPoly;
@@ -487,8 +487,8 @@ class PolyTools
 					}
 					output.push(inputEdgeEnd);
 				} else if (isInside(inputEdgeStart, clipEdgeStart, clipEdgeEnd)) {
-						var intersectionPoint = intersection(inputEdgeStart, inputEdgeEnd, clipEdgeStart, clipEdgeEnd);
-						if (intersectionPoint != null) output.push(intersectionPoint);
+					var intersectionPoint = intersection(inputEdgeStart, inputEdgeEnd, clipEdgeStart, clipEdgeEnd);
+					if (intersectionPoint != null) output.push(intersectionPoint);
 				}
 				inputEdgeStart = inputEdgeEnd;
 			}
