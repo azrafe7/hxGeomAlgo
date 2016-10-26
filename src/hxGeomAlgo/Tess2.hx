@@ -103,6 +103,8 @@ class Tess2
 	/**
 	 * Tesselates the specified `contours`.
 	 * 
+	 * (see Tess2.convertResult() for an easy way to use the returned TessResult)
+	 * 
 	 * @param	contours		Array of polygons to tesselate. Each poly is specified as a sequence of point coords (i.e. [x0, y0, x1, y1, x2, y2, ...]).
 	 * @param	windingRule		Winding rule to apply. Deaults to WindingRule.ODD.
 	 * @param	resultType		The result type you want as output. Defaults to ResultType.POLYGONS.
