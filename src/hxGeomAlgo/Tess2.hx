@@ -1888,7 +1888,7 @@ private class Sweep
 	static public function topRightRegion(reg:ActiveRegion):ActiveRegion
 	{
 		var dst = reg.eUp.Dst;
-		var reg = null;
+
 		/* Find the region above the uppermost edge with the same destination */
 		do {
 			reg = Sweep.regionAbove(reg);
