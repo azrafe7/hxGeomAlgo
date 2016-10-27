@@ -16,6 +16,7 @@ import flash.text.TextFormatAlign;
 import flash.utils.ByteArray;
 import flash.text.TextFieldAutoSize;
 import flash.display.PNGEncoderOptions;
+import hxGeomAlgo.Debug;
 
 import haxe.Resource;
 import haxe.Timer;
@@ -38,6 +39,7 @@ import hxGeomAlgo.CCLabeler;
 import hxGeomAlgo.VisvalingamWhyatt;
 import hxGeomAlgo.Tess2;
 import hxGeomAlgo.HertelMehlhorn;
+import hxGeomAlgo.PoleOfInaccessibility;
 
 #if (sys)
 import sys.io.File;
@@ -52,6 +54,7 @@ typedef DrawSettings = {
 	@:optional var showSteinerPoints:Bool;
 	@:optional var showReflexPoints:Bool;
 	@:optional var showArrows:Bool;
+	@:optional var showPIA:Bool;
 	@:optional var fill:Bool;
 }
 
@@ -81,6 +84,7 @@ class GeomAlgoTest extends Sprite {
 		showSteinerPoints: true,
 		showReflexPoints: false,
 		showArrows: false,
+		showPIA: false,
 		fill: true,
 	};
 	
@@ -297,7 +301,7 @@ class GeomAlgoTest extends Sprite {
 		setSlot(2, 1);
 		var polySize = 3;
 		var resultType = ResultType.POLYGONS;
-		var flatContours = [for (c in labeler.contours) PolyTools.toFloatArray(RamerDouglasPeucker.simplify(c, 1.))];
+		var flatContours = [for (c in contours) PolyTools.toFloatArray(RamerDouglasPeucker.simplify(c, 1.))];
 		startTime = Timer.stamp();
 		var res = Tess2.tesselate(flatContours, null, resultType, polySize);
 		trace('Tess2Triang   : ${Timer.stamp() - startTime}');
@@ -396,6 +400,16 @@ class GeomAlgoTest extends Sprite {
 		trace('Tess2Union    : ${Timer.stamp() - startTime}');
 		drawPaths(polys, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
 		addChild(getTextField("Tess2\nUnion\n" + res.elementCount + " polys", X, Y));
+	
+		// PIA - TESS2 UNION
+		setSlot(3, 4);
+		startTime = Timer.stamp();
+		var pia = PoleOfInaccessibility.calculate(polys, 1.0, true);
+		trace('PoleOfInaccess: ${Timer.stamp() - startTime}');
+		var r = PoleOfInaccessibility.pointToPolygonDist(pia.x, pia.y, polys);
+		drawPaths(polys, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
+		drawCircle(pia, X + clipRect.x, Y + clipRect.y, r);
+		addChild(getTextField("PIA\n(Tess Union)\nradius:" + r, X, Y));
 	
 		// TESS2 - INTERSECTION
 		setSlot(2, 4);
@@ -545,6 +559,15 @@ class GeomAlgoTest extends Sprite {
 		}
 	}
 	
+	public function drawCircle(center:HxPoint, x:Float, y:Float, radius:Float):Void {
+		if (Math.isFinite(radius)) {
+			g.lineStyle(THICKNESS, CENTROID_COLOR);
+			g.drawCircle(x + center.x, y + center.y, 1);
+			g.drawCircle(x + center.x, y + center.y, radius);
+			g.lineStyle(THICKNESS, COLOR);
+		}
+	}
+	
 	// Draw arrow head at `q`
 	public function drawArrowHead(p:HxPoint, q:HxPoint, x:Float, y:Float, length:Float = 7, angleDeg:Float = 15):Void 
 	{
@@ -650,12 +673,26 @@ class GeomAlgoTest extends Sprite {
 		if (settings.fill) g.beginFill(COLOR, .5);
 		g.drawPath(commands, data, flash.display.GraphicsPathWinding.EVEN_ODD);
 		if (settings.fill) g.endFill();
+
+		// PoleOfInaccessibility
+		if (settings.showPIA) {
+			var p = PoleOfInaccessibility.calculate(paths);
+			var r = PoleOfInaccessibility.pointToPolygonDist(p.x, p.y, paths);
+			drawCircle(p, x, y, r);
+		}
 	}
 
 	public function drawPolys(polys:Array<Poly>, x:Float, y:Float, settings:DrawSettings):Void 
 	{
 		for (poly in polys) {
 			drawPoly(poly, x, y, settings);
+		}
+
+		// PoleOfInaccessibility
+		if (settings.showPIA) {
+			var p = PoleOfInaccessibility.calculate(polys);
+			var r = PoleOfInaccessibility.pointToPolygonDist(p.x, p.y, polys);
+			drawCircle(p, x, y, r);
 		}
 	}
 
