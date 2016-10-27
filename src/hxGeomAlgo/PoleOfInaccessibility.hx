@@ -1,12 +1,10 @@
-//https://github.com/mapbox/polylabel/commit/220414f77caebec46d62d5a41301571bf2f85b90
 /**
- * Ear clipping implementation - polygon triangulation and triangles polygonization.
- * NOTE: Should work only for non self-intersecting polygons (but holes are supported).
+ * An algorithm for finding polygon pole of inaccessibility, the most distant internal point from
+ * the polygon outline (not to be confused with centroid).
  * 
  * Based on:
  * 
- * @see https://github.com/mapbox/earcut																(JS - by Vladimir Agafonkin)
- * @see http://www.ewjordan.com/earClip/																(Java - by Eric Jordan)
+ * @see https://github.com/mapbox/polylabel/commit/64fe157												(JS - by Vladimir Agafonkin)
  * 
  * @author azrafe7
  */
@@ -15,12 +13,18 @@ package hxGeomAlgo;
 
 
 import haxe.ds.ArraySort;
+import hxGeomAlgo.Heap.Heapable;
 import hxGeomAlgo.PolyTools;
 
 
 @:expose
 class PoleOfInaccessibility
 {
+	static var SQRT2:Float;
+	static function __init__():Void {
+		SQRT2 = Math.sqrt(2.0);
+	}
+	
 	static public function calculate(poly:Array<Poly>, precision:Float = 1.0, debug:Bool = false):HxPoint {
 		if (poly == null || poly.length <= 0) return HxPoint.EMPTY;
 		
@@ -43,60 +47,54 @@ class PoleOfInaccessibility
 		var height = maxY - minY;
 		var cellSize = Math.min(width, height);
 		var h = cellSize / 2;
-		var cells = [];
-
+		
+		
+		// a priority queue of cells in order of their "potential" (max distance to polygon)
+		var cellQueue = new Heap<Cell>();
+		
+		if (cellSize == 0.0) return new HxPoint(minX, minY);
+		
 		// cover polygon with initial cells
 		var x = minX;
 		var y = minY;
 		while (x < maxX) {
 			y = minY;
 			while (y < maxY) {
-				cells.push(new Cell(x + h, y + h));
+				cellQueue.push(new Cell(x + h, y + h, h, poly));
 				y += cellSize;
 			}
 			x += cellSize;
 		}
 
 		// take centroid as the first best guess
-		var bestCell = getCentroidCell(poly[0]);
-		bestCell.d = pointToPolygonDist(bestCell.x, bestCell.y, poly);
+		var bestCell = getCentroidCell(poly);
+		
+		// special case for rectangular polygons
+		var bboxCell = new Cell(minX + width / 2, minY + height / 2, 0, poly);
+		if (bboxCell.d > bestCell.d) bestCell = bboxCell;
 
-		var error = h * Math.sqrt(2);
-		var numProbes = 0;
+		var numProbes = cellQueue.length;
 
-		while (true) {
-			numProbes += cells.length;
+		while (cellQueue.length > 0) {
+			// pick the most promising cell from the queue
+			var cell = cellQueue.pop();
 
-			// calculate cell distances, keeping track of global max distance
-			for (i in 0...cells.length) {
-				var cell = cells[i];
-				cell.d = pointToPolygonDist(cell.x, cell.y, poly);
-
-				if (cell.d > bestCell.d) {
-					bestCell = cell;
-				}
+			// update the best cell if we found a better one
+			if (cell.d > bestCell.d) {
+				bestCell = cell;
+				if (debug) trace('found best ${Math.round(1e4 * cell.d) / 1e4} after ${numProbes} probes');
 			}
 
-			if (debug) trace('cells processed: ${cells.length}, best so far ${bestCell.d}, error ${error}');
+			// do not drill down further if there's no chance of a better solution
+			if (cell.max - bestCell.d <= precision) continue;
 
-			if (error <= precision) break;
-
-			h /= 2;
-
-			var childCells = [];
-			for (i in 0...cells.length) {
-				var cell = cells[i];
-				if (cell.d + error <= bestCell.d) continue;
-
-				// if a cell potentially contains a better solution than the current best, subdivide
-				childCells.push(new Cell(cell.x - h, cell.y - h));
-				childCells.push(new Cell(cell.x + h, cell.y - h));
-				childCells.push(new Cell(cell.x - h, cell.y + h));
-				childCells.push(new Cell(cell.x + h, cell.y + h));
-			}
-
-			cells = childCells;
-			error /= 2;
+			// split the cell into four cells
+			h = cell.h / 2;
+			cellQueue.push(new Cell(cell.x - h, cell.y - h, h, poly));
+			cellQueue.push(new Cell(cell.x + h, cell.y - h, h, poly));
+			cellQueue.push(new Cell(cell.x - h, cell.y + h, h, poly));
+			cellQueue.push(new Cell(cell.x + h, cell.y + h, h, poly));
+			numProbes += 4;
 		}
 
 		if (debug) {
@@ -135,10 +133,11 @@ class PoleOfInaccessibility
 	}
 
 	/** Get polygon centroid */
-	static public function getCentroidCell(points:Poly):Cell {
+	static public function getCentroidCell(poly:Array<Poly>):Cell {
 		var area = 0.0;
 		var x = 0.0;
 		var y = 0.0;
+		var points = poly[0];
 
 		var i = 0;
 		var len = points.length;
@@ -153,7 +152,9 @@ class PoleOfInaccessibility
 			area += f * 3;
 			i++;
 		}
-		return new Cell(x / area, y / area);
+		
+		if (area == 0.0) return new Cell(points[0].x, points[0].y, 0, poly);
+		return new Cell(x / area, y / area, 0, poly);
 	}
 
 	/** Get squared distance from a point to a segment */
@@ -186,16 +187,29 @@ class PoleOfInaccessibility
 }
 
 
-class Cell {
+@:access(hxGeomAlgo.PoleOfInaccessibility)
+private class Cell implements Heapable<Cell>
+{
+	public var position:Int;
 	
-	public var x:Float;
-	public var y:Float;
-	public var d:Null<Float>;
+	public var x:Float;			// cell center x
+	public var y:Float;			// cell center y
+	public var h:Float;			// half cell size
+	public var d:Null<Float>;	// distance from cell center to polygon
+	public var max:Float;		// max distance to polygon within a cell
 
 
-	public function new(x:Float, y:Float) {
+	public function new(x:Float, y:Float, h:Float, polygon:Array<Poly>) {
 		this.x = x;
 		this.y = y;
-		this.d = null;
+		this.h = h;
+		this.d = PoleOfInaccessibility.pointToPolygonDist(x, y, polygon);
+		this.max = this.d + this.h * PoleOfInaccessibility.SQRT2;
 	}
+	
+	// compare max
+    public function compare(other:Cell):Int {
+        var diff = other.max - max;
+		return diff < 0 ? -1 : diff > 0 ? 1 : 0;
+    }
 }
