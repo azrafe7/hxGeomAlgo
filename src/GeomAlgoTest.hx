@@ -127,7 +127,10 @@ class GeomAlgoTest extends Sprite {
 		//  ASSET IMAGE
 		var assetTF = getTextField("move: ARROWS/GHJY  |  cycle: CTRL+ARROWS  |  zoom: +/-  |  [" + asset + "]", 0, 5 * TEXT_SIZE);
 		trace("\n\n[" + asset + "]\n");
-		assetTF.autoSize = TextFieldAutoSize.LEFT;
+		assetTF.width = flash.Lib.current.stage.stageWidth;
+		var fmt = assetTF.defaultTextFormat.clone();
+		fmt.align = TextFormatAlign.LEFT;
+		assetTF.defaultTextFormat = fmt;
 		addChild(assetTF);
 
 		//  VERSION
