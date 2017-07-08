@@ -725,7 +725,7 @@ class GeomAlgoTest extends Sprite {
 		tf.selectable = false;
 		tf.x = x;
 		tf.y = y + TEXT_OFFSET;
-		tf.filters = [TEXT_OUTLINE];
+		//tf.filters = [TEXT_OUTLINE]; // disabled. No more working with recent versions of openfl!
 		tf.text = text;
 		return tf;
 	}
