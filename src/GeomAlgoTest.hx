@@ -725,7 +725,10 @@ class GeomAlgoTest extends Sprite {
 		tf.selectable = false;
 		tf.x = x;
 		tf.y = y + TEXT_OFFSET;
-		//tf.filters = [TEXT_OUTLINE]; // disabled. No more working with recent versions of openfl!
+		// Don't apply glow filter on non-flash (not working with current version of openfl)
+	#if flash
+		tf.filters = [TEXT_OUTLINE];
+	#end
 		tf.text = text;
 		return tf;
 	}
