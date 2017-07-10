@@ -16,7 +16,9 @@
 	<haxelib name="openfl" />
 	<haxelib name="hxPixels" />
 
-	<assets path="assets" rename="assets" exclude="openfl.svg" include="*.png" />
+  <haxelib name="format" if="html5" />
+  <!--haxelib name="hxPako" /-->
+	<assets path="assets" rename="assets" exclude="openfl.svg" include="*.png" embed="false" />
 	<icon path="assets/openfl.svg" />
 	
 </project>

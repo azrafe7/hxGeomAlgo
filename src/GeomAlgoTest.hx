@@ -18,6 +18,7 @@ import flash.text.TextFieldAutoSize;
 #if (openfl && !nme)
 import flash.display.PNGEncoderOptions;
 #end
+import haxe.Json;
 import hxGeomAlgo.Debug;
 
 import haxe.Resource;
@@ -118,7 +119,26 @@ class GeomAlgoTest extends Sprite {
 		addChild(sprite);
 		g = sprite.graphics;
 		g.lineStyle(THICKNESS, color = COLOR, ALPHA);
+  #if html5
+    var manifest:Embedder.ManifestType = Json.parse(CustomAssets.getString("manifest.json"));
+    trace(manifest);
+    var info:Embedder.ManifestEntry = null;
+    for (e in manifest.assets) {
+      if (e.name == asset) {
+        info = e;
+        break;
+      }
+    }
+    trace(info);
+    var bytes = CustomAssets.getBytes(asset);
+    //var uncompressed = pako.Pako.inflate(haxe.io.UInt8Array.fromBytes(bytes));
+    var uncompressed = haxe.zip.Uncompress.run(bytes);
+    var imageBuffer = new lime.graphics.ImageBuffer(lime.utils.UInt8Array.fromBytes(uncompressed), info.metadata.width, info.metadata.height);
+    var image = new lime.graphics.Image(imageBuffer);
+		originalBMD = BitmapData.fromImage(image);
+  #else
 		originalBMD = openfl.Assets.getBitmapData(asset);
+  #end
 		WIDTH = originalBMD.width;
 		HEIGHT = originalBMD.height + 80;
 		if (WIDTH < 100) WIDTH = 100;

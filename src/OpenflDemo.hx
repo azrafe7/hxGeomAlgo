@@ -39,12 +39,13 @@ class OpenflDemo extends Sprite {
 		
 		flash.Lib.current.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 
+    trace(haxe.Resource.listNames());
 		asset = assets[currAssetIdx];
 		geomAlgoTest = new GeomAlgoTest(asset);
 		
 		flash.Lib.current.addChild(geomAlgoTest);
 	}
-	
+  
 	public function onKeyDown(e:KeyboardEvent):Void 
 	{
 		if (e.keyCode == 27) {
