@@ -138,10 +138,10 @@ class IsoContours
 		}
 		
 		// march
-		for (x in startX...endX) {
+		for (y in startY...endY) {
+		
+			for (x in startX...endX) {
 			
-			for (y in startY...endY) {
-				
 				// calc binaryIdx (CW from msb)
 				var pos = y * paddedWidth + x;
 				var topLeft = values[pos];
