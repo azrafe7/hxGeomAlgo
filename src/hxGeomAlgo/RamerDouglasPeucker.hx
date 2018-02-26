@@ -21,7 +21,7 @@ class RamerDouglasPeucker
 	 * Simplify polyline.
 	 * 
 	 * @param	points		Array of points defining the polyline.
-	 * @param	epsilon		Perpendicular distance threshold (typically in the range [1..2]).
+	 * @param	epsilon		Perpendicular distance threshold (typically in the range (0..2]).
 	 * @return	An array of points defining the simplified polyline.
 	 */
 	static public function simplify(points:Array<HxPoint>, epsilon:Float = 1):Array<HxPoint> 
@@ -29,7 +29,7 @@ class RamerDouglasPeucker
 		var firstPoint = points[0];
 		var lastPoint = points[points.length - 1];
 		
-		if (points.length < 2 || epsilon < 1) {
+		if (points.length < 2) {
 			return [].concat(points);
 		}
 		
