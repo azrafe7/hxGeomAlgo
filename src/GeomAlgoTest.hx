@@ -438,17 +438,8 @@ class GeomAlgoTest extends Sprite {
 
 		dumpPoly(simplifiedPolyRDP, false);
 	
-		// Tess2.js parsable poly string (https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html)
-		/*
-		var str = "";
-		for (poly in flatContours) {
-			for (i in 0...poly.length >> 1) {
-				str += '${poly[i * 2]} ${poly[i * 2 + 1]}\n';
-			}
-			str += "\n";
-		}
-		trace(str);
-		*/
+		// Tess2.js-test parsable poly string (https://rawgit.com/azrafe7/tess2.js/master/test/index.html)
+		dumpTess2Polys(flatContours);
 	
 		// test CCW and duplicate points
 		trace("\n");
@@ -546,9 +537,20 @@ class GeomAlgoTest extends Sprite {
 		Y = START_POINT.y + (HEIGHT + Y_GAP) * row;
 	}
 	
+	public function dumpTess2Polys(flatContours:Array<Array<Float>>):Void {
+		var str = "all polys dump: \n";
+		for (poly in flatContours) {
+			for (i in 0...poly.length >> 1) {
+				str += '${poly[i * 2]} ${poly[i * 2 + 1]}\n';
+			}
+			str += "\n";
+		}
+		trace(str);
+	}
+
 	public function dumpPoly(poly:Array<HxPoint>, reverse:Bool = false):Void {
 		var len = poly.length;
-		var str = "poly dump: ";
+		var str = "poly dump: \n";
 		for (i in 0...len) {
 			var p = poly[reverse ? len - i - 1 : i];
 			str += p.x + "," + p.y + ",";
