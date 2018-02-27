@@ -24,6 +24,7 @@ class OpenflDemo extends Sprite {
 		"assets/opaque_white.png",
 		"assets/py_figure.png",
 		"assets/issue11.png",
+		"assets/9x9_holed_square.png",
 	];
 	
 	static var currAssetIdx:Int = 0;
