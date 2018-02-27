@@ -500,7 +500,7 @@ class PolyTools
 	
 	/** Used internally to expose enums in js. */
 	@:noUsing @:noCompletion static public function exposeEnum<T>(enumClass:Enum<T>, ?as:String) {
-	#if js
+	#if (js && !jsprime)
 		var dotPath = (as != null ? as : enumClass.getName()).split(".");
 		untyped {
             var exports = $hx_exports;
