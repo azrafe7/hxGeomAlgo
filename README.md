@@ -35,7 +35,7 @@ Based on:
  - http://mnbayazit.com/406/bayazit (C - by Mark Bayazit)
  - http://www.dyn4j.org/ (Java - by William Bittle)
 
-#### [Visibilty Polygon](http://en.wikipedia.org/wiki/Visibility_polygon) and [Homogeneous Coords (2D)](http://en.wikipedia.org/wiki/Homogeneous_coordinates)
+#### [Visibility Polygon](http://en.wikipedia.org/wiki/Visibility_polygon) and [Homogeneous Coords (2D)](http://en.wikipedia.org/wiki/Homogeneous_coordinates)
 
 Based on:
 
