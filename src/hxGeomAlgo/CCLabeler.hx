@@ -330,7 +330,7 @@ class CCLabeler
    * Override this to use your own criteria to identify solid pixels.
    */
   private function isPixelSolid(x:Int, y:Int):Bool {
-    return (!isOutOfBounds(x, y) && sourcePixels[(y * width + x) << 2] >= alphaThreshold);
+    return (!isOutOfBounds(x, y) && sourcePixels.getByte((y * width + x) << 2) >= alphaThreshold);
   }
   
   inline private function isOutOfBounds(x:Int, y:Int):Bool {

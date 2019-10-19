@@ -194,6 +194,6 @@ class MarchingSquares
    * Override this to use your own logic to identify solid pixels.
    */
   private function isPixelSolid(x:Int, y:Int):Bool {
-    return (x >= 0 && y >= 0 && x < width && y < height && (pixels[(y * width + x) << 2]) >= alphaThreshold);
+    return (x >= 0 && y >= 0 && x < width && y < height && (pixels.getByte((y * width + x) << 2) >= alphaThreshold));
   }
 }
