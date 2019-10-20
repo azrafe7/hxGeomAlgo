@@ -166,6 +166,22 @@ class GeomAlgoTest extends Sprite {
     addChild(perimeterBitmap);*/
     addChild(getTextField("MarchSqrs\n" + perimeter.length + " pts", X, Y));
 
+    // RAMER-DOUGLAS-PEUCKER SIMPLIFICATION
+    setSlot(0, 4);
+    startTime = Timer.stamp();
+    simplifiedPolyRDP = RamerDouglasPeucker.simplify(perimeter, 1.5);
+    trace('Doug-Peuck    : ${Timer.stamp() - startTime}');
+    drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
+    addChild(getTextField("Doug-Peuck\n" + simplifiedPolyRDP.length + " pts", X, Y));
+
+    // VISVALINGAM-WHYATT SIMPLIFICATION
+    setSlot(0, 5);
+    startTime = Timer.stamp();
+    var simplifiedPolyVW = VisvalingamWhyatt.simplify(perimeter, SimplificationMethod.MaxPoints(simplifiedPolyRDP.length));
+    trace('Visv-Whyatt   : ${Timer.stamp() - startTime}');
+    drawPoly(simplifiedPolyVW, X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
+    addChild(getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts", X, Y));		
+
     // ISOCONTOURS
     setSlot(0, 2);
     
@@ -210,22 +226,6 @@ class GeomAlgoTest extends Sprite {
     }
     labeler.labelMap.applyToBitmapData(labelBMP.bitmapData);
     addChild(getTextField("CCLabeler\n" + labeler.numComponents + " cmpts\n" + labeler.contours.length + " cntrs", X, Y));
-
-    // RAMER-DOUGLAS-PEUCKER SIMPLIFICATION
-    setSlot(0, 4);
-    startTime = Timer.stamp();
-    simplifiedPolyRDP = RamerDouglasPeucker.simplify(perimeter, 1.5);
-    trace('Doug-Peuck    : ${Timer.stamp() - startTime}');
-    drawPoly(simplifiedPolyRDP, X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
-    addChild(getTextField("Doug-Peuck\n" + simplifiedPolyRDP.length + " pts", X, Y));
-
-    // VISVALINGAM-WHYATT SIMPLIFICATION
-    setSlot(0, 5);
-    startTime = Timer.stamp();
-    var simplifiedPolyVW = VisvalingamWhyatt.simplify(perimeter, SimplificationMethod.MaxPoints(simplifiedPolyRDP.length));
-    trace('Visv-Whyatt   : ${Timer.stamp() - startTime}');
-    drawPoly(simplifiedPolyVW, X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
-    addChild(getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts", X, Y));		
 
     // EARCUT TRIANGULATION
     setSlot(1, 1);
