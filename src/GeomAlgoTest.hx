@@ -725,7 +725,7 @@ class GeomAlgoTest extends Sprite {
   public function getTextField(text:String = "", x:Float, y:Float, ?size:Int):TextField
   {
     var tf:TextField = new TextField();
-    var fmt:TextFormat = new TextFormat(TEXT_FONT, null, TEXT_COLOR);
+    var fmt:TextFormat = new TextFormat(TEXT_FONT, TEXT_SIZE, TEXT_COLOR);
     fmt.align = TextFormatAlign.CENTER;
     fmt.size = size == null ? TEXT_SIZE : size;
     tf.defaultTextFormat = fmt;
