@@ -650,6 +650,7 @@ class GeomAlgoTest extends Sprite {
       g.drawCircle(x + c.x, y + c.y, 2);
       g.lineStyle(THICKNESS, COLOR);
     }
+	g.lineStyle(THICKNESS, COLOR);
   }
 
   public function drawPaths(paths:Array<Array<HxPoint>>, x:Float, y:Float, settings:DrawSettings):Void 
@@ -687,6 +688,7 @@ class GeomAlgoTest extends Sprite {
       var r = PoleOfInaccessibility.pointToPolygonDist(p.x, p.y, paths);
       drawCircle(p, x, y, r);
     }
+	g.lineStyle(THICKNESS, COLOR);
   }
 
   public function drawPolys(polys:Array<Poly>, x:Float, y:Float, settings:DrawSettings):Void 
