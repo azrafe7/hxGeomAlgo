@@ -373,7 +373,7 @@ class PolyTools
   /** Empties an array of its contents. */
   static inline public function clear<T>(array:Array<T>)
   {
-#if (cpp || php)
+#if (cpp || php || hl || neko)
     array.splice(0, array.length);
 #else
     untyped array.length = 0;
