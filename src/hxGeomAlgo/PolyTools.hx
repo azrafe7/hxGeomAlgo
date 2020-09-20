@@ -469,7 +469,6 @@ class PolyTools
     
     var clipLen = clipPoly.length;
     
-    var i = 0;
     for (i in 0...clipLen) {
       clipEdgeStart = clipPoly[i];
       clipEdgeEnd = clipPoly[wrappedIdx(clipPoly, i + 1)];
@@ -496,6 +495,16 @@ class PolyTools
     }
     
     return res;
+  }
+  
+  /** Linear interpolation. */
+  static inline public function lerp(a:Float, b:Float, t:Float):Float {
+    return (1.0 - t) * a + t * b;
+  }
+  
+  /** Linear interpolation between points. */
+  static inline public function lerpPoints(a:HxPoint, b:HxPoint, t:Float):HxPoint {
+    return new HxPoint(lerp(a.x, b.x, t), lerp(a.y, b.y, t));
   }
   
   /** Used internally to expose enums in js. */
