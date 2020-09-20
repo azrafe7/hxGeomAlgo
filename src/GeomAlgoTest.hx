@@ -4,8 +4,6 @@ import flash.display.Bitmap;
 import flash.display.BitmapData;
 import flash.display.Graphics;
 import flash.display.Sprite;
-import flash.display.Stage;
-import flash.events.KeyboardEvent;
 import flash.filters.GlowFilter;
 import flash.geom.Rectangle;
 import flash.Lib;
@@ -385,7 +383,7 @@ class GeomAlgoTest extends Sprite {
     var cy = originalBMD.height / 2;
     var theta = 0.;
     var delta = 2 * Math.PI / 100;
-    for (i in 0...100) {
+    for (_ in 0...100) {
       var cos = Math.cos(theta);
       var sin = Math.sin(theta);
       outerCircle.push(new HxPoint(cx + cos * radius, cy + sin * radius));

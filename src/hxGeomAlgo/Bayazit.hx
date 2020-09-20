@@ -19,10 +19,6 @@
 
 package hxGeomAlgo;
 
-
-import hxGeomAlgo.PolyTools;
-
-
 using hxGeomAlgo.PolyTools;
 
 

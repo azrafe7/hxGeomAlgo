@@ -18,8 +18,6 @@ package hxGeomAlgo;
 
 import hxGeomAlgo.Debug;
 import hxGeomAlgo.HomogCoord;
-import hxGeomAlgo.PolyTools;
-import hxGeomAlgo.Visibility.VertexType;
 
 
 using hxGeomAlgo.PolyTools;

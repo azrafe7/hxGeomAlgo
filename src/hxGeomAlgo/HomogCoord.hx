@@ -13,7 +13,6 @@ package hxGeomAlgo;
 
 
 
-
 class HomogCoord
 {
   public static var INFINITY:HomogCoord = new HomogCoord();

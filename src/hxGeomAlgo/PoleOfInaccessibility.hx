@@ -12,7 +12,6 @@
 package hxGeomAlgo;
 
 
-import haxe.ds.ArraySort;
 import hxGeomAlgo.Heap.Heapable;
 import hxGeomAlgo.PolyTools;
 

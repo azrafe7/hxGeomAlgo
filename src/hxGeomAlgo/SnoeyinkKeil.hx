@@ -20,7 +20,6 @@ package hxGeomAlgo;
 
 import haxe.ds.ArraySort;
 import haxe.ds.IntMap.IntMap;
-import hxGeomAlgo.PolyTools;
 import hxGeomAlgo.SnoeyinkKeil.DecompPoly;
 
 
