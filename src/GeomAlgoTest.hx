@@ -40,6 +40,7 @@ import hxGeomAlgo.VisvalingamWhyatt;
 import hxGeomAlgo.Tess2;
 import hxGeomAlgo.HertelMehlhorn;
 import hxGeomAlgo.PoleOfInaccessibility;
+import hxGeomAlgo.Chaikin;
 
 #if (sys)
 import sys.io.File;
@@ -224,6 +225,21 @@ class GeomAlgoTest extends Sprite {
     }
     labeler.labelMap.applyToBitmapData(labelBMP.bitmapData);
     addChild(getTextField("CCLabeler\n" + labeler.numComponents + " cmpts\n" + labeler.contours.length + " cntrs", X, Y));
+
+    // CHAIKIN (CURVE SMOOTHING)
+    setSlot(1, 0);
+    var strPtsToRefine = simplifiedPolyRDP.toString();
+    var curveToRefine = PolyTools.parsePoints(strPtsToRefine).slice(0, -1); // remove last point
+    startTime = Timer.stamp();
+    var smoothedCurve = Chaikin.smooth(curveToRefine, 3, true);
+    trace('Chaikin       : ${Timer.stamp() - startTime}');
+    g.lineStyle(THICKNESS, color = COLOR, ALPHA);
+    drawPolys([smoothedCurve], X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
+    //for (p in smoothedCurve) drawCircle(p, X + clipRect.x, Y + clipRect.y, 2);
+    //g.lineStyle(THICKNESS, color = 0xFFFF00, .5);
+    //drawPaths([curveToRefine], X + clipRect.x, Y + clipRect.y, set({showPoints:false, fill:false}));
+    //for (p in curveToRefine) drawCircle(p, X + clipRect.x, Y + clipRect.y, 2);
+    addChild(getTextField("Chaikin\nSmooth\n" + smoothedCurve.length + " pts", X, Y));
 
     // EARCUT TRIANGULATION
     setSlot(1, 1);
@@ -648,7 +664,7 @@ class GeomAlgoTest extends Sprite {
       g.drawCircle(x + c.x, y + c.y, 2);
       g.lineStyle(THICKNESS, COLOR);
     }
-	g.lineStyle(THICKNESS, COLOR);
+    g.lineStyle(THICKNESS, COLOR);
   }
 
   public function drawPaths(paths:Array<Array<HxPoint>>, x:Float, y:Float, settings:DrawSettings):Void 
@@ -686,7 +702,7 @@ class GeomAlgoTest extends Sprite {
       var r = PoleOfInaccessibility.pointToPolygonDist(p.x, p.y, paths);
       drawCircle(p, x, y, r);
     }
-	g.lineStyle(THICKNESS, COLOR);
+    g.lineStyle(THICKNESS, COLOR);
   }
 
   public function drawPolys(polys:Array<Poly>, x:Float, y:Float, settings:DrawSettings):Void 
