@@ -102,6 +102,14 @@ class OpenflDemo extends Sprite {
     if (e.charCode == "h".code || e.charCode == "H".code || e.keyCode == 40) geomAlgoTest.y -= moveDelta; // down
     if (e.charCode == "y".code || e.charCode == "Y".code || e.keyCode == 38) geomAlgoTest.y += moveDelta; // up
 
+    // reset pos & zoom
+    if (e.charCode == "r".code || e.charCode == "R".code) {
+      geomAlgoTest.x = 0;
+      geomAlgoTest.y = 0;
+      flash.Lib.current.scaleX = 1;
+      flash.Lib.current.scaleY = 1;
+    }
+
     if (e.charCode >= "0".code && e.charCode <= "9".code) {
       currAssetIdx = -1;
       deltaIdx = e.charCode - "0".code + 1;
