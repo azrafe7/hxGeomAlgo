@@ -1,5 +1,5 @@
 /**
- * Chaikin curve smoothing implementation.
+ * Chaikin curve smoothing recursive implementation.
  *
  * Based on:
  *
@@ -9,9 +9,6 @@
  *
  * Chaikin, G. M. (1974). An algorithm for high-speed curve generation. Computer Graphics and Image Processing, 3(4), 346–349
  * @see https://sci-hub.tw/10.1016/0146-664X(74)90028-8	(George Merrill Chaikin)
- *
- * Wu, L., Yong, J.-H., Zhang, Y.-W., & Zhang, L. (2004). Multi-step Subdivision Algorithm for Chaikin Curves. Lecture Notes in Computer Science, 1232–1238. doi:10.1007/978-3-540-30497-5_188
- * @see https://sci-hub.tw/10.1007/978-3-540-30497-5_188		(Ling Wu, Jun-Hai Yong, You-Wei Zhang, and Li Zhang)
  *
  * @author azrafe7
  */
@@ -37,7 +34,7 @@ class Chaikin
 
   static public function smooth(poly:Poly, iterations:Int = 3, close:Bool = false, ratio:Float = .25):Poly
   {
-    if (iterations <= 0 || poly.length <= 3) return poly;
+    if (iterations <= 0 || poly.length <= 2) return poly;
 
     var smoothedPoints = new Poly();
 

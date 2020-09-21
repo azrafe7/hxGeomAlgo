@@ -11,25 +11,25 @@ import flash.display.BitmapData;
 class OpenflDemo extends Sprite {
 
   static var assets:Array<String> = [
-    "assets/pirate_small.png",
-    "assets/super_mario.png",	// from http://www.newgrounds.com/art/view/petelavadigger/super-mario-pixel
-    "assets/nazca_monkey.png",
-    "assets/small_rect.png",
-    "assets/star.png",
-    "assets/text.png",
-    "assets/transparent.png",
-    "assets/opaque_black.png",
-    "assets/complex.png",
-    "assets/big.png",
-    "assets/bord.png",
-    "assets/line.png",
-    "assets/opaque_white.png",
-    "assets/py_figure.png",
-    "assets/issue11.png",
-    "assets/9x9_holed_square.png",
+    "assets/pirate_small.png",      //  0
+    "assets/super_mario.png",	      //  1 - from http://www.newgrounds.com/art/view/petelavadigger/super-mario-pixel
+    "assets/nazca_monkey.png",      //  2
+    "assets/small_rect.png",        //  3
+    "assets/star.png",              //  4
+    "assets/text.png",              //  5
+    "assets/transparent.png",       //  6
+    "assets/opaque_black.png",      //  7
+    "assets/complex.png",           //  8
+    "assets/big.png",               //  9
+    "assets/bord.png",              // 10
+    "assets/line.png",              // 11
+    "assets/opaque_white.png",      // 12
+    "assets/py_figure.png",         // 13
+    "assets/issue11.png",           // 14
+    "assets/9x9_holed_square.png",  // 15
   ];
 
-  static var currAssetIdx:Int = 10;
+  static var currAssetIdx:Int = 6;
   static var asset:String;
   static var geomAlgoTest:GeomAlgoTest;
 

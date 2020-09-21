@@ -41,6 +41,7 @@ import hxGeomAlgo.Tess2;
 import hxGeomAlgo.HertelMehlhorn;
 import hxGeomAlgo.PoleOfInaccessibility;
 import hxGeomAlgo.Chaikin;
+import hxGeomAlgo.WuYongZhang;
 
 #if (sys)
 import sys.io.File;
@@ -231,20 +232,39 @@ class GeomAlgoTest extends Sprite {
     var strPtsToRefine = simplifiedPolyRDP.toString();
     var curveToRefine = PolyTools.parsePoints(strPtsToRefine).slice(0, -1); // remove last point
     startTime = Timer.stamp();
-    var closeCurve = true;
-    var smoothedCurve = Chaikin.smooth(curveToRefine, 3, closeCurve);
+    var smoothIterations = 3;
+    var closeCurve = false;
+    var smoothedCurveChaikin = Chaikin.smooth(curveToRefine, smoothIterations, closeCurve);
     trace('Chaikin       : ${Timer.stamp() - startTime}');
     g.lineStyle(THICKNESS, color = COLOR, ALPHA);
     if (closeCurve) {
-      drawPolys([smoothedCurve], X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
+      drawPolys([smoothedCurveChaikin], X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
     } else {
-      drawPaths([smoothedCurve], X + clipRect.x, Y + clipRect.y, set({fill:false}));
-      drawPoints(smoothedCurve, X + clipRect.x, Y + clipRect.y, 2);
+      drawPaths([smoothedCurveChaikin], X + clipRect.x, Y + clipRect.y, set({fill:false}));
+      drawPoints(smoothedCurveChaikin, X + clipRect.x, Y + clipRect.y, 2);
     }
-    addChild(getTextField("Chaikin\nSmooth " + (closeCurve ? "[C]" : "[O]") + "\n" + smoothedCurve.length + " pts", X, Y));
+    addChild(getTextField('Chaikin\nSmooth [k:${smoothIterations} ' + (closeCurve ? "C" : "O") + "]\n" + smoothedCurveChaikin.length + " pts", X, Y));
+
+    // WU-YONG-ZHANG (CHAIKIN CURVE SMOOTHING)
+    var testPoly = PolyTools.parsePoints("[0 0; 1 0; 2 1; 3 1]");
+    var smoothed = WuYongZhang.smooth(testPoly, 2);
+    dumpPoly(smoothed);
+
+    setSlot(1, 1);
+    startTime = Timer.stamp();
+    var smoothedCurveWYZ = WuYongZhang.smooth(curveToRefine, smoothIterations, closeCurve);
+    trace('WuYongZhang   : ${Timer.stamp() - startTime}');
+    g.lineStyle(THICKNESS, color = COLOR, ALPHA);
+    if (closeCurve) {
+      drawPolys([smoothedCurveWYZ], X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
+    } else {
+      drawPaths([smoothedCurveWYZ], X + clipRect.x, Y + clipRect.y, set({fill:false}));
+      drawPoints(smoothedCurveWYZ, X + clipRect.x, Y + clipRect.y, 2);
+    }
+    addChild(getTextField('WuYongZhang\nSmooth [k:${smoothIterations} ' + (closeCurve ? "C" : "O") + "]\n" + smoothedCurveWYZ.length + " pts", X, Y));
 
     // CHAIKIN (CONTROL POLY)
-    setSlot(1, 1);
+    setSlot(1, 2);
     g.lineStyle(THICKNESS, color = COLOR, ALPHA);
     drawPaths([curveToRefine], X + clipRect.x, Y + clipRect.y, set({fill:false}));
     drawPoints(curveToRefine, X + clipRect.x, Y + clipRect.y, 2);
