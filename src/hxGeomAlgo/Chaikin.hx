@@ -56,7 +56,7 @@ class Chaikin
      *         with a PShape object, do a pairwise iteration
      *         over vertices instead. Same thing.
      */
-    for (i in 0...numCorners + 1) {
+    for (i in 0...numCorners) {
 
       // Get the i'th and (i+1)'th vertex to work on that edge.
       var a = poly.at(i);

@@ -231,18 +231,27 @@ class GeomAlgoTest extends Sprite {
     var strPtsToRefine = simplifiedPolyRDP.toString();
     var curveToRefine = PolyTools.parsePoints(strPtsToRefine).slice(0, -1); // remove last point
     startTime = Timer.stamp();
-    var smoothedCurve = Chaikin.smooth(curveToRefine, 3, true);
+    var closeCurve = true;
+    var smoothedCurve = Chaikin.smooth(curveToRefine, 3, closeCurve);
     trace('Chaikin       : ${Timer.stamp() - startTime}');
     g.lineStyle(THICKNESS, color = COLOR, ALPHA);
-    drawPolys([smoothedCurve], X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
-    //for (p in smoothedCurve) drawCircle(p, X + clipRect.x, Y + clipRect.y, 2);
-    //g.lineStyle(THICKNESS, color = 0xFFFF00, .5);
-    //drawPaths([curveToRefine], X + clipRect.x, Y + clipRect.y, set({showPoints:false, fill:false}));
-    //for (p in curveToRefine) drawCircle(p, X + clipRect.x, Y + clipRect.y, 2);
-    addChild(getTextField("Chaikin\nSmooth\n" + smoothedCurve.length + " pts", X, Y));
+    if (closeCurve) {
+      drawPolys([smoothedCurve], X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
+    } else {
+      drawPaths([smoothedCurve], X + clipRect.x, Y + clipRect.y, set({fill:false}));
+      drawPoints(smoothedCurve, X + clipRect.x, Y + clipRect.y, 2);
+    }
+    addChild(getTextField("Chaikin\nSmooth " + (closeCurve ? "[C]" : "[O]") + "\n" + smoothedCurve.length + " pts", X, Y));
+
+    // CHAIKIN (CONTROL POLY)
+    setSlot(1, 1);
+    g.lineStyle(THICKNESS, color = COLOR, ALPHA);
+    drawPaths([curveToRefine], X + clipRect.x, Y + clipRect.y, set({fill:false}));
+    drawPoints(curveToRefine, X + clipRect.x, Y + clipRect.y, 2);
+    addChild(getTextField("Chaikin\nControl Poly\n" + curveToRefine.length + " pts", X, Y));
 
     // EARCUT TRIANGULATION
-    setSlot(1, 1);
+    setSlot(1, 2);
     startTime = Timer.stamp();
     triangulation = EarCut.triangulate(simplifiedPolyRDP);
     trace('ECTriang      : ${Timer.stamp() - startTime}');
