@@ -232,7 +232,7 @@ class GeomAlgoTest extends Sprite {
     var strPtsToRefine = simplifiedPolyRDP.toString();
     var curveToRefine = PolyTools.parsePoints(strPtsToRefine).slice(0, -1); // remove last point
     startTime = Timer.stamp();
-    var smoothIterations = 5;
+    var smoothIterations = 4;
     var closeCurve = false;
     var smoothedCurveChaikin = Chaikin.smooth(curveToRefine, smoothIterations, closeCurve);
     trace('Chaikin       : ${Timer.stamp() - startTime}');
@@ -243,25 +243,27 @@ class GeomAlgoTest extends Sprite {
       drawPaths([smoothedCurveChaikin], X + clipRect.x, Y + clipRect.y, set({fill:false}));
       drawPoints(smoothedCurveChaikin, X + clipRect.x, Y + clipRect.y, 2);
     }
-    addChild(getTextField('Chaikin\nSmooth [' + (closeCurve ? "C" : "O") + ']\n k:${smoothIterations} ' + smoothedCurveChaikin.length + " pts", X, Y));
+    addChild(getTextField('Chaikin\nSmooth [' + (closeCurve ? "clsd" : "open") + ']\n k:${smoothIterations} ' + smoothedCurveChaikin.length + " pts", X, Y));
 
     // WU-YONG-ZHANG (CHAIKIN CURVE SMOOTHING)
-    var testPoly = PolyTools.parsePoints("[0 0; 1 0; 2 1; 3 1]");
-    var smoothed = WuYongZhang.smooth(testPoly, 2);
+    //var testPoly = PolyTools.parsePoints("[0 0; 1 0; 2 1; 3 1]");
+    //var smoothed = WuYongZhang.smooth(testPoly, 2);
     //dumpPoly(smoothed);
 
-    setSlot(1, 1);
+    setSlot(1, 0);
     startTime = Timer.stamp();
     var smoothedCurveWYZ = WuYongZhang.smooth(curveToRefine, smoothIterations, closeCurve);
+    var offsetCurveWYZ = new HxPoint(0, 0);
     trace('WuYongZhang   : ${Timer.stamp() - startTime}');
-    g.lineStyle(THICKNESS, color = COLOR, ALPHA);
+    g.lineStyle(THICKNESS, color = 0xFFFF00, .7);
     if (closeCurve) {
-      drawPolys([smoothedCurveWYZ], X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
+      drawPolys([smoothedCurveWYZ], X + clipRect.x + offsetCurveWYZ.x, Y + clipRect.y + offsetCurveWYZ.y, set({showPoints:true, fill:false}));
     } else {
-      drawPaths([smoothedCurveWYZ], X + clipRect.x, Y + clipRect.y, set({fill:false}));
-      drawPoints(smoothedCurveWYZ, X + clipRect.x, Y + clipRect.y, 2);
+      drawPaths([smoothedCurveWYZ], X + clipRect.x + offsetCurveWYZ.x, Y + clipRect.y + offsetCurveWYZ.y, set({fill:false}));
+      g.lineStyle(THICKNESS, color = 0xFFFF00, .7);
+      drawPoints(smoothedCurveWYZ, X + clipRect.x + offsetCurveWYZ.x, Y + clipRect.y + offsetCurveWYZ.y, 2);
     }
-    addChild(getTextField('WuYongZhang\nSmooth [' + (closeCurve ? "C" : "O") + ']\n k:${smoothIterations} ' + smoothedCurveWYZ.length + " pts", X, Y));
+    addChild(getTextField('WuYongZhang\nSmooth [' + (closeCurve ? "clsd" : "open") + ']\n k:${smoothIterations} ' + smoothedCurveWYZ.length + " pts", X, Y));
 
     // CHAIKIN (CONTROL POLY)
     setSlot(1, 2);
@@ -273,7 +275,7 @@ class GeomAlgoTest extends Sprite {
     return;
 
     // EARCUT TRIANGULATION
-    setSlot(1, 2);
+    setSlot(1, 3);
     startTime = Timer.stamp();
     triangulation = EarCut.triangulate(simplifiedPolyRDP);
     trace('ECTriang      : ${Timer.stamp() - startTime}');
