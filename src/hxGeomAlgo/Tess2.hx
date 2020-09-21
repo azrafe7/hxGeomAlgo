@@ -1,5 +1,5 @@
 /*
- * SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008) 
+ * SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008)
  * Copyright (C) [dates of first publication] Silicon Graphics, Inc.
  * All Rights Reserved.
  *
@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
  * of the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- * 
+ *
  * The above copyright notice including the dates of first publication and either this
  * permission notice or a reference to http://oss.sgi.com/projects/FreeB/ shall be
- * included in all copies or substantial portions of the Software. 
+ * included in all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -20,7 +20,7 @@
  * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  * Except as contained in this notice, the name of Silicon Graphics, Inc. shall not
  * be used in advertising or otherwise to promote the sale, use or other dealings in
  * this Software without prior written authorization from Silicon Graphics, Inc.
@@ -28,21 +28,21 @@
 
 /**
  * Tesselator implementation.
- * 
+ *
  * From https://github.com/memononen/tess2.js readme:
  *
- * "The tess2.js library performs polygon boolean operations and tesselation to triangles 
- * and convex polygons. It is a port of libtess2, which in turn is a cleaned up version 
- * of the stock GLU tesselator. The original code was written by Eric Veach in 1994. 
- * The greatest thing about tess2.js is that it handles all kinds of input like 
+ * "The tess2.js library performs polygon boolean operations and tesselation to triangles
+ * and convex polygons. It is a port of libtess2, which in turn is a cleaned up version
+ * of the stock GLU tesselator. The original code was written by Eric Veach in 1994.
+ * The greatest thing about tess2.js is that it handles all kinds of input like
  * self-intersecting polygons or any number of holes and contours."
- * 
+ *
  * Based on:
- * 
+ *
  * @see tess2.js (https://github.com/memononen/tess2.js) 			(JS - by Mikko Mononen, Aug 2013)
  * @see libtess2 PR (https://github.com/memononen/libtess2/pull/7)	(C - by Marius Kintel)
  * GLU libtess 														(by Eric Veach, July 1994)
- * 
+ *
  * @author azrafe7
  */
 
@@ -68,7 +68,7 @@ enum ResultType
   POLYGONS;
   CONNECTED_POLYGONS;
   BOUNDARY_CONTOURS;
-  EXPERIMENTAL_DELAUNAY; /* Similar to POLYGONS, but we output only triangles and we attempt 
+  EXPERIMENTAL_DELAUNAY; /* Similar to POLYGONS, but we output only triangles and we attempt
                 to provide a valid Constrained Delaunay triangulation.
                 @see https://github.com/memononen/libtess2/pull/7
               */
@@ -84,10 +84,10 @@ typedef TessResult = {
 
 /**
  * Class offering a quick wrapper around Tesselator functions.
- * 
+ *
  * For more info about how to use this class see the demo by Mikko Mononen on (https://github.com/memononen/tess2.js).
  * Live version rehosted here (https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html).
- * 
+ *
  * Further reading: http://www.glprogramming.com/red/chapter11.html
  */
 @:expose
@@ -99,21 +99,21 @@ class Tess2
     PolyTools.exposeEnum(ResultType);
   }
 #end
-  
+
   /**
    * Tesselates the specified `contours`.
-   * 
+   *
    * (see Tess2.convertResult() for an easy way to use the returned TessResult)
-   * 
+   *
    * @param	contours		Array of polygons to tesselate. Each poly is specified as a sequence of point coords (i.e. [x0, y0, x1, y1, x2, y2, ...]).
    * @param	windingRule		Winding rule to apply. Deaults to WindingRule.ODD.
    * @param	resultType		The result type you want as output. Defaults to ResultType.POLYGONS.
    * @param	polySize		Max dimesion of the polygons resulting from the tesselation. Defaults to 3 (not considered if resultType is BOUNDARY_CONTOURS or EXPERIMENTAL_DELAUNAY).
    * @param	vertexDim		Pass 2 when working with 2D polys (default), or 3 for 3D.
    * @param	normal			Array of length 3 representing the normals in each plane.
-   * 
+   *
    * @return A structure of TessResult type, composed of the following fields:
-   *		   { 
+   *		   {
    *				vertices:Array<Float>;		// A sequence of point coords in the same format of `contours`.
    *				vertexIndices:Array<Int>;	// A sequence of indices that map into the original `contours` joined together.
    *				vertexCount:Int;			// The number of vertices.
@@ -140,9 +140,9 @@ class Tess2
       elementCount: tess.elementCount,
     };
   }
-  
-  /** 
-   * Computes the union between `contoursA` and `contoursB`. 
+
+  /**
+   * Computes the union between `contoursA` and `contoursB`.
    *
    * @see "CSG Uses for Winding Rules" section on http://www.glprogramming.com/red/chapter11.html
    */
@@ -151,8 +151,8 @@ class Tess2
     var contours = contoursA.concat(contoursB);
     return tesselate(contours, WindingRule.NON_ZERO, resultType, polySize, vertexDim);
   }
-  
-  /** 
+
+  /**
    * Computes the intersection between `contoursA` and `contoursB`.
    *
    * @see "CSG Uses for Winding Rules" section on http://www.glprogramming.com/red/chapter11.html
@@ -162,8 +162,8 @@ class Tess2
     var contours = contoursA.concat(contoursB);
     return tesselate(contours, WindingRule.ABS_GEQ_TWO, resultType, polySize, vertexDim);
   }
-  
-  /** 
+
+  /**
    * Computes `contoursA` - `contoursB`.
    *
    * @see "CSG Uses for Winding Rules" section on http://www.glprogramming.com/red/chapter11.html
@@ -174,28 +174,28 @@ class Tess2
     var contours = contoursA.concat(diffB);
     return tesselate(contours, WindingRule.POSITIVE, resultType, polySize, vertexDim);
   }
-  
+
   /**
    * Converts the results from tesselate() in a more manageable output.
-   * 
+   *
    * @param	vertices	A sequence of point coords in the same format of `contours`. Typically the `vertices` field of Tess2.tesselate() output.
    * @param	elements	A sequence of elements. Typically the `vertices` field of Tess2.tesselate() output.
    * @param	resultType	The `resultType` passed to Tess2.tesselate().
    * @param	polySize	The `polySize` passed to Tess2.tesselate().
    * @param	out			The output will be appended to this array of polygons (if specified).
-   * 
+   *
    * @return An array of polygons.
    */
   static public function convertResult(vertices:Array<Float>, elements:Array<Int>, resultType:ResultType, polySize:Int, ?out:Array<Poly>):Array<Poly>
   {
     out = (out != null) ? out : new Array<Poly>();
-    
+
     if (!resultType.match(BOUNDARY_CONTOURS)) {
       Debug.assert(polySize >= 3 && (elements.length % polySize == 0), "Invalid size");
     }
-    
+
     var i = 0;
-    switch (resultType) 
+    switch (resultType)
     {
       case ResultType.POLYGONS, ResultType.EXPERIMENTAL_DELAUNAY:
         while (i < elements.length) {
@@ -208,7 +208,7 @@ class Tess2
           out.push(poly);
           i += polySize;
         }
-        
+
       case ResultType.CONNECTED_POLYGONS:
         while (i < elements.length) {
           var poly = [];
@@ -220,7 +220,7 @@ class Tess2
           out.push(poly);
           i += polySize * 2;
         }
-        
+
       case ResultType.BOUNDARY_CONTOURS:
         while (i < elements.length) {
           var poly = [];
@@ -234,9 +234,9 @@ class Tess2
           i += 2;
         }
     }
-    
+
     return out;
-  }	
+  }
 }
 
 /* The mesh structure is similar in spirit, notation, and operations
@@ -305,9 +305,9 @@ class Tess2
 * a region which is not part of the output polygon.
 */
 
-private class TessVertex 
+private class TessVertex
 {
-  
+
   public var next:TessVertex = null;			/* next vertex (never NULL) */
   public var prev:TessVertex = null;			/* previous vertex (never NULL) */
   public var anEdge:TessHalfEdge = null;		/* a half-edge with this origin */
@@ -319,11 +319,11 @@ private class TessVertex
   public var pqHandle:Int = 0;				/* to allow deletion from priority queue */
   public var n:Int = 0;						/* to allow identify unique vertices */
   public var idx:Int = 0;						/* to allow map result to original verts */
-  
-  public function new() {}
-} 
 
-private class TessFace 
+  public function new() {}
+}
+
+private class TessFace
 {
   public var next:TessFace = null;			/* next face (never NULL) */
   public var prev:TessFace = null;			/* previous face (never NULL) */
@@ -334,9 +334,9 @@ private class TessFace
   public var n:Int = 0;						/* to allow identiy unique faces */
   public var marked:Bool = false;				/* flag for conversion to strips */
   public var inside:Bool = false;				/* this face is in the polygon interior */
-  
+
   public function new() {}
-} 
+}
 
 private class TessHalfEdge
 {
@@ -353,40 +353,40 @@ private class TessHalfEdge
                            from the right face to the left face */
   public var side:Int;						/* 0 for original dir, 1 for symmetric */
   public var mark:Bool; 						/* Used by the Edge Flip algorithm */
-  
+
   public function new(side:Int)
   {
     this.side = side;
   }
-  
+
   public var Rface(get, set):TessFace;
   private function get_Rface():TessFace { return this.Sym.Lface; }
   private function set_Rface(v:TessFace) { return this.Sym.Lface = v; }
-  
+
   public var Dst(get, set):TessVertex;
   private function get_Dst():TessVertex { return this.Sym.Org; }
   private function set_Dst(v:TessVertex) { return this.Sym.Org = v; }
-  
+
   public var Oprev(get, set):TessHalfEdge;
   private function get_Oprev():TessHalfEdge { return this.Sym.Lnext; }
   private function set_Oprev(v:TessHalfEdge) { return this.Sym.Lnext = v; }
-  
+
   public var Lprev(get, set):TessHalfEdge;
   private function get_Lprev():TessHalfEdge { return this.Onext.Sym; }
   private function set_Lprev(v:TessHalfEdge) { return this.Onext.Sym = v; }
-  
+
   public var Dprev(get, set):TessHalfEdge;
   private function get_Dprev():TessHalfEdge { return this.Lnext.Sym; }
   private function set_Dprev(v:TessHalfEdge) { return this.Lnext.Sym = v; }
-  
+
   public var Rprev(get, set):TessHalfEdge;
   private function get_Rprev():TessHalfEdge { return this.Sym.Onext; }
   private function set_Rprev(v:TessHalfEdge) { return this.Sym.Onext = v; }
-  
+
   public var Dnext(get, set):TessHalfEdge;
   private function get_Dnext() { return /*this.Rprev*/this.Sym.Onext.Sym; }  /* 3 pointers */
   private function set_Dnext(v:TessHalfEdge) { return/*this.Rprev*/this.Sym.Onext.Sym = v; }  /* 3 pointers */
-  
+
   public var Rnext(get, set):TessHalfEdge;
   private function get_Rnext():TessHalfEdge { return /*this.Oprev*/this.Sym.Lnext.Sym; }  /* 3 pointers */
   private function set_Rnext(v:TessHalfEdge) { return/*this.Oprev*/this.Sym.Lnext.Sym = v; }  /* 3 pointers */
@@ -403,8 +403,8 @@ private class TessMesh
   public var fHead:TessFace;				/* dummy header for face list */
   public var eHead:TessHalfEdge;			/* dummy header for edge list */
   public var eHeadSym:TessHalfEdge;		/* and its symmetric counterpart */
-  
-  public function new() 
+
+  public function new()
   {
     v.next = v.prev = v;
     v.anEdge = null;
@@ -424,7 +424,7 @@ private class TessMesh
     e.winding = 0;
     e.activeRegion = null;
     e.mark = false;
-    
+
     eSym.next = eSym;
     eSym.Sym = e;
     eSym.Onext = null;
@@ -434,13 +434,13 @@ private class TessMesh
     eSym.winding = 0;
     eSym.activeRegion = null;
     e.Sym.mark = false;
-    
+
     this.vHead = v;			/* dummy header for vertex list */
     this.fHead = f;			/* dummy header for face list */
     this.eHead = e;			/* dummy header for edge list */
     this.eHeadSym = eSym;	/* and its symmetric counterpart */
   }
-  
+
   /* The mesh operations below have three motivations: completeness,
   * convenience, and efficiency.  The basic mesh operations are MakeEdge,
   * Splice, and Delete.  All the other edge operations can be implemented
@@ -517,7 +517,7 @@ private class TessMesh
   *
   * tessMeshCheckMesh( mesh ) checks a mesh for self-consistency.
   */
-  
+
   /* MakeEdge creates a new pair of half-edges which form their own loop.
   * No vertex or face structures are allocated, but these must be assigned
   * before the current edge operation is completed.
@@ -612,7 +612,7 @@ private class TessMesh
   // static void MakeFace( TESSface *newFace, TESShalfEdge *eOrig, TESSface *fNext )
   private function makeFace_(newFace:TessFace, eOrig:TessHalfEdge, fNext:TessFace) {
     var fNew = newFace;
-    Debug.assert(fNew != null); 
+    Debug.assert(fNew != null);
 
     /* insert in circular doubly-linked list before fNext */
     var fPrev = fNext.prev;
@@ -693,7 +693,7 @@ private class TessMesh
     fNext.prev = fPrev;
     fPrev.next = fNext;
   }
-  
+
   /****************** Basic Edge Operations **********************/
 
   /* tessMeshMakeEdge creates one edge, two vertices, and a loop (face).
@@ -765,7 +765,7 @@ private class TessMesh
       eOrg.Org.anEdge = eOrg;
     }
     if (!joiningLoops) {
-      var newFace = new TessFace();  
+      var newFace = new TessFace();
 
       /* We split one loop into two -- the new loop is eDst->Lface.
       * Make sure the old face points to a valid half-edge.
@@ -964,7 +964,7 @@ private class TessMesh
 
     return eNew;
   }
-  
+
   /* tessMeshConnect( eOrg, eDst ) creates a new edge from eOrg->Dst
   * to eDst->Org, and returns the corresponding half-edge eNew.
   * If eOrg->Lface == eDst->Lface, this splits one loop into two,
@@ -977,7 +977,7 @@ private class TessMesh
   */
   // TESShalfEdge *tessMeshConnect( TESSmesh *mesh, TESShalfEdge *eOrg, TESShalfEdge *eDst );
   public function connect(eOrg:TessHalfEdge, eDst:TessHalfEdge):TessHalfEdge {
-    var joiningLoops = false;  
+    var joiningLoops = false;
     var eNew = this.makeEdge_(eOrg);
     var eNewSym = eNew.Sym;
 
@@ -1055,7 +1055,7 @@ private class TessMesh
     fNext.prev = fPrev;
     fPrev.next = fNext;
   }
-  
+
   private function countFaceVerts_(f:TessFace):Int {
     var eCur = f.anEdge;
     var n = 0;
@@ -1086,7 +1086,7 @@ private class TessMesh
 
       eCur = f.anEdge;
       vStart = eCur.Org;
-        
+
       while (true)
       {
         eNext = eCur.Lnext;
@@ -1112,17 +1112,17 @@ private class TessMesh
             }
           }
         }
-        
+
         if (eCur != null && eCur.Lnext.Org == vStart)
           break;
-          
+
         // Continue to next edge.
         eCur = eNext;
       }
-      
+
       f = f.next;
     }
-    
+
     return true;
   }
 
@@ -1211,7 +1211,7 @@ private class Geom
   static public function edgeIsInternal(e:TessHalfEdge):Bool {
     return e.Rface != null && e.Rface.inside;
   }
-  
+
   static public function vertL1dist(u:TessVertex, v:TessVertex):Float {
     return (Math.abs(u.s - v.s) + Math.abs(u.t - v.t));
   }
@@ -1243,7 +1243,7 @@ private class Geom
     /* vertical line */
     return 0.0;
   }
-  
+
   //TESSreal tesedgeSign( TESSvertex *u, TESSvertex *v, TESSvertex *w )
   static public function edgeSign(u:TessVertex, v:TessVertex, w:TessVertex):Float {
     /* Returns a number whose sign matches EdgeEval(u,v,w) but which
@@ -1294,7 +1294,7 @@ private class Geom
     /* vertical line */
     return 0.0;
   }
-  
+
   //TESSreal testransSign( TESSvertex *u, TESSvertex *v, TESSvertex *w )
   static public function transSign(u:TessVertex, v:TessVertex, w:TessVertex):Float {
     /* Returns a number whose sign matches TransEval(u,v,w) but which
@@ -1335,13 +1335,13 @@ private class Geom
   static public function interpolate(a:Float, x:Float, b:Float, y:Float):Float {
     if (a < 0) a = 0;
     if (b < 0) b = 0;
-    
+
     if (a <= b) {
       if (b == 0) return ((x+y) / 2);
       else return (x + (y-x) * (a/(a+b)));
     } else return (y + (x - y) * (b / (a + b)));
   }
-  
+
   /*
   #ifndef FOR_TRITE_TEST_PROGRAM
   #define Interpolate(a,x,b,y)	RealInterpolate(a,x,b,y)
@@ -1424,7 +1424,7 @@ private class Geom
       v.t = Geom.interpolate(z1, o2.t, z2, d2.t);
     }
   }
-  
+
   /*
     Calculate the angle between v1-v2 and v1-v0
    */
@@ -1457,8 +1457,8 @@ private class DictNode
 {
   public var key:ActiveRegion = null;
   public var next:DictNode = null;
-  public var prev:DictNode = null;	
-  
+  public var prev:DictNode = null;
+
   public function new() { }
 }
 
@@ -1467,8 +1467,8 @@ private class Dict
   public var head:DictNode;
   public var frame:Tesselator;
   public var leq:Tesselator->ActiveRegion->ActiveRegion->Bool;
-  
-  public function new(frame:Tesselator, leq:Tesselator->ActiveRegion->ActiveRegion->Bool):Void 
+
+  public function new(frame:Tesselator, leq:Tesselator->ActiveRegion->ActiveRegion->Bool):Void
   {
     this.head = new DictNode();
     this.head.next = this.head;
@@ -1476,7 +1476,7 @@ private class Dict
     this.frame = frame;
     this.leq = leq;
   }
-  
+
   public function min():DictNode {
     return this.head.next;
   }
@@ -1501,7 +1501,7 @@ private class Dict
 
     return node;
   }
-  
+
   public function insertBefore(node:DictNode, key:ActiveRegion):DictNode {
     do {
       node = node.prev;
@@ -1526,7 +1526,7 @@ private class Dict
 private class PQNode
 {
   public var handle:Int = -1;
-  
+
   public function new() { }
 }
 
@@ -1534,7 +1534,7 @@ private class PQHandleElem
 {
   public var key:TessVertex = null;
   public var node:Int = -1;
-  
+
   public function new() { }
 }
 
@@ -1547,8 +1547,8 @@ private class PriorityQ
   public var initialized:Bool;
   public var freeList:Int;
   public var leq:TessVertex->TessVertex->Bool;
-  
-  public function new(size:Int, leq:TessVertex->TessVertex->Bool) 
+
+  public function new(size:Int, leq:TessVertex->TessVertex->Bool)
   {
     this.size = 0;
     this.max = size;
@@ -1568,7 +1568,7 @@ private class PriorityQ
     this.nodes[1].handle = 1;	/* so that Minimum() returns NULL */
     this.handles[1].key = null;
   }
-  
+
   private function floatDown_(curr:Int):Void
   {
     var n = this.nodes;
@@ -1596,7 +1596,7 @@ private class PriorityQ
       curr = child;
     }
   }
-  
+
   private function floatUp_(curr:Int):Void
   {
     var n = this.nodes;
@@ -1628,7 +1628,7 @@ private class PriorityQ
     }
     this.initialized = true;
   }
-  
+
   public function min():TessVertex {
     return this.handles[this.nodes[1].handle].key;
   }
@@ -1728,7 +1728,7 @@ private class PriorityQ
 * sweep line crosses each vertex, we update the affected regions.
 */
 
-private class ActiveRegion 
+private class ActiveRegion
 {
   public var eUp:TessHalfEdge = null;		/* upper edge, directed right to left */
   public var nodeUp:DictNode = null;		/* dictionary node corresponding to eUp */
@@ -1742,7 +1742,7 @@ private class ActiveRegion
   public var fixUpperEdge:Bool = false;	/* marks temporary edges introduced when
                       * we process a "right vertex" (one without
                       * any edges leaving to the right) */
-  
+
   public function new() { }
 }
 
@@ -1759,7 +1759,7 @@ private class Sweep
   static public function debugEvent(tess:Tesselator) {
     // empty
   }
-  
+
   /*
   * Invariants for the Edge Dictionary.
   * - each pair of adjacent edges e2=Succ(e1) satisfies EdgeLeq(e1,e2)
@@ -1838,7 +1838,7 @@ private class Sweep
     var t2 = Geom.edgeEval(e2.Dst, ev, e2.Org);
     return (t1 >= t2);
   }
-  
+
   //static void DeleteRegion( TESStesselator *tess, ActiveRegion *reg )
   static public function deleteRegion(tess:Tesselator, reg:ActiveRegion):Void {
     if (reg.fixUpperEdge) {
@@ -1885,7 +1885,7 @@ private class Sweep
     }
     return reg;
   }
-  
+
   //static ActiveRegion *TopRightRegion( ActiveRegion *reg )
   static public function topRightRegion(reg:ActiveRegion):ActiveRegion
   {
@@ -1917,7 +1917,7 @@ private class Sweep
     eNewUp.activeRegion = regNew;
     return regNew;
   }
-  
+
   //static int IsWindingInside( TESStesselator *tess, int n )
   static public function isWindingInside(tess:Tesselator, n:Int):Bool {
     switch (tess.windingRule) {
@@ -2088,7 +2088,7 @@ private class Sweep
     * Two vertices with idential coordinates are combined into one.
     * e1->Org is kept, while e2->Org is discarded.
     */
-    tess.mesh.splice(e1, e2); 
+    tess.mesh.splice(e1, e2);
   }
 
   //static void VertexWeights( TESSvertex *isect, TESSvertex *org, TESSvertex *dst, TESSreal *weights )
@@ -2108,7 +2108,7 @@ private class Sweep
     isect.coords[1] += w0 * org.coords[1] + w1 * dst.coords[1];
     isect.coords[2] += w0 * org.coords[2] + w1 * dst.coords[2];
   }
-  
+
   //static void GetIntersectData( TESStesselator *tess, TESSvertex *isect, TESSvertex *orgUp, TESSvertex *dstUp, TESSvertex *orgLo, TESSvertex *dstLo )
   static public function getIntersectData(tess:Tesselator, isect:TessVertex, orgUp:TessVertex, dstUp:TessVertex, orgLo:TessVertex, dstLo:TessVertex):Void {
      /*
@@ -2328,7 +2328,7 @@ private class Sweep
       if (dstUp == tess.event) {
         /* Splice dstUp into eLo, and process the new region(s) */
         tess.mesh.splitEdge(eLo.Sym);
-        tess.mesh.splice(eUp.Lnext, eLo.Oprev); 
+        tess.mesh.splice(eUp.Lnext, eLo.Oprev);
         regLo = regUp;
         regUp = Sweep.topRightRegion(regUp);
         e = Sweep.regionBelow(regUp).eUp.Rprev;
@@ -2375,7 +2375,7 @@ private class Sweep
     Sweep.regionAbove(regUp).dirty = regUp.dirty = regLo.dirty = true;
     return false;
   }
-  
+
   //static void WalkDirtyRegions( TESStesselator *tess, ActiveRegion *regUp )
   static public function walkDirtyRegions(tess:Tesselator, regUp:ActiveRegion):Void {
     /*
@@ -2543,7 +2543,7 @@ private class Sweep
     eNew.Sym.activeRegion.fixUpperEdge = true;
     Sweep.walkDirtyRegions(tess, regUp);
   }
-  
+
   /* Because vertices at exactly the same location are merged together
   * before we process the sweep event, some degenerate cases can't occur.
   * However if someone eventually makes the modifications required to
@@ -2759,7 +2759,7 @@ private class Sweep
     reg.nodeUp = tess.dict.insert(reg);
   //	if (reg->nodeUp == NULL) longjmp(tess->env,1);
   }
-  
+
   //static void InitEdgeDict( TESStesselator *tess )
   static public function initEdgeDict(tess:Tesselator):Void {
     /*
@@ -2802,7 +2802,7 @@ private class Sweep
     }
   //	dictDeleteDict( &tess->alloc, tess->dict );
   }
-  
+
   static public function removeDegenerateEdges(tess:Tesselator):Void {
     /*
     * Remove zero-length edges, and contours with fewer than 3 vertices.
@@ -2844,7 +2844,7 @@ private class Sweep
     var pq:PriorityQ;
     var v, vHead:TessVertex;
     var vertexCount = 0;
-    
+
     vHead = tess.mesh.vHead;
     v = vHead.next;
     while (v != vHead) {
@@ -2853,7 +2853,7 @@ private class Sweep
     }
     /* Make sure there is enough space for sentinels. */
     vertexCount += 8; //MAX( 8, tess->alloc.extraVertices );
-    
+
     pq = tess.pq = new PriorityQ(vertexCount, Geom.vertLeq);
   //	if (pq == NULL) return 0;
 
@@ -2878,7 +2878,7 @@ private class Sweep
   static public function donePriorityQ(tess):Void {
     tess.pq = null;
   }
-  
+
   static public function removeDegenerateFaces(tess:Tesselator, mesh:TessMesh):Bool {
     /*
     * Delete any degenerate faces with only two edges.  WalkDirtyRegions()
@@ -2935,7 +2935,7 @@ private class Sweep
     Sweep.initEdgeDict(tess);
 
     var pq = tess.pq;
-    
+
     while ((v = tess.pq.extractMin()) != null) {
       while (true) {
         vNext = tess.pq.min();
@@ -2972,17 +2972,17 @@ private class Sweep
 
     return true;
   }
-  
+
 
 }
 
 
 /**
  * The actual tesselator class.
- * 
+ *
  * For more info about how to use this class see the demo by Mikko Mononen on (https://github.com/memononen/tess2.js).
  * Live version rehosted here (https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html)
- * 
+ *
  * Further reading: http://www.glprogramming.com/red/chapter11.html
  */
 @:expose
@@ -3009,19 +3009,19 @@ class Tesselator
   public var event:TessVertex = null;					/* current sweep event being processed */
 
   public var vertexIndexCounter:Int = 0;
-  
+
   public var vertices:Array<Float> = [];
   public var vertexIndices:Array<Int> = [];
   public var vertexCount:Int = 0;
   public var elements:Array<Int> = [];
   public var elementCount:Int = 0;
-  
-  
-  public function new() 
+
+
+  public function new()
   {
     windingRule = WindingRule.ODD;
   }
-  
+
   private function dot_(u:Array<Float>, v:Array<Float>):Float {
     return (u[0] * v[0] + u[1] * v[1] + u[2] * v[2]);
   }
@@ -3115,7 +3115,7 @@ class Tesselator
       norm[this.longAxis_(d1)] = 1;
     }
   }
-  
+
   private function checkOrientation_():Void {
     var area;
     var f, fHead = this.mesh.fHead;
@@ -3199,21 +3199,21 @@ class Tesselator
 /*	#if defined(FOR_TRITE_TEST_PROGRAM) || defined(TRUE_PROJECT)
     // Choose the initial sUnit vector to be approximately perpendicular
     // to the normal.
-    
+
     Normalize( norm );
 
     sUnit[i] = 0;
     sUnit[(i+1)%3] = S_UNIT_X;
     sUnit[(i+2)%3] = S_UNIT_Y;
 
-    // Now make it exactly perpendicular 
+    // Now make it exactly perpendicular
     w = Dot( sUnit, norm );
     sUnit[0] -= w * norm[0];
     sUnit[1] -= w * norm[1];
     sUnit[2] -= w * norm[2];
     Normalize( sUnit );
 
-    // Choose tUnit so that (sUnit,tUnit,norm) form a right-handed frame 
+    // Choose tUnit so that (sUnit,tUnit,norm) form a right-handed frame
     tUnit[0] = norm[1]*sUnit[2] - norm[2]*sUnit[1];
     tUnit[1] = norm[2]*sUnit[0] - norm[0]*sUnit[2];
     tUnit[2] = norm[0]*sUnit[1] - norm[1]*sUnit[0];
@@ -3262,12 +3262,12 @@ class Tesselator
     eDst.winding += eSrc.winding;
     eDst.Sym.winding += eSrc.Sym.winding;
   }
-  
+
     /* tessMeshTessellateMonoRegion( face ) tessellates a monotone region
     * (what else would it do??)  The region must consist of a single
     * loop of half-edges (see mesh.h) oriented CCW.  "Monotone" in this
     * case means that any vertical line intersects the interior of the
-    * region in a single interval.  
+    * region in a single interval.
     *
     * Tessellation consists of adding interior edges (actually pairs of
     * half-edges), to split the region into non-overlapping triangles.
@@ -3304,7 +3304,7 @@ class Tesselator
 
     while (Geom.vertLeq(up.Dst, up.Org)) up = up.Lprev;
     while (Geom.vertLeq(up.Org, up.Dst)) up = up.Lnext;
-    
+
     lo = up.Lprev;
 
     while (up.Lnext != lo) {
@@ -3314,7 +3314,7 @@ class Tesselator
         * are CW, given that the upper and lower chains are truly monotone.
         */
         while (lo.Lnext != up && (Geom.edgeGoesLeft(lo.Lnext)
-             || Geom.edgeSign(lo.Org, lo.Dst, lo.Lnext.Dst) <= 0.0 )) 
+             || Geom.edgeSign(lo.Org, lo.Dst, lo.Lnext.Dst) <= 0.0 ))
         {
           var tempHalfEdge = mesh.connect(lo.Lnext, lo);
           //if (tempHalfEdge == NULL) return 0;
@@ -3324,7 +3324,7 @@ class Tesselator
       } else {
         /* lo->Org is on the left.  We can make CCW triangles from up->Dst. */
         while (lo.Lnext != up && (Geom.edgeGoesRight(up.Lprev)
-             || Geom.edgeSign(up.Dst, up.Org, up.Lprev.Org) >= 0.0 )) 
+             || Geom.edgeSign(up.Dst, up.Org, up.Lprev.Org) >= 0.0 ))
         {
           var tempHalfEdge = mesh.connect(up, up.Lprev);
           //if (tempHalfEdge == NULL) return 0;
@@ -3389,7 +3389,7 @@ class Tesselator
     var stack = [];
     var e:TessHalfEdge;
     var edges:Array<TessHalfEdge> = [null, null, null, null];
-    
+
     f = mesh.fHead.next;
     while (f != mesh.fHead) {
       if (f.inside) {
@@ -3402,7 +3402,7 @@ class Tesselator
       }
       f = f.next;
     }
-    
+
     // Pop stack until we find a reversed edge
     // Flip the reversed edge, and insert any of the four opposite edges
     // which are internal and not already in the stack (!marked)
@@ -3425,7 +3425,7 @@ class Tesselator
         }
       }
     }
-    
+
     for (e in stack) stack.pop();
     stack = null;
   }
@@ -3540,7 +3540,7 @@ class Tesselator
         edge = edge.Lnext;
       }
       while (edge != f.anEdge);
-      
+
       Debug.assert(faceVerts <= polySize);
 
       f.n = maxFaceCount;
@@ -3560,7 +3560,7 @@ class Tesselator
     }*/
     this.elements = [];
     //this.elements.length = maxFaceCount * polySize;
-    
+
     this.vertexCount = maxVertexCount;
 /*		tess->vertices = (TESSreal*)tess->alloc.memalloc( tess->alloc.userData,
                              sizeof(TESSreal) * tess->vertexCount * vertexSize );
@@ -3582,7 +3582,7 @@ class Tesselator
     this.vertexIndices = [];
     //this.vertexIndices.length = maxVertexCount;
 
-    
+
     // Output vertices.
     v = mesh.vHead.next;
     while (v != mesh.vHead)
@@ -3604,13 +3604,13 @@ class Tesselator
     // Output indices.
     var nel = 0;
     f = mesh.fHead.next;
-    while (f != mesh.fHead) 
+    while (f != mesh.fHead)
     {
       if (!f.inside) {
         f = f.next;
         continue;
       }
-      
+
       // Store polygon
       edge = f.anEdge;
       faceVerts = 0;
@@ -3643,7 +3643,7 @@ class Tesselator
       f = f.next;
     }
   }
-  
+
   //	void OutputContours( TESStesselator *tess, TESSmesh *mesh, int vertexSize )
   private function outputContours_(mesh:TessMesh, vertexDim:Int):Void {
     var f;
@@ -3686,7 +3686,7 @@ class Tesselator
     }*/
     this.elements = [];
     //this.elements.length = this.elementCount * 2;
-    
+
 /*		tess->vertices = (TESSreal*)tess->alloc.memalloc( tess->alloc.userData,
                               sizeof(TESSreal) * tess->vertexCount * vertexSize );
     if (!tess->vertices)
@@ -3806,7 +3806,7 @@ class Tesselator
     this.vertexIndices = [];
 
     this.vertexIndexCounter = 0;
-    
+
     if (normal != null)
     {
       this.normal[0] = normal[0];
@@ -3821,7 +3821,7 @@ class Tesselator
     if (vertexDim > 3)
       vertexDim = 3;
 
-/*		if (setjmp(tess->env) != 0) { 
+/*		if (setjmp(tess->env) != 0) {
       // come back here if out of memory
       return 0;
     }*/
@@ -3853,7 +3853,7 @@ class Tesselator
     if (resultType == ResultType.BOUNDARY_CONTOURS) {
       this.setWindingNumber_(mesh, 1, true);
     } else {
-      this.tessellateInterior_(mesh); 
+      this.tessellateInterior_(mesh);
       if (resultType == ResultType.EXPERIMENTAL_DELAUNAY) {
         this.refineDelaunay_(mesh);
         //resultType = ResultType.POLYGONS; //NOTE: check this overridden var

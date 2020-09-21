@@ -1,12 +1,12 @@
 /**
  * Connected components labeling (8 and 4-connectivity) implementation.
- * 
+ *
  * Based on the paper of:
- * 
+ *
  * Fu Chang, Chun-jen Chen, Chi-jen Lu: A linear-time component-labeling algorithm using contour tracing technique (2004)
- * 
+ *
  * @see http://www.iis.sinica.edu.tw/papers/fchang/1362-F.pdf
- * 
+ *
  * @author azrafe7
  */
 
@@ -32,38 +32,38 @@ class CCLabeler
     PolyTools.exposeEnum(Connectivity);
   }
 #end
-  
+
   /** Minimum alpha value to consider a pixel opaque (in the range 1-255). */
   public var alphaThreshold:Int;
 
   /** Pixels containing the labeling info. */
   public var labelMap:Pixels;
-  
+
   /** Whether to store contours' points while labeling. */
   public var traceContours:Bool;
-  
+
   /** Whether to compute and store components' area (in areaMap) while labeling. */
   public var calcArea:Bool;
-  
+
   /** Type of connectivity to search for. */
   public var connectivity:Connectivity;
-  
-  /** 
+
+  /**
    * Contours' points found while labeling (external contours
    * are in clockwise order, while internal ones are in ccw order).
    */
   public var contours(default, null):Array<Poly>;
-  
+
   /** Count of pixels belonging to the same connected component, indexed by label color (as returned by labelToColor()). */
   public var areaMap(default, null):Map<Int, Int>;
-  
+
   /** Number of connected components found. */
   public var numComponents(default, null):Int;
 
-  
+
   private var MARKED:Int = 0xFFFFFFFF;
   private var UNLABELED:Int = 0x00000000;
-  
+
   private var searchDir:Array<{dx:Int, dy:Int}> = [
     {dx:  1, dy:  0}, // 0
     {dx:  1, dy:  1}, // 1    +-------x
@@ -74,24 +74,24 @@ class CCLabeler
     {dx:  0, dy: -1}, // 6
     {dx:  1, dy: -1}  // 7
   ];
-  
+
   private var tracingDir:Int = 0;
   private var labelIndex:Int = 0;
   private var contourPoint:HxPoint = new HxPoint();
   private var secondContourPoint:HxPoint = new HxPoint();
-  
+
   private var sourcePixels:Pixels;
   private var markedPixels:Pixels;
-  
+
   private var width:Int;
   private var height:Int;
-  
+
   private var colors:Array<Int> = [];
   private var hue:Float = .60;
 
   /**
    * Constructor.
-   * 
+   *
    * @param	pixels			Pixels to use as source for labeling.
    * @param	alphaThreshold  Minimum alpha value to consider a pixel opaque (in the range 1-255).
    * @param	traceContours	Whether to store contours' points while labeling.
@@ -101,24 +101,24 @@ class CCLabeler
   public function new(pixels:Pixels, alphaThreshold:Int = 1, traceContours:Bool = true, ?connectivity:Connectivity, calcArea:Bool = false)
   {
     setSource(pixels);
-    
+
     this.alphaThreshold = alphaThreshold;
     this.connectivity = connectivity != null ? connectivity : EIGHT_CONNECTED;
     this.traceContours = traceContours;
     this.calcArea = calcArea;
     numComponents = 0;
   }
-  
-  /** 
+
+  /**
    * Updates the Pixels to use as source.
-   * 
-   * NOTE: If you modifiy your source between calls to run() you may 
+   *
+   * NOTE: If you modifiy your source between calls to run() you may
    * also want to re-set the source so that the internal representation gets updated too.
    */
   public function setSource(pixels:Pixels)
   {
     this.sourcePixels = pixels;
-    
+
     width = this.sourcePixels.width;
     height = this.sourcePixels.height;
     labelMap = new Pixels(width, height);
@@ -128,7 +128,7 @@ class CCLabeler
     markedPixels.format = pixels.format;
     markedPixels.fillRect(0, 0, width, height, 0);
   }
-  
+
   /**
    * Labels connected components and writes them in the returned Pixels (also stored in `labelMap`).
    * If `traceContours` has been set, it also saves contours' points in the `contours` variable.
@@ -139,10 +139,10 @@ class CCLabeler
     areaMap = new Map<Int, Int>();
     numComponents = 0;
     labelIndex = 0;
-    
+
     var	isLabeled:Bool;
     var leftLabeledPixel:Int;
-    
+
     var x, y = 0;
     while (y < height) {
       x = 0;
@@ -177,14 +177,14 @@ class CCLabeler
       }
       y++;
     }
-    
+
     numComponents = labelIndex;
-    return labelMap;	
+    return labelMap;
   }
-  
+
   /**
    * Traces the contour starting at `x`, `y`.
-   * 
+   *
    * @param	x			Starting x of the contour
    * @param	y			Starting y of the contour
    * @param	labelColor	Color to use
@@ -196,13 +196,13 @@ class CCLabeler
       startY:Int = y,
       poly:Poly = null,
       nextPointExists;
-    
+
     if (traceContours) {
       poly = new Poly();
       poly.push(new HxPoint(x, y));
       contours.push(poly);
     }
-    
+
     contourPoint.setTo(x, y);
     tracingDir = dir;
     //trace(x, y, StringTools.hex(getPixel32(sourcePixels(x, y)), "dir: " + tracingDir);
@@ -220,7 +220,7 @@ class CCLabeler
         //trace(x, y, StringTools.hex(getPixel32(sourcePixels, x, y)), "dir: " + tracingDir);
         if (x == startX && y == startY) { // we're back to starting point
           nextOnContour(x, y, contourPoint);
-          
+
           // break if next point is the same we found with the first call to nextOnContour
           // (which can actually be different based on tracing direction - f.e. in an x-shaped pattern)
           if (contourPoint.x == secondContourPoint.x && contourPoint.y == secondContourPoint.y) {
@@ -237,7 +237,7 @@ class CCLabeler
       }
     }
   }
-  
+
   /** Finds the next point on contour and stores it into `nextPoint` (returns false if no next point exists). */
   private function nextOnContour(x:Int, y:Int, nextPoint:HxPoint):Bool
   {
@@ -245,17 +245,17 @@ class CCLabeler
       cx, cy,
       numSteps = 8,
       step = 1;
-      
-    // if we're in FOUR_CONNECTED mode then only even values of `tracingDir` are possible 
+
+    // if we're in FOUR_CONNECTED mode then only even values of `tracingDir` are possible
     // (i.e. no diagonals and we advance by two)
     if (connectivity == Connectivity.FOUR_CONNECTED) {
       if (tracingDir & 1 == 1) tracingDir = (tracingDir + 1) % 8;
       numSteps = 4;
       step = 2;
     }
-    
+
     var dir = tracingDir;
-    
+
     for (i in 0...numSteps) {
       cx = x + searchDir[tracingDir].dx;
       cy = y + searchDir[tracingDir].dy;
@@ -269,18 +269,18 @@ class CCLabeler
       }
       tracingDir = (tracingDir + step) % 8;
     }
-    
+
     return !isolatedPixel;
   }
-  
+
   /**
-   * Maps `label` to a color. 
+   * Maps `label` to a color.
    * Override this to use your own label-to-color mapping.
-   * 
-   * NOTE: Avoid using 0x00000000 as a returned value, as it's used 
+   *
+   * NOTE: Avoid using 0x00000000 as a returned value, as it's used
    * interally to identify unlabeled pixels.
    */
-  public function labelToColor(label:Int):Int 
+  public function labelToColor(label:Int):Int
   {
     if (label >= colors.length) {
       colors[label] = 0xFF000000 | getColorFromHSV(hue, .9, 1);
@@ -288,20 +288,20 @@ class CCLabeler
     }
     return colors[label];
   }
-  
+
   /**
    * Override this to have a way to add logic everytime a pixel is labeled.
    */
-  private function setLabel(x:Int, y:Int, labelColor:Int):Void 
+  private function setLabel(x:Int, y:Int, labelColor:Int):Void
   {
     setPixel32(labelMap, x, y, labelColor);
   }
-  
+
   /**
    * Returns the 32-bit pixel color at position (`x`, `y`) from `pixels`.
    * If the specified position is out of bounds, `outerValue` is returned.
    */
-  private function getPixel32(pixels:Pixels, x:Int, y:Int, outerValue:Int = 0):Int 
+  private function getPixel32(pixels:Pixels, x:Int, y:Int, outerValue:Int = 0):Int
   {
     var res = outerValue;
     if (!isOutOfBounds(x, y)) {
@@ -309,7 +309,7 @@ class CCLabeler
     }
     return res;
   }
-  
+
   /**
    * Writes a 32-bit pixel `color` at position (`x`, `y`) in `pixels`.
    * If the specified position is out of bounds nothing is written.
@@ -325,18 +325,18 @@ class CCLabeler
     }
   }
 
-  /** 
-   * Returns true if the pixel at `x`, `y` is opaque (according to `alphaThreshold`). 
+  /**
+   * Returns true if the pixel at `x`, `y` is opaque (according to `alphaThreshold`).
    * Override this to use your own criteria to identify solid pixels.
    */
   private function isPixelSolid(x:Int, y:Int):Bool {
     return (!isOutOfBounds(x, y) && sourcePixels.getByte((y * width + x) << 2) >= alphaThreshold);
   }
-  
+
   inline private function isOutOfBounds(x:Int, y:Int):Bool {
     return (x < 0 || y < 0 || x >= width || y >= height);
   }
-  
+
   private function getColorFromHSV(h:Float, s:Float, v:Float):Int
   {
     h = Std.int(h * 360);

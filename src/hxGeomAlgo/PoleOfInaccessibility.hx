@@ -1,11 +1,11 @@
 /**
  * An algorithm for finding polygon pole of inaccessibility, the most distant internal point from
  * the polygon outline (not to be confused with centroid).
- * 
+ *
  * Based on:
- * 
+ *
  * @see https://github.com/mapbox/polylabel/commit/64fe157												(JS - by Vladimir Agafonkin)
- * 
+ *
  * @author azrafe7
  */
 
@@ -23,10 +23,10 @@ class PoleOfInaccessibility
   static function __init__():Void {
     SQRT2 = Math.sqrt(2.0);
   }
-  
+
   static public function calculate(poly:Array<Poly>, precision:Float = 1.0, debug:Bool = false):HxPoint {
     if (poly == null || poly.length <= 0) return HxPoint.EMPTY;
-    
+
     var minX = Math.POSITIVE_INFINITY;
     var minY = Math.POSITIVE_INFINITY;
     var maxX = Math.NEGATIVE_INFINITY;
@@ -46,13 +46,13 @@ class PoleOfInaccessibility
     var height = maxY - minY;
     var cellSize = Math.min(width, height);
     var h = cellSize / 2;
-    
-    
+
+
     // a priority queue of cells in order of their "potential" (max distance to polygon)
     var cellQueue = new Heap<Cell>();
-    
+
     if (cellSize == 0.0) return new HxPoint(minX, minY);
-    
+
     // cover polygon with initial cells
     var x = minX;
     var y = minY;
@@ -67,7 +67,7 @@ class PoleOfInaccessibility
 
     // take centroid as the first best guess
     var bestCell = getCentroidCell(poly);
-    
+
     // special case for rectangular polygons
     var bboxCell = new Cell(minX + width / 2, minY + height / 2, 0, poly);
     if (bboxCell.d > bestCell.d) bestCell = bboxCell;
@@ -151,7 +151,7 @@ class PoleOfInaccessibility
       area += f * 3;
       i++;
     }
-    
+
     if (area == 0.0) return new Cell(points[0].x, points[0].y, 0, poly);
     return new Cell(x / area, y / area, 0, poly);
   }
@@ -190,7 +190,7 @@ class PoleOfInaccessibility
 private class Cell implements Heapable<Cell>
 {
   public var position:Int;
-  
+
   public var x:Float;			// cell center x
   public var y:Float;			// cell center y
   public var h:Float;			// half cell size
@@ -205,7 +205,7 @@ private class Cell implements Heapable<Cell>
     this.d = PoleOfInaccessibility.pointToPolygonDist(x, y, polygon);
     this.max = this.d + this.h * PoleOfInaccessibility.SQRT2;
   }
-  
+
   // compare max
     public function compare(other:Cell):Int {
         var diff = other.max - max;

@@ -62,7 +62,7 @@ typedef DrawSettings = {
 class GeomAlgoTest extends Sprite {
 
   var g:Graphics;
-  
+
   var THICKNESS:Float = .5;
   var COLOR:Int = 0xFF0000;
   var CENTROID_COLOR:Int = 0x00FF00;
@@ -88,7 +88,7 @@ class GeomAlgoTest extends Sprite {
     showPIA: false,
     fill: true,
   };
-  
+
   var X:Float;
   var Y:Float;
   var WIDTH:Int;
@@ -106,10 +106,10 @@ class GeomAlgoTest extends Sprite {
   var decomposition:Array<Poly>;
 
   var color:Int;
-  
+
   var text:TextField;
   var labelBMP:Bitmap;
-  
+
   public function new(asset:String) {
     super();
 
@@ -137,7 +137,7 @@ class GeomAlgoTest extends Sprite {
     versionTF.autoSize = TextFieldAutoSize.LEFT;
     versionTF.x = flash.Lib.current.stage.stageWidth - 140;
     addChild(versionTF);
-  
+
     // ORIGINAL IMAGE
     setSlot(0, 0);
     addChildAt(originalBitmap = new Bitmap(originalBMD), 0);	// add it underneath sprite
@@ -179,11 +179,11 @@ class GeomAlgoTest extends Sprite {
     var simplifiedPolyVW = VisvalingamWhyatt.simplify(perimeter, SimplificationMethod.MaxPoints(simplifiedPolyRDP.length));
     trace('Visv-Whyatt   : ${Timer.stamp() - startTime}');
     drawPoly(simplifiedPolyVW, X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
-    addChild(getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts", X, Y));		
+    addChild(getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts", X, Y));
 
     // ISOCONTOURS
     setSlot(0, 2);
-    
+
     var customIsoFunction = function (pixels:Pixels, x:Int, y:Int):Float {
       if (IsoContours.isOutOfBounds(pixels, x, y)) return 0;
       else {
@@ -191,7 +191,7 @@ class GeomAlgoTest extends Sprite {
         return pixel.R;
       }
     }
-    
+
     var isoContours = new IsoContours(originalBMD);
     startTime = Timer.stamp();
     var contours = isoContours.find(0, true);
@@ -204,7 +204,7 @@ class GeomAlgoTest extends Sprite {
     trace('IsoContours   : ${Timer.stamp() - startTime}');
     drawPaths(contours, X, Y, DEFAULT_DRAW_SETTINGS);
     addChild(getTextField("IsoContours\n" + pts + " pts\n" + contours.length + " cntrs", X, Y));
-  
+
     // CONNECTED COMPONENTS LABELING
     setSlot(0, 3);
     startTime = Timer.stamp();
@@ -218,7 +218,7 @@ class GeomAlgoTest extends Sprite {
     for (contour in labeler.contours) {
       var isHole = PolyTools.isCCW(contour);
       var color:Int = isHole ? 0xFF00FF00 : 0xFF0000FF;
-      
+
       for (p in contour) {
         labeler.labelMap.setPixel32(Std.int(p.x), Std.int(p.y), color);
       }
@@ -389,7 +389,7 @@ class GeomAlgoTest extends Sprite {
     for (p in polys) drawPoly(p, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
     addChild(getTextField("Tess2\nContours\n" + res.elementCount + " polys", X, Y));
     */
-  
+
     // setup a ring poly to test Tess2 bool ops
     var radius = originalBMD.width / 2;
     var holeRadius = radius - 25;
@@ -407,7 +407,7 @@ class GeomAlgoTest extends Sprite {
       theta += delta;
     }
     var flatRing = [PolyTools.toFloatArray(outerCircle), PolyTools.reverseFloatArray(PolyTools.toFloatArray(innerCircle))];
-    
+
     polySize = 3;
     resultType = ResultType.BOUNDARY_CONTOURS;
 
@@ -419,7 +419,7 @@ class GeomAlgoTest extends Sprite {
     trace('Tess2Union    : ${Timer.stamp() - startTime}');
     drawPaths(polys, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
     addChild(getTextField("Tess2\nUnion\n" + res.elementCount + " polys", X, Y));
-  
+
     // PIA - TESS2 UNION
     setSlot(3, 4);
     startTime = Timer.stamp();
@@ -429,7 +429,7 @@ class GeomAlgoTest extends Sprite {
     drawPaths(polys, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
     drawCircle(pia, X + clipRect.x, Y + clipRect.y, r);
     addChild(getTextField("PIA\n(Tess Union)\nradius:" + r, X, Y));
-  
+
     // TESS2 - INTERSECTION
     setSlot(2, 4);
     startTime = Timer.stamp();
@@ -438,7 +438,7 @@ class GeomAlgoTest extends Sprite {
     trace('Tess2Intersect: ${Timer.stamp() - startTime}');
     drawPaths(polys, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
     addChild(getTextField("Tess2\nIntersection\n" + res.elementCount + " polys", X, Y));
-  
+
     // TESS2 - DIFFERENCE
     setSlot(2, 5);
     startTime = Timer.stamp();
@@ -447,14 +447,14 @@ class GeomAlgoTest extends Sprite {
     trace('Tess2Diff     : ${Timer.stamp() - startTime}');
     drawPaths(polys, X + clipRect.x, Y + clipRect.y, DEFAULT_DRAW_SETTINGS);
     addChild(getTextField("Tess2\nDifference\n" + res.elementCount + " polys", X, Y));
-    
+
     //flash.Lib.current.stage.addChild(new openfl.FPS(5, 5, 0xFFFFFF));
 
     dumpPoly(simplifiedPolyRDP, false);
-  
+
     // Tess2.js-test parsable poly string (https://rawgit.com/azrafe7/tess2.js/master/test/index.html)
     dumpTess2Polys(flatContours);
-  
+
     // test CCW and duplicate points
     trace("\n");
     polys = [perimeter, simplifiedPolyRDP, simplifiedPolyVW, visPoints].concat(labeler.contours).concat(contours);
@@ -469,7 +469,7 @@ class GeomAlgoTest extends Sprite {
       trace('$name (orientation:$orientation, hasDups:$hasDups)');
     }
   }
-  
+
   public function set(extra:DrawSettings):DrawSettings {
     var newSettings:DrawSettings = {};
     for (f in Reflect.fields(DEFAULT_DRAW_SETTINGS)) {
@@ -480,14 +480,14 @@ class GeomAlgoTest extends Sprite {
     }
     return newSettings;
   }
-  
+
   public function testOrientation(polys:Array<Poly>):String {
     var res = "none";
-    
+
     for (i in 0...polys.length) {
       var poly = polys[i];
       var orientation = PolyTools.isCCW(poly) ? "CCW" : " CW";
-      
+
       if (i == 0) {
         res = orientation;
       } else if (res != orientation) {
@@ -495,17 +495,17 @@ class GeomAlgoTest extends Sprite {
         break;
       }
     }
-    
+
     return res;
   }
-  
+
   public function testConvex(polys:Array<Poly>):String {
     var res = "none";
-    
+
     for (i in 0...polys.length) {
       var poly = polys[i];
       var convex = PolyTools.isConvex(poly) ? "convex" : "not convex";
-      
+
       if (i == 0) {
         res = convex;
       } else if (res != convex) {
@@ -513,17 +513,17 @@ class GeomAlgoTest extends Sprite {
         break;
       }
     }
-    
+
     return res;
   }
-  
+
   public function testSimple(polys:Array<Poly>):String {
     var res = "none";
-    
+
     for (i in 0...polys.length) {
       var poly = polys[i];
       var convex = PolyTools.isSimple(poly) ? "simple" : "not simple";
-      
+
       if (i == 0) {
         res = convex;
       } else if (res != convex) {
@@ -531,10 +531,10 @@ class GeomAlgoTest extends Sprite {
         break;
       }
     }
-    
+
     return res;
   }
-  
+
   static public function savePNG(bmd:BitmapData, fileName:String) {
   #if (sys && (openfl && !nme))
     var ba:ByteArray = bmd.encode(bmd.rect, new PNGEncoderOptions());
@@ -544,13 +544,13 @@ class GeomAlgoTest extends Sprite {
     trace('BitmapData saved as "${fileName}".');
   #end
   }
-  
-  public function setSlot(row:Int, col:Int):Void 
+
+  public function setSlot(row:Int, col:Int):Void
   {
     X = START_POINT.x + (WIDTH + X_GAP) * col;
     Y = START_POINT.y + (HEIGHT + Y_GAP) * row;
   }
-  
+
   public function dumpTess2Polys(flatContours:Array<Array<Float>>):Void {
     var str = "all polys dump: \n";
     for (poly in flatContours) {
@@ -572,14 +572,14 @@ class GeomAlgoTest extends Sprite {
     trace(str);
   }
 
-  public function drawPoints(points:Array<HxPoint>, x:Float, y:Float, radius:Float = 2):Void 
+  public function drawPoints(points:Array<HxPoint>, x:Float, y:Float, radius:Float = 2):Void
   {
     for (i in 0...points.length) {
       var p = points[i];
       g.drawCircle(x + p.x, y + p.y, radius);
     }
   }
-  
+
   public function drawCircle(center:HxPoint, x:Float, y:Float, radius:Float):Void {
     if (Math.isFinite(radius)) {
       g.lineStyle(THICKNESS, CENTROID_COLOR);
@@ -588,9 +588,9 @@ class GeomAlgoTest extends Sprite {
       g.lineStyle(THICKNESS, COLOR);
     }
   }
-  
+
   // Draw arrow head at `q`
-  public function drawArrowHead(p:HxPoint, q:HxPoint, x:Float, y:Float, length:Float = 7, angleDeg:Float = 15):Void 
+  public function drawArrowHead(p:HxPoint, q:HxPoint, x:Float, y:Float, length:Float = 7, angleDeg:Float = 15):Void
   {
     var dx = p.x - q.x;
     var dy = p.y - q.y;
@@ -607,8 +607,8 @@ class GeomAlgoTest extends Sprite {
     //g.lineTo(end1.x + x, end1.y + y); // close head
     //g.moveTo((X + q.x), (Y + q.y));
   }
-  
-  public function drawPointsLabels(points:Array<HxPoint>, x:Float, y:Float):Void 
+
+  public function drawPointsLabels(points:Array<HxPoint>, x:Float, y:Float):Void
   {
     var len = points.length;
     var i = len - 1;
@@ -624,14 +624,14 @@ class GeomAlgoTest extends Sprite {
       i--;
     }
   }
-  
-  public function drawPoly(points:Array<HxPoint>, x:Float, y:Float, settings:DrawSettings):Void 
+
+  public function drawPoly(points:Array<HxPoint>, x:Float, y:Float, settings:DrawSettings):Void
   {
     if (points.length <= 0) return;
-    
+
     // points
     if (settings.showPoints) drawPoints(points, x, y);
-    
+
     // lines
     if (settings.fill) g.beginFill(COLOR, .5);
     g.moveTo(x + points[0].x, y + points[0].y);
@@ -641,7 +641,7 @@ class GeomAlgoTest extends Sprite {
     }
     g.lineTo(x + points[0].x, y + points[0].y);
     if (settings.fill) g.endFill();
-    
+
     if (settings.showArrows) {
       g.lineStyle(THICKNESS, color, ALPHA);
       if (settings.fill) g.beginFill(color, .3);
@@ -653,10 +653,10 @@ class GeomAlgoTest extends Sprite {
       if (settings.fill) g.endFill();
       g.lineStyle(THICKNESS, color, ALPHA);
     }
-    
+
     // labels
     if (settings.showLabels) drawPointsLabels(points, x, y);
-    
+
     // centroids
     if (settings.showCentroids) {
       var c = PolyTools.getCentroid(points);
@@ -667,20 +667,20 @@ class GeomAlgoTest extends Sprite {
     g.lineStyle(THICKNESS, COLOR);
   }
 
-  public function drawPaths(paths:Array<Array<HxPoint>>, x:Float, y:Float, settings:DrawSettings):Void 
+  public function drawPaths(paths:Array<Array<HxPoint>>, x:Float, y:Float, settings:DrawSettings):Void
   {
     if (paths.length <= 0) return;
-    
+
     var data = new flash.Vector();
     var commands = new flash.Vector();
 
     for (path in paths) {
       var len = path.length;
-      
+
       for (i in 0...len) {
         if (i == 0) commands.push(1); // moveTo
         else commands.push(2); // lineTo
-        
+
         data.push(x + path[i].x);
         data.push(y + path[i].y);
       }
@@ -691,7 +691,7 @@ class GeomAlgoTest extends Sprite {
         data.push(y + path[0].y);
       }
     }
-    
+
     if (settings.fill) g.beginFill(COLOR, .5);
     g.drawPath(commands, data, flash.display.GraphicsPathWinding.EVEN_ODD);
     if (settings.fill) g.endFill();
@@ -705,7 +705,7 @@ class GeomAlgoTest extends Sprite {
     g.lineStyle(THICKNESS, COLOR);
   }
 
-  public function drawPolys(polys:Array<Poly>, x:Float, y:Float, settings:DrawSettings):Void 
+  public function drawPolys(polys:Array<Poly>, x:Float, y:Float, settings:DrawSettings):Void
   {
     for (poly in polys) {
       drawPoly(poly, x, y, settings);
@@ -719,16 +719,16 @@ class GeomAlgoTest extends Sprite {
     }
   }
 
-  public function drawDecompositionBayazit(polys:Array<Poly>, x:Float, y:Float, settings:DrawSettings):Void 
+  public function drawDecompositionBayazit(polys:Array<Poly>, x:Float, y:Float, settings:DrawSettings):Void
   {
     drawPolys(polys, x, y, settings);
-    
+
     // draw Reflex and Steiner points
     if (settings.showReflexPoints) {
       g.lineStyle(THICKNESS, (COLOR >> 1) | COLOR, ALPHA);
       for (p in Bayazit.reflexVertices) g.drawCircle(x + p.x, y + p.y, 2);
     }
-    
+
     if (settings.showSteinerPoints) {
       g.lineStyle(THICKNESS, (COLOR >> 2) | COLOR, ALPHA);
       for (p in Bayazit.steinerPoints) g.drawCircle(x + p.x, y + p.y, 2);
@@ -766,30 +766,30 @@ typedef PixelInfo = {
   var l:Float;
 }
 
-class CustomLabeler extends CCLabeler 
+class CustomLabeler extends CCLabeler
 {
   var pixelInfoMap:Map<Int, PixelInfo>; // cache
-  
+
   public function new(pixels:Pixels, alphaThreshold:Int = 1, traceContours:Bool = true, ?connectivity:Connectivity, calcArea:Bool = false)
   {
     super(pixels, alphaThreshold, traceContours, connectivity, calcArea);
-    
+
     pixelInfoMap = new Map();
   }
-  
-  override function isPixelSolid(x:Int, y:Int):Bool 
+
+  override function isPixelSolid(x:Int, y:Int):Bool
   {
     var pixelColor:Int = getPixel32(sourcePixels, x, y, 0);
-    
+
     var pixelInfo = getPixelInfo(pixelColor);
-    
+
     return (pixelInfo.a > 0); // this could have been more complex (e.g. ` && pixelInfo.h > .5 && pixelInfo.h < .8`)
   }
-  
+
   public function getPixelInfo(color:Int):PixelInfo
   {
     if (pixelInfoMap[color] != null) return pixelInfoMap[color];
-    
+
     var a:Int = (color >> 24) & 0xFF;
     var colMask:Int = a > 0 ? 0xFF : 0;	// fix to force neko to report rgb as 0 when alpha is 0 (to be consistent with flash)
     var r:Int = (color >> 16) & colMask;
@@ -797,7 +797,7 @@ class CustomLabeler extends CCLabeler
     var b:Int = color & colMask;
 
     var info:Dynamic = {a:a, r:r, g:g, b:b};
-    
+
     // hue
     var max:Int = Std.int(Math.max(r, Math.max(g, b)));
     var min:Int = Std.int(Math.min(r, Math.min(g, b)));
@@ -808,20 +808,20 @@ class CustomLabeler extends CCLabeler
     else if (max == b) info.h = (60 * (r - g) / (max - min) + 240);
 
     info.h /= 360;
-    
+
     // saturation
     if (max == 0) info.s = 0;
     else info.s = (max - min) / max;
-    
+
     // value
     info.v = max / 255;
-    
+
     // luminance
     //info.l = (0.2126 * r / 255 + 0.7152 * g / 255 + 0.0722 * b / 255);
     info.l = (0.33333 * r / 255 + 0.33333 * g / 255 + 0.33333 * b / 255);
-    
+
     pixelInfoMap[color] = info;
-    
+
     return info;
   }
 }

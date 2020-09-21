@@ -7,7 +7,7 @@ import flash.display.BitmapData;
 
 
 class OpenflDemo extends Sprite {
-  
+
   static var assets:Array<String> = [
     "assets/pirate_small.png",
     "assets/super_mario.png",	// from http://www.newgrounds.com/art/view/petelavadigger/super-mario-pixel
@@ -26,32 +26,32 @@ class OpenflDemo extends Sprite {
     "assets/issue11.png",
     "assets/9x9_holed_square.png",
   ];
-  
+
   static var currAssetIdx:Int = 0;
   static var asset:String;
   static var geomAlgoTest:GeomAlgoTest;
-  
+
   static public function main():Void {
     new OpenflDemo();
   }
-  
+
   public function new() {
     super();
-    
+
     flash.Lib.current.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 
     asset = assets[currAssetIdx];
     geomAlgoTest = new GeomAlgoTest(asset);
-    
+
     flash.Lib.current.addChild(geomAlgoTest);
   }
-  
-  public function onKeyDown(e:KeyboardEvent):Void 
+
+  public function onKeyDown(e:KeyboardEvent):Void
   {
     if (e.keyCode == 27) {
       quit();
     }
-    
+
     // zoom
     if (e.charCode == "+".code) {
       flash.Lib.current.scaleX *= 1.25;
@@ -59,8 +59,8 @@ class OpenflDemo extends Sprite {
     } else if (e.charCode == "-".code) {
       flash.Lib.current.scaleX *= .8;
       flash.Lib.current.scaleY *= .8;
-    }	
-    
+    }
+
     // screenshot
   #if sys
     if (e.charCode == "s".code) {
@@ -70,13 +70,13 @@ class OpenflDemo extends Sprite {
       GeomAlgoTest.savePNG(bmd, "capture.png");
     }
   #end
-    
+
     var deltaIdx = 0;
     var moveDelta = 12;
     var moveMult = e.shiftKey ? 4 : 1;
-    
+
     moveDelta *= moveMult;
-    
+
     // keys to move camera around and cycle through assets
     if (e.charCode == "j".code || e.charCode == "J".code || e.keyCode == 39) { // right
       geomAlgoTest.x -= moveDelta;
@@ -88,15 +88,15 @@ class OpenflDemo extends Sprite {
     }
     if (e.charCode == "h".code || e.charCode == "H".code || e.keyCode == 40) geomAlgoTest.y -= moveDelta; // down
     if (e.charCode == "y".code || e.charCode == "Y".code || e.keyCode == 38) geomAlgoTest.y += moveDelta; // up
-    
+
     if (e.charCode >= "0".code && e.charCode <= "9".code) {
       currAssetIdx = -1;
       deltaIdx = e.charCode - "0".code + 1;
     }
-    
+
     if (deltaIdx != 0) {
       currAssetIdx = (currAssetIdx + deltaIdx + assets.length) % assets.length;
-      
+
       asset = assets[currAssetIdx];
       flash.Lib.current.removeChild(geomAlgoTest);
       geomAlgoTest = new GeomAlgoTest(asset);
@@ -104,7 +104,7 @@ class OpenflDemo extends Sprite {
     }
   }
 
-  static public function quit():Void 
+  static public function quit():Void
   {
     #if (flash || html5)
       System.exit(1);

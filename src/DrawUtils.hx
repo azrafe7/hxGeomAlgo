@@ -40,7 +40,7 @@ class DrawUtils {
 
   static var sprite:Sprite = null;
   static var g:Graphics = null;
-  
+
   static public var THICKNESS:Float = .5;
   static public var COLOR:Int = 0xFF0000;
   static var CENTROID_COLOR:Int = 0x00FF00;
@@ -63,14 +63,14 @@ class DrawUtils {
     fill: true,
     close: true,
   };
-  
-  
+
+
   static public function init(sprite:Sprite):Void {
     DrawUtils.sprite = sprite;
     DrawUtils.g = sprite.graphics;
     DrawUtils.g.lineStyle(THICKNESS, COLOR, ALPHA);
   }
-  
+
   static public function config(extra:DrawSettings):DrawSettings {
     var newSettings:DrawSettings = {};
     for (f in Reflect.fields(DEFAULT_DRAW_SETTINGS)) {
@@ -81,14 +81,14 @@ class DrawUtils {
     }
     return newSettings;
   }
-  
+
   static public function testOrientation(polys:Array<Poly>):String {
     var res = "none";
-    
+
     for (i in 0...polys.length) {
       var poly = polys[i];
       var orientation = PolyTools.isCCW(poly) ? "CCW" : " CW";
-      
+
       if (i == 0) {
         res = orientation;
       } else if (res != orientation) {
@@ -96,17 +96,17 @@ class DrawUtils {
         break;
       }
     }
-    
+
     return res;
   }
-  
+
   static public function testConvex(polys:Array<Poly>):String {
     var res = "none";
-    
+
     for (i in 0...polys.length) {
       var poly = polys[i];
       var convex = PolyTools.isConvex(poly) ? "convex" : "not convex";
-      
+
       if (i == 0) {
         res = convex;
       } else if (res != convex) {
@@ -114,17 +114,17 @@ class DrawUtils {
         break;
       }
     }
-    
+
     return res;
   }
-  
+
   static public function testSimple(polys:Array<Poly>):String {
     var res = "none";
-    
+
     for (i in 0...polys.length) {
       var poly = polys[i];
       var convex = PolyTools.isSimple(poly) ? "simple" : "not simple";
-      
+
       if (i == 0) {
         res = convex;
       } else if (res != convex) {
@@ -132,10 +132,10 @@ class DrawUtils {
         break;
       }
     }
-    
+
     return res;
   }
-  
+
   static public function savePNG(bmd:BitmapData, fileName:String) {
   #if (sys)
     var ba:ByteArray = bmd.encode(bmd.rect, new PNGEncoderOptions());
@@ -145,7 +145,7 @@ class DrawUtils {
     trace('BitmapData saved as "${fileName}".');
   #end
   }
-  
+
   static public function dumpPoly(poly:Array<HxPoint>, reverse:Bool = false):Void {
     var len = poly.length;
     var str = "poly dump: ";
@@ -156,14 +156,14 @@ class DrawUtils {
     trace(str);
   }
 
-  static public function drawPoints(points:Array<HxPoint>, x:Float, y:Float, radius:Float = 2):Void 
+  static public function drawPoints(points:Array<HxPoint>, x:Float, y:Float, radius:Float = 2):Void
   {
     for (i in 0...points.length) {
       var p = points[i];
       g.drawCircle(x + p.x, y + p.y, radius);
     }
   }
-  
+
   static public function drawCircle(center:HxPoint, x:Float, y:Float, radius:Float):Void {
     if (Math.isFinite(radius)) {
       g.lineStyle(THICKNESS, CENTROID_COLOR);
@@ -172,9 +172,9 @@ class DrawUtils {
       //g.lineStyle(THICKNESS, COLOR);
     }
   }
-  
+
   // Draw arrow head at `q`
-  static public function drawArrowHead(p:HxPoint, q:HxPoint, x:Float, y:Float, length:Float = 7, angleDeg:Float = 15):Void 
+  static public function drawArrowHead(p:HxPoint, q:HxPoint, x:Float, y:Float, length:Float = 7, angleDeg:Float = 15):Void
   {
     var dx = p.x - q.x;
     var dy = p.y - q.y;
@@ -191,8 +191,8 @@ class DrawUtils {
     //g.lineTo(end1.x + x, end1.y + y); // close head
     //g.moveTo((X + q.x), (Y + q.y));
   }
-  
-  static public function drawPointsLabels(points:Array<HxPoint>, x:Float, y:Float):Void 
+
+  static public function drawPointsLabels(points:Array<HxPoint>, x:Float, y:Float):Void
   {
     var len = points.length;
     var i = len - 1;
@@ -208,17 +208,17 @@ class DrawUtils {
       i--;
     }
   }
-  
-  static public function drawPoly(points:Array<HxPoint>, x:Float, y:Float, settings:DrawSettings):Void 
+
+  static public function drawPoly(points:Array<HxPoint>, x:Float, y:Float, settings:DrawSettings):Void
   {
     if (points.length <= 0) return;
-    
+
     var color = settings.color != null ? settings.color : COLOR;
     g.lineStyle(THICKNESS, color, ALPHA);
-    
+
     // points
     if (settings.showPoints) drawPoints(points, x, y);
-    
+
     // lines
     if (settings.fill) g.beginFill(color, .5);
     g.moveTo(x + points[0].x, y + points[0].y);
@@ -228,7 +228,7 @@ class DrawUtils {
     }
     if (settings.close) g.lineTo(x + points[0].x, y + points[0].y);
     if (settings.fill) g.endFill();
-    
+
     if (settings.showArrows) {
       g.lineStyle(THICKNESS, color, ALPHA);
       if (settings.fill) g.beginFill(color, .3);
@@ -240,10 +240,10 @@ class DrawUtils {
       if (settings.fill) g.endFill();
       g.lineStyle(THICKNESS, color, ALPHA);
     }
-    
+
     // labels
     if (settings.showLabels) drawPointsLabels(points, x, y);
-    
+
     // centroids
     if (settings.showCentroids) {
       var c = PolyTools.getCentroid(points);
@@ -253,22 +253,22 @@ class DrawUtils {
     }
   }
 
-  static public function drawPaths(paths:Array<Array<HxPoint>>, x:Float, y:Float, settings:DrawSettings):Void 
+  static public function drawPaths(paths:Array<Array<HxPoint>>, x:Float, y:Float, settings:DrawSettings):Void
   {
     if (paths.length <= 0) return;
-    
+
     var color = settings.color != null ? settings.color : COLOR;
-    
+
     var data = new flash.Vector();
     var commands = new flash.Vector();
 
     for (path in paths) {
       var len = path.length;
-      
+
       for (i in 0...len) {
         if (i == 0) commands.push(1); // moveTo
         else commands.push(2); // lineTo
-        
+
         data.push(x + path[i].x);
         data.push(y + path[i].y);
       }
@@ -279,7 +279,7 @@ class DrawUtils {
         data.push(y + path[0].y);
       }
     }
-    
+
     if (settings.fill) g.beginFill(color, .5);
     g.drawPath(commands, data, flash.display.GraphicsPathWinding.EVEN_ODD);
     if (settings.fill) g.endFill();
@@ -292,7 +292,7 @@ class DrawUtils {
     }
   }
 
-  static public function drawPolys(polys:Array<Poly>, x:Float, y:Float, settings:DrawSettings):Void 
+  static public function drawPolys(polys:Array<Poly>, x:Float, y:Float, settings:DrawSettings):Void
   {
     for (poly in polys) {
       drawPoly(poly, x, y, settings);
@@ -306,18 +306,18 @@ class DrawUtils {
     }
   }
 
-  static public function drawDecompositionBayazit(polys:Array<Poly>, x:Float, y:Float, settings:DrawSettings):Void 
+  static public function drawDecompositionBayazit(polys:Array<Poly>, x:Float, y:Float, settings:DrawSettings):Void
   {
     drawPolys(polys, x, y, settings);
-    
+
     var color = settings.color != null ? settings.color : COLOR;
-    
+
     // draw Reflex and Steiner points
     if (settings.showReflexPoints) {
       g.lineStyle(THICKNESS, (color >> 1) | color, ALPHA);
       for (p in Bayazit.reflexVertices) g.drawCircle(x + p.x, y + p.y, 2);
     }
-    
+
     if (settings.showSteinerPoints) {
       g.lineStyle(THICKNESS, (color >> 2) | color, ALPHA);
       for (p in Bayazit.steinerPoints) g.drawCircle(x + p.x, y + p.y, 2);

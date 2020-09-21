@@ -1,11 +1,11 @@
 /**
  * Ramer-Douglas-Peucker implementation.
- * 
+ *
  * Based on:
- * 
+ *
  * @see http://karthaus.nl/rdp/																				(JS - by Marius Karthaus)
  * @see http://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment		(JS - Grumdrig)
- * 
+ *
  * @author azrafe7
  */
 
@@ -19,20 +19,20 @@ class RamerDouglasPeucker
 {
   /**
    * Simplify polyline.
-   * 
+   *
    * @param	points		Array of points defining the polyline.
    * @param	epsilon		Perpendicular distance threshold (typically in the range (0..2]).
    * @return	An array of points defining the simplified polyline.
    */
-  static public function simplify(points:Array<HxPoint>, epsilon:Float = 1):Array<HxPoint> 
+  static public function simplify(points:Array<HxPoint>, epsilon:Float = 1):Array<HxPoint>
   {
     var firstPoint = points[0];
     var lastPoint = points[points.length - 1];
-    
+
     if (points.length < 2) {
       return [].concat(points);
     }
-    
+
     var index = -1;
     var dist = 0.;
     for (i in 1...points.length - 1) {
@@ -42,7 +42,7 @@ class RamerDouglasPeucker
         index = i;
       }
     }
-    
+
     if (dist > epsilon){
       // recurse
       var l1 = points.slice(0, index + 1);

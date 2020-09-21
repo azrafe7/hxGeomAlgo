@@ -1,12 +1,12 @@
 /**
  * Ear clipping implementation - polygon triangulation and triangles polygonization.
  * NOTE: Should work only for non self-intersecting polygons (but holes are supported).
- * 
+ *
  * Based on:
- * 
+ *
  * @see https://github.com/mapbox/earcut																(JS - by Vladimir Agafonkin)
  * @see http://www.ewjordan.com/earClip/																(Java - by Eric Jordan)
- * 
+ *
  * @author azrafe7
  */
 
@@ -21,23 +21,23 @@ class EarCut
 {
   /**
    * Triangulates a polygon.
-   * 
+   *
    * @param	poly		Array of points defining the polygon.
    * @param	holes		Optional array of holes in the poly.
    * @return	An array of Triangle resulting from the triangulation.
    */
   static public function triangulate(poly:Poly, ?holes:Array<Poly> = null):Array<Tri> {
     var data = PolyTools.toFloatArray(poly);
-    
+
     var holeIndices = null;
     var allVertices = poly;
-    
+
     // concat poly and holes' vertices
     if (holes != null && holes.length > 0) {
-      
+
       allVertices = poly.concat([]);
       PolyTools.flatten(holes, allVertices);
-      
+
       holeIndices = [];
       var holeIdx = poly.length;
       for (hole in holes) {
@@ -46,21 +46,21 @@ class EarCut
         holeIdx += hole.length;
       }
     }
-    
+
     var triIndices:Array<Int> = earcut(data, holeIndices);
-    
+
     var res:Array<Tri> = [];
     var i = 0;
     while (i < triIndices.length) {
-      var tri:Tri = [			
-        allVertices[triIndices[i]], 
-        allVertices[triIndices[i + 1]], 
+      var tri:Tri = [
+        allVertices[triIndices[i]],
+        allVertices[triIndices[i + 1]],
         allVertices[triIndices[i + 2]]
       ];
       res.push(tri);
       i += 3;
     }
-    
+
     return res;
   }
 
@@ -76,7 +76,7 @@ class EarCut
     if (outerNode == null) return triangles;
 
     outerNode = filterPoints(outerNode);
-    
+
     var minX, minY, maxX, maxY, x, y, size;
     minX = minY = maxX = maxY = x = y = size = Math.NaN;
 
@@ -140,7 +140,7 @@ class EarCut
 
     var p = start,
       again;
-    
+
     do {
       again = false;
 
@@ -644,10 +644,10 @@ class EarCut
   }
 
 
-  /** 
+  /**
    * Returns a percentage difference between the polygon area and its triangulation area;
    * used to verify correctness of triangulation
-   */ 
+   */
   static public function deviation(data:Array<Float>, holeIndices:Array<Int>, dim:Int, triangles:Array<Int>):Float {
     var hasHoles = (holeIndices != null) && holeIndices.length > 0;
     var outerLen = hasHoles ? holeIndices[0] * dim : data.length;
@@ -684,7 +684,7 @@ class EarCut
     var sum = 0.;
     var i = start;
     var j = end - dim;
-    
+
     while (i < end) {
       sum += (data[j] - data[i]) * (data[i + 1] + data[j + 1]);
       j = i;
@@ -694,7 +694,7 @@ class EarCut
   }
 
   /**
-   * Turn a polygon in a multi-dimensional array form (e.g. as in GeoJSON) into a form Earcut accepts 
+   * Turn a polygon in a multi-dimensional array form (e.g. as in GeoJSON) into a form Earcut accepts
    * @return An object of type {vertices:Array<Float>, holes:Array<Int>, dimensions:Int} you can pass to earcut()
    */
   static public function flatten(data:Array<Array<Array<Float>>>) {
@@ -713,15 +713,15 @@ class EarCut
     }
     return result;
   }
-  
-  
+
+
   /**
    * Merges triangles (defining a triangulated concave polygon) into a set of convex polygons.
-   * 
+   *
    * @param	triangulation	An array of triangles defining the concave polygon.
    * @return	An array of convex polygons being a decomposition of the original concave polygon.
    */
-  public static function polygonize(triangulation:Array<Tri>):Array<Poly> 
+  public static function polygonize(triangulation:Array<Tri>):Array<Poly>
   {
     var polys = new Array<Poly>();
 
@@ -773,11 +773,11 @@ class EarCut
 
     return polys;
   }
-  
-  /** 
+
+  /**
    * Tries to add a triangle to the polygon.
    * Assumes bitwise equality of join vertices.
-   * 
+   *
    * @return null if it can't connect properly.
    */
   static public function addTriangle(poly:Poly, t:Tri):Poly
@@ -865,21 +865,21 @@ class EarCut
 class EarNode {
 
   var i:Int;
-  
+
   var x:Float;
   var y:Float;
-  
+
   var prev:EarNode;
   var next:EarNode;
-  
+
   var z:Null<Int>;
-  
+
   var prevZ:EarNode;
   var nextZ:EarNode;
-  
+
   var steiner:Bool;
-  
-  
+
+
   public function new(i:Int, x:Float, y:Float) {
     // vertice index in coordinates array
     this.i = i;
@@ -902,5 +902,5 @@ class EarNode {
     // indicates whether this is a steiner point
     this.steiner = false;
   }
-  
+
 }
