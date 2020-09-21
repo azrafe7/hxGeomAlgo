@@ -2,6 +2,8 @@ package;
 
 import flash.display.Sprite;
 import flash.events.KeyboardEvent;
+import flash.events.MouseEvent;
+import flash.events.Event;
 import flash.system.System;
 import flash.display.BitmapData;
 
@@ -27,9 +29,13 @@ class OpenflDemo extends Sprite {
     "assets/9x9_holed_square.png",
   ];
 
-  static var currAssetIdx:Int = 0;
+  static var currAssetIdx:Int = 15;
   static var asset:String;
   static var geomAlgoTest:GeomAlgoTest;
+
+  var lastMouseX:Float = 0.0;
+  var lastMouseY:Float = 0.0;
+  var isMouseDown:Bool = false;
 
   static public function main():Void {
     new OpenflDemo();
@@ -39,11 +45,20 @@ class OpenflDemo extends Sprite {
     super();
 
     flash.Lib.current.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+    flash.Lib.current.stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+    flash.Lib.current.stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+    flash.Lib.current.stage.addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel);
+    flash.Lib.current.stage.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 
     asset = assets[currAssetIdx];
     geomAlgoTest = new GeomAlgoTest(asset);
 
     flash.Lib.current.addChild(geomAlgoTest);
+  }
+
+  inline function zoom(factor:Float) {
+    flash.Lib.current.scaleX *= factor;
+    flash.Lib.current.scaleY *= factor;
   }
 
   public function onKeyDown(e:KeyboardEvent):Void
@@ -54,11 +69,9 @@ class OpenflDemo extends Sprite {
 
     // zoom
     if (e.charCode == "+".code) {
-      flash.Lib.current.scaleX *= 1.25;
-      flash.Lib.current.scaleY *= 1.25;
+      zoom(1.25);
     } else if (e.charCode == "-".code) {
-      flash.Lib.current.scaleX *= .8;
-      flash.Lib.current.scaleY *= .8;
+      zoom(.8);
     }
 
     // screenshot
@@ -101,6 +114,38 @@ class OpenflDemo extends Sprite {
       flash.Lib.current.removeChild(geomAlgoTest);
       geomAlgoTest = new GeomAlgoTest(asset);
       flash.Lib.current.addChild(geomAlgoTest);
+    }
+  }
+
+  public function onMouseDown(e:MouseEvent):Void
+  {
+    lastMouseX = flash.Lib.current.stage.mouseX;
+    lastMouseY = flash.Lib.current.stage.mouseY;
+    isMouseDown = true;
+  }
+
+  public function onMouseUp(e:MouseEvent):Void
+  {
+    isMouseDown = false;
+  }
+
+  public function onMouseWheel(e:MouseEvent):Void
+  {
+    // zoom
+    if (e.delta > 0) {
+      zoom(1.25);
+    } else if (e.delta < 0) {
+      zoom(.8);
+    }
+  }
+
+  public function onEnterFrame(e:Event):Void
+  {
+    if (isMouseDown) {
+      geomAlgoTest.x += flash.Lib.current.stage.mouseX - lastMouseX;
+      geomAlgoTest.y += flash.Lib.current.stage.mouseY - lastMouseY;
+      lastMouseX = flash.Lib.current.stage.mouseX;
+      lastMouseY = flash.Lib.current.stage.mouseY;
     }
   }
 
