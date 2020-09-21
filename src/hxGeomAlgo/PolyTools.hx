@@ -434,6 +434,24 @@ class PolyTools
     
     return out;
   }
+
+  /** Converts a string into an array of HxPoints. */
+  @:noUsing static public function parsePoints(str:String):Poly {
+    var floats = ~/[^-eE\.\d]+/g.split(str).filter(function(val) {
+      return val != null && val != "";
+    }).map(Std.parseFloat);
+    
+    var pts = new Poly();
+    
+    var n = floats.length;
+    Debug.assert(n % 2 == 0, 'Parsed string must contain an even number of parseable floats (${n} found).');
+    
+    for (i in 0...Std.int(n / 2)) {
+      pts.push(new HxPoint(floats[i * 2], floats[i * 2 + 1]));
+    }
+    
+    return pts;
+  }
   
   /** Expands a line into a rectangular poly, offsetting it by half-`thickness` along its normals. */
   @:noUsing static public function inflateLine(start:HxPoint, end:HxPoint, thickness:Float):Poly {
@@ -498,11 +516,13 @@ class PolyTools
   }
   
   /** Linear interpolation. */
+  @:noUsing 
   static inline public function lerp(a:Float, b:Float, t:Float):Float {
     return (1.0 - t) * a + t * b;
   }
   
   /** Linear interpolation between points. */
+  @:noUsing 
   static inline public function lerpPoints(a:HxPoint, b:HxPoint, t:Float):HxPoint {
     return new HxPoint(lerp(a.x, b.x, t), lerp(a.y, b.y, t));
   }
