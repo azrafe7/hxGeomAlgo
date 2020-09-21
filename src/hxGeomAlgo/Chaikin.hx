@@ -53,8 +53,8 @@ class Chaikin
 
     /*
      * Step 2: Since we don't have access to edges directly
-     *         with a PShape object, do a pairwise iteration
-     *         over vertices instead. Same thing.
+     *         do a pairwise iteration over vertices instead.
+     *         Same thing.
      */
     for (i in 0...numCorners) {
 
@@ -74,17 +74,17 @@ class Chaikin
       if (!close && i == 0) {
         // For the first point of open shapes, ignore vertex A
         smoothedPoints.push(a.clone());
-        smoothedPoints.push(n[1].clone());
+        smoothedPoints.push(n[1]);
       } else if (!close && i == numCorners - 1) {
         // For the last point of open shapes, ignore vertex B
-        smoothedPoints.push(n[0].clone());
+        smoothedPoints.push(n[0]);
         smoothedPoints.push(b.clone());
       } else {
         // For all other cases (i.e. interior edges of open
         // shapes or edges of closed shapes), add both vertices
-        // returned by our chaikin_break() method
-        smoothedPoints.push(n[0].clone());
-        smoothedPoints.push(n[1].clone());
+        // returned by our cut() method
+        smoothedPoints.push(n[0]);
+        smoothedPoints.push(n[1]);
       }
     }
 
