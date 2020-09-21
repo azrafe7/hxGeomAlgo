@@ -3,6 +3,7 @@ package;
 import flash.display.Sprite;
 import flash.events.KeyboardEvent;
 import flash.system.System;
+import flash.display.BitmapData;
 
 
 class OpenflDemo extends Sprite {
