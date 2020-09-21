@@ -23,7 +23,7 @@ abstract HxPoint(HxPointData) from HxPointData to HxPointData
     this = new HxPointData(x, y);
   }
 
-  public function setTo(newX:Float, newY:Float):Void
+  inline public function setTo(newX:Float, newY:Float):Void
   {
     x = newX;
     y = newY;

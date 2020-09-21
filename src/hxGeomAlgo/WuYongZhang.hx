@@ -27,26 +27,40 @@ class WuYongZhang
   static var G:Map<Int, Map<Int, Float>> = new Map(); // G(j,k)
   static var H:Map<Int, Map<Int, Float>> = new Map(); // H(j,k)
 
-  static function buildCache(k:Int)
+  static public function buildCache(k:Int)
   {
-    for (j in 1...Std.int(Math.pow(2, k) + 1)) {
+    var pow2_minus1 = Math.pow(2, -1);
+    var pow2_minusK_minus1 = Math.pow(2, -k - 1);
+    var pow2_minusK = Math.pow(2, -k);
+    var pow2_K = Std.int(Math.pow(2, k));
+
+    // exit early if cache is already built for k
+    if (F.exists(pow2_K) && F[pow2_K].exists(k)) return;
+
+    for (j in 1...pow2_K + 1) {
       if (!F.exists(j)) {
         F[j] = new Map();
         G[j] = new Map();
         H[j] = new Map();
       }
-      F[j][k] = Math.pow(2, -1) - Math.pow(2, -k - 1) - (j - 1) * (Math.pow(2, -k) - j * Math.pow(2, -2 * k - 1));
-      G[j][k] = Math.pow(2, -1) + Math.pow(2, -k - 1) + (j - 1) * (Math.pow(2, -k) - j * Math.pow(2, -2 * k));
-      H[j][k] = (j - 1) * j * Math.pow(2, -2 * k - 1);
+      if (!F[j].exists(k)) {
+        F[j][k] = pow2_minus1 - pow2_minusK_minus1 - (j - 1) * (pow2_minusK - j * Math.pow(2, -2 * k - 1));
+        G[j][k] = pow2_minus1 + pow2_minusK_minus1 + (j - 1) * (pow2_minusK - j * Math.pow(2, -2 * k));
+        H[j][k] = (j - 1) * j * Math.pow(2, -2 * k - 1);
+      }
     }
   }
 
+  /** In-place point scaling. */
   static inline function scale(a:HxPoint, s:Float):HxPoint {
-    return new HxPoint(s * a.x, s * a.y);
+    a.setTo(s * a.x, s * a.y);
+    return a;
   }
 
+  /** In-place point sum (`a` will be modified and returned). */
   static inline function add(a:HxPoint, b:HxPoint):HxPoint {
-    return new HxPoint(a.x + b.x, a.y + b.y);
+    a.setTo(a.x + b.x, a.y + b.y);
+    return a;
   }
 
   static public function smooth(poly:Poly, iterations:Int = 3, close:Bool = false):Poly
@@ -55,6 +69,7 @@ class WuYongZhang
 
     var P0 = poly;
     var k = iterations;
+
     buildCache(k);
 
     var smoothedPoints = new Poly();
@@ -64,16 +79,18 @@ class WuYongZhang
 
     var factor1 = (Math.pow(2, -1) + Math.pow(2, -k - 1));
     var factor2 = (Math.pow(2, -1) - Math.pow(2, -k - 1));
-    var firstPoint = add(scale(P0[0], factor1), scale(P0[1], factor2));
+
+    var firstPoint = P0[0].clone().scale(factor1).add(P0[1].clone().scale(factor2));
     smoothedPoints[0] = firstPoint;
 
-    var lastPoint = add(scale(P0[n0 - 1], factor2), scale(P0[n0], factor1));
+    var lastPoint = P0[n0 - 1].clone().scale(factor2).add(P0[n0].clone().scale(factor1));
     smoothedPoints[newLength - 1] = lastPoint;
 
-    for (i in 0...n0-1) {
-      for (j in 0...Std.int(Math.pow(2, k))) {
-        var idx = Std.int(Math.pow(2, k) * (i) + j + 1);
-        smoothedPoints[idx] = P0[i].scale(F[j + 1][k]).add(P0[i + 1].scale(G[j + 1][k])).add(P0[i + 2].scale(H[j + 1][k]));
+    var pow2_k = Std.int(Math.pow(2, k));
+    for (i in 0...n0 - 1) {
+      for (j in 0...pow2_k) {
+        var idx = pow2_k * i + j + 1;
+        smoothedPoints[idx] = P0[i].clone().scale(F[j + 1][k]).add(P0[i + 1].clone().scale(G[j + 1][k])).add(P0[i + 2].clone().scale(H[j + 1][k]));
       }
     }
 

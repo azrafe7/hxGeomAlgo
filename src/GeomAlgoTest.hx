@@ -232,7 +232,7 @@ class GeomAlgoTest extends Sprite {
     var strPtsToRefine = simplifiedPolyRDP.toString();
     var curveToRefine = PolyTools.parsePoints(strPtsToRefine).slice(0, -1); // remove last point
     startTime = Timer.stamp();
-    var smoothIterations = 3;
+    var smoothIterations = 5;
     var closeCurve = false;
     var smoothedCurveChaikin = Chaikin.smooth(curveToRefine, smoothIterations, closeCurve);
     trace('Chaikin       : ${Timer.stamp() - startTime}');
@@ -243,12 +243,12 @@ class GeomAlgoTest extends Sprite {
       drawPaths([smoothedCurveChaikin], X + clipRect.x, Y + clipRect.y, set({fill:false}));
       drawPoints(smoothedCurveChaikin, X + clipRect.x, Y + clipRect.y, 2);
     }
-    addChild(getTextField('Chaikin\nSmooth [k:${smoothIterations} ' + (closeCurve ? "C" : "O") + "]\n" + smoothedCurveChaikin.length + " pts", X, Y));
+    addChild(getTextField('Chaikin\nSmooth [' + (closeCurve ? "C" : "O") + ']\n k:${smoothIterations} ' + smoothedCurveChaikin.length + " pts", X, Y));
 
     // WU-YONG-ZHANG (CHAIKIN CURVE SMOOTHING)
     var testPoly = PolyTools.parsePoints("[0 0; 1 0; 2 1; 3 1]");
     var smoothed = WuYongZhang.smooth(testPoly, 2);
-    dumpPoly(smoothed);
+    //dumpPoly(smoothed);
 
     setSlot(1, 1);
     startTime = Timer.stamp();
@@ -261,7 +261,7 @@ class GeomAlgoTest extends Sprite {
       drawPaths([smoothedCurveWYZ], X + clipRect.x, Y + clipRect.y, set({fill:false}));
       drawPoints(smoothedCurveWYZ, X + clipRect.x, Y + clipRect.y, 2);
     }
-    addChild(getTextField('WuYongZhang\nSmooth [k:${smoothIterations} ' + (closeCurve ? "C" : "O") + "]\n" + smoothedCurveWYZ.length + " pts", X, Y));
+    addChild(getTextField('WuYongZhang\nSmooth [' + (closeCurve ? "C" : "O") + ']\n k:${smoothIterations} ' + smoothedCurveWYZ.length + " pts", X, Y));
 
     // CHAIKIN (CONTROL POLY)
     setSlot(1, 2);
@@ -269,6 +269,8 @@ class GeomAlgoTest extends Sprite {
     drawPaths([curveToRefine], X + clipRect.x, Y + clipRect.y, set({fill:false}));
     drawPoints(curveToRefine, X + clipRect.x, Y + clipRect.y, 2);
     addChild(getTextField("Chaikin\nControl Poly\n" + curveToRefine.length + " pts", X, Y));
+
+    return;
 
     // EARCUT TRIANGULATION
     setSlot(1, 2);
@@ -479,10 +481,10 @@ class GeomAlgoTest extends Sprite {
 
     //flash.Lib.current.stage.addChild(new openfl.FPS(5, 5, 0xFFFFFF));
 
-    dumpPoly(simplifiedPolyRDP, false);
+    //dumpPoly(simplifiedPolyRDP, false);
 
     // Tess2.js-test parsable poly string (https://rawgit.com/azrafe7/tess2.js/master/test/index.html)
-    dumpTess2Polys(flatContours);
+    //dumpTess2Polys(flatContours);
 
     // test CCW and duplicate points
     trace("\n");
