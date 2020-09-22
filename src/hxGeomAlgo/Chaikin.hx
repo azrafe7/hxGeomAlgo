@@ -1,5 +1,5 @@
 /**
- * Chaikin curve smoothing recursive implementation.
+ * Chaikin curve smoothing, recursive implementation.
  *
  * Based on:
  *
@@ -34,7 +34,9 @@ class Chaikin
 
   static public function smooth(poly:Poly, iterations:Int = 3, close:Bool = false, ratio:Float = .25):Poly
   {
-    if (iterations <= 0 || poly.length <= 2) return poly;
+    if (iterations <= 0 || poly.length <= 2) {
+      return poly.copy();
+    }
 
     var smoothedPoints = new Poly();
 
