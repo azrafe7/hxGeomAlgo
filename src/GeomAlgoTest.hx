@@ -227,13 +227,19 @@ class GeomAlgoTest extends Sprite {
     labeler.labelMap.applyToBitmapData(labelBMP.bitmapData);
     addChild(getTextField("CCLabeler\n" + labeler.numComponents + " cmpts\n" + labeler.contours.length + " cntrs", X, Y));
 
+    // CHAIKIN (CONTROL POLY)
+    var curveToRefine = simplifiedPolyRDP.slice(0, -1); // remove last point
+    setSlot(1, 1);
+    g.lineStyle(THICKNESS, color = COLOR, ALPHA);
+    drawPaths([curveToRefine], X + clipRect.x, Y + clipRect.y, set({fill:false}));
+    drawPoints(curveToRefine, X + clipRect.x, Y + clipRect.y, 2);
+    addChild(getTextField("Chaikin\nControl Poly\n" + curveToRefine.length + " pts", X, Y));
+
     // CHAIKIN (CURVE SMOOTHING)
     setSlot(1, 0);
-    var strPtsToRefine = simplifiedPolyRDP.toString();
-    var curveToRefine = PolyTools.parsePoints(strPtsToRefine).slice(0, -1); // remove last point
     startTime = Timer.stamp();
     var smoothIterations = 4;
-    var closeCurve = false;
+    var closeCurve = true;
     var smoothedCurveChaikin = Chaikin.smooth(curveToRefine, smoothIterations, closeCurve);
     trace('Chaikin       : ${Timer.stamp() - startTime}');
     g.lineStyle(THICKNESS, color = COLOR, ALPHA);
@@ -265,13 +271,11 @@ class GeomAlgoTest extends Sprite {
     }
     addChild(getTextField('WuYongZhang\nSmooth [' + (closeCurve ? "clsd" : "open") + ']\n k:${smoothIterations} ' + smoothedCurveWYZ.length + " pts", X, Y));
 
-    // CHAIKIN (CONTROL POLY)
-    setSlot(1, 2);
-    g.lineStyle(THICKNESS, color = COLOR, ALPHA);
-    drawPaths([curveToRefine], X + clipRect.x, Y + clipRect.y, set({fill:false}));
-    drawPoints(curveToRefine, X + clipRect.x, Y + clipRect.y, 2);
-    addChild(getTextField("Chaikin\nControl Poly\n" + curveToRefine.length + " pts", X, Y));
-
+    if (smoothedCurveChaikin.length < 1000) {
+      trace("smoothedCurveWYZ    :", smoothedCurveWYZ.toString());
+      trace("smoothedCurveChaikin:", smoothedCurveChaikin.toString());
+    }
+    trace(smoothedCurveChaikin.toString() == smoothedCurveWYZ.toString());
     return;
 
     // EARCUT TRIANGULATION

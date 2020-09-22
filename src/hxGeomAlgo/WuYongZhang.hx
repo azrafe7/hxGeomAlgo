@@ -1,5 +1,5 @@
 /**
- * Chaikin curve smoothing multi-step implementation.
+ * Chaikin curve smoothing, multi-step implementation.
  *
  * Based on:
  *
@@ -65,26 +65,39 @@ class WuYongZhang
 
   static public function smooth(poly:Poly, iterations:Int = 3, close:Bool = false):Poly
   {
-    if (iterations <= 0 || poly.length <= 2) return poly;
+    if (iterations <= 0 || poly.length <= 2) {
+      return poly.copy();
+    }
 
-    var P0 = poly;
+    var P0 = poly.copy();
     var k = iterations;
+    if (close) {
+      P0.push(P0[0]);
+      P0.push(P0[1]);
+    }
 
     buildCache(k);
 
     var smoothedPoints = new Poly();
-    var n0 = poly.length - 1;
+    var n0 = P0.length - 1;
     var newLength = Std.int(Math.pow(2, k) * n0 - Math.pow(2, k) + 2);
     smoothedPoints.resize(newLength);
 
     var factor1 = (Math.pow(2, -1) + Math.pow(2, -k - 1));
     var factor2 = (Math.pow(2, -1) - Math.pow(2, -k - 1));
 
-    var firstPoint = P0[0].clone().scale(factor1).add(P0[1].clone().scale(factor2));
-    smoothedPoints[0] = firstPoint;
+    if (false) {
+      P0.push(P0[0]);
+      P0.push(P0[1]);
+      smoothedPoints[0] = P0[0].clone();
+      smoothedPoints[newLength - 1] = P0[n0].clone();
+    } else {
+      var firstPoint = P0[0].clone().scale(factor1).add(P0[1].clone().scale(factor2));
+      smoothedPoints[0] = firstPoint;
 
-    var lastPoint = P0[n0 - 1].clone().scale(factor2).add(P0[n0].clone().scale(factor1));
-    smoothedPoints[newLength - 1] = lastPoint;
+      var lastPoint = P0[n0 - 1].clone().scale(factor2).add(P0[n0].clone().scale(factor1));
+      smoothedPoints[newLength - 1] = lastPoint;
+    }
 
     var pow2_k = Std.int(Math.pow(2, k));
     for (i in 0...n0 - 1) {
@@ -94,6 +107,9 @@ class WuYongZhang
       }
     }
 
+    if (close && smoothedPoints.length > 2) {
+      smoothedPoints.splice(newLength - 2, 2);
+    }
     return smoothedPoints;
   }
 }
