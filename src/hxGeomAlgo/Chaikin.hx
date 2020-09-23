@@ -22,13 +22,30 @@ using hxGeomAlgo.PolyTools;
 class Chaikin
 {
 
+  static public function smooth(poly:Poly, iterations:Int = 3, close:Bool = false, ratio:Float = .25):Poly
+  {
+    var smoothedPoints = _smooth(poly, iterations, close, ratio);
+
+    /*
+     * Now we have to deal with one corner case. In the case
+     * of open shapes, the first and last endpoints shouldn't
+     * be moved.
+     */
+    if (!close) {
+      smoothedPoints[0] = poly[0];
+      smoothedPoints[smoothedPoints.length - 1] = poly[poly.length - 1];
+    }
+
+    return smoothedPoints;
+  }
+
   static inline function cut(a:HxPoint, b:HxPoint, ratio:Float, newAB:Poly):Void
   {
     newAB[0] = PolyTools.lerpPoints(a, b, ratio);
     newAB[1] = PolyTools.lerpPoints(b, a, ratio);
   }
 
-  static public function smooth(poly:Poly, iterations:Int = 3, close:Bool = false, ratio:Float = .25):Poly
+  static function _smooth(poly:Poly, iterations:Int, close:Bool, ratio:Float):Poly
   {
     if (iterations <= 0 || poly.length <= 2) {
       return poly.copy();
@@ -62,29 +79,12 @@ class Chaikin
       // Step 3: Break it using our cut() function
       cut(a, b, ratio, newAB);
 
-      /*
-       * Now we have to deal with one corner case. In the case
-       * of open shapes, the first and last endpoints shouldn't
-       * be moved. However, in the case of closed shapes, we
-       * cut all edges on both ends.
-       */
-      if (!close && i == 0) {
-        // For the first point of open shapes, ignore vertex A
-        smoothedPoints.push(a.clone());
-        smoothedPoints.push(newAB[1]);
-      } else if (!close && i == numCorners - 1) {
-        // For the last point of open shapes, ignore vertex B
-        smoothedPoints.push(newAB[0]);
-        smoothedPoints.push(b.clone());
-      } else {
-        // For all other cases (i.e. interior edges of open
-        // shapes or edges of closed shapes), add both vertices
-        // returned by our cut() method
-        smoothedPoints.push(newAB[0]);
-        smoothedPoints.push(newAB[1]);
-      }
+      // For all edges add both vertices
+      // returned by our cut() method
+      smoothedPoints.push(newAB[0]);
+      smoothedPoints.push(newAB[1]);
     }
 
-    return smooth(smoothedPoints, iterations - 1, close, ratio);
+    return _smooth(smoothedPoints, iterations - 1, close, ratio);
   }
 }

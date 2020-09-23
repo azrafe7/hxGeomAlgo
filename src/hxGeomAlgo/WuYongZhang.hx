@@ -71,6 +71,7 @@ class WuYongZhang
 
     var P0 = poly.copy();
     var k = iterations;
+
     if (close) {
       P0.push(P0[0]);
       P0.push(P0[1]);
@@ -86,11 +87,9 @@ class WuYongZhang
     var factor1 = (Math.pow(2, -1) + Math.pow(2, -k - 1));
     var factor2 = (Math.pow(2, -1) - Math.pow(2, -k - 1));
 
-    if (false) {
-      P0.push(P0[0]);
-      P0.push(P0[1]);
-      smoothedPoints[0] = P0[0].clone();
-      smoothedPoints[newLength - 1] = P0[n0].clone();
+    if (!close) {
+      smoothedPoints[0] = poly[0].clone();
+      smoothedPoints[newLength - 1] = poly[poly.length - 1].clone();
     } else {
       var firstPoint = P0[0].clone().scale(factor1).add(P0[1].clone().scale(factor2));
       smoothedPoints[0] = firstPoint;
@@ -110,6 +109,7 @@ class WuYongZhang
     if (close && smoothedPoints.length > 2) {
       smoothedPoints.splice(newLength - 2, 2);
     }
+
     return smoothedPoints;
   }
 }

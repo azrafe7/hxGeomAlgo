@@ -238,8 +238,9 @@ class GeomAlgoTest extends Sprite {
     // CHAIKIN (CURVE SMOOTHING)
     setSlot(1, 0);
     startTime = Timer.stamp();
-    var smoothIterations = 4;
-    var closeCurve = true;
+    var smoothIterations = 3;
+    var closeCurve = false;
+    trace(curveToRefine);
     var smoothedCurveChaikin = Chaikin.smooth(curveToRefine, smoothIterations, closeCurve);
     trace('Chaikin       : ${Timer.stamp() - startTime}');
     g.lineStyle(THICKNESS, color = COLOR, ALPHA);
