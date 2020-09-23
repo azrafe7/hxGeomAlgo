@@ -10,7 +10,7 @@
 
 	<haxeflag name="-D" value="swf-script-timeout=60" />
 
-	<set name="SWF_VERSION" value="11.2" />
+	<set name="SWF_VERSION" value="11.3" />
 	<source path="src" />
 
 	<haxelib name="openfl" />
