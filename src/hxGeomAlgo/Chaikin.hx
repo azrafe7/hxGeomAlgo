@@ -31,7 +31,7 @@ class Chaikin
      * of open shapes, the first and last endpoints shouldn't
      * be moved.
      */
-    if (!close) {
+    if (!close && smoothedPoints.length > 2) {
       smoothedPoints[0] = poly[0];
       smoothedPoints[smoothedPoints.length - 1] = poly[poly.length - 1];
     }
