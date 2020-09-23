@@ -34,6 +34,13 @@
     - http://en.wikipedia.org/wiki/Marching_squares
     - https://github.com/deltaluca/nape (Luca Deltodesco)
     - https://github.com/scikit-image/scikit-image (scikit-image team)
- - Hertel-Mehlhorn (Convex Polygons from Arbitrary Triangulation) 
+ - Hertel-Mehlhorn (Convex Polygons from Arbitrary Triangulation)
     - https://github.com/ivanfratric/polypartition (Ivan Fratric)
     - http://www.philvaz.com/compgeom (Phil Porvaznik)
+ - Chaikin (Recursive Curve Smoothing)
+   - George Merrill Chaikin: [An algorithm for high-speed curve generation](https://sci-hub.tw/10.1016/0146-664X(74)90028-8) (1974)
+   - https://sighack.com/post/chaikin-curves (Manohar Vanga)
+ - Wu-Yong-Zhang-Zhang (Multi-step Chaikin Curve Smoothing)
+   - Ling Wu, Jun-Hai Yong, You-Wei Zhang, and Li Zhang: [Multi-step Subdivision Algorithm for Chaikin Curves](https://sci-hub.tw/10.1007/978-3-540-30497-5_188) (2004)
+   - http://win.doomitalia.it/varie/chaikin.pdf (Fabio Roman, 2009)
+

@@ -85,6 +85,19 @@ Based on:
  - https://github.com/ivanfratric/polypartition (CPP - by Ivan Fratric)
  - http://www.philvaz.com/compgeom (by Phil Porvaznik)
 
+#### [Chaikin (Recursive Curve Smoothing)](https://observablehq.com/@pamacha/chaikins-algorithm)
+
+Based on:
+
+ - George Merrill Chaikin: [An algorithm for high-speed curve generation](https://sci-hub.tw/10.1016/0146-664X(74)90028-8) (1974)
+ - https://sighack.com/post/chaikin-curves (Java - by Manohar Vanga)
+
+#### [Wu-Yong-Zhang-Zhang (Multi-step Chaikin Curve Smoothing)](https://observablehq.com/@pamacha/chaikins-algorithm)
+
+Based on:
+
+ - Ling Wu, Jun-Hai Yong, You-Wei Zhang, and Li Zhang: [Multi-step Subdivision Algorithm for Chaikin Curves](https://sci-hub.tw/10.1007/978-3-540-30497-5_188) (2004)
+ - http://win.doomitalia.it/varie/chaikin.pdf (Matlab - by Fabio Roman, 2009)
 
 ## Dependencies
 The only dependency is [hxPixels](https://github.com/azrafe7/hxPixels), and only for the algorithms needing access to pixels.
