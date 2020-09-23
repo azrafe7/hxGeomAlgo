@@ -20,6 +20,7 @@ import hxGeomAlgo.Debug;
 
 import haxe.Resource;
 import haxe.Timer;
+import haxe.io.Bytes;
 
 import hxPixels.Pixels;
 
@@ -569,9 +570,8 @@ class GeomAlgoTest extends Sprite {
   static public function savePNG(bmd:BitmapData, fileName:String) {
   #if (sys && (openfl && !nme))
     var ba:ByteArray = bmd.encode(bmd.rect, new PNGEncoderOptions());
-    var file:FileOutput = sys.io.File.write(fileName, true);
-    file.writeString(ba.toString());
-    file.close();
+    var bytes:Bytes = ba;
+    sys.io.File.saveBytes(fileName, bytes);
     trace('BitmapData saved as "${fileName}".');
   #end
   }
