@@ -5,7 +5,7 @@ Small collection of computational geometry algorithms in Haxe 3.3.
 
 ![](screenshot.png)
 
-<sup>[swf demo](https://rawgithub.com/azrafe7/hxGeomAlgo/master/bin/flash/debug/bin/OpenflDemo.swf) | [js demo](https://rawgithub.com/azrafe7/hxGeomAlgo/master/bin/html5/final/bin/index.html)</sup>
+<sup>[swf demo](https://rawgithub.com/azrafe7/hxGeomAlgo/master/bin/flash/bin/OpenflDemo.swf) | [js demo](https://rawgithub.com/azrafe7/hxGeomAlgo/master/bin/html5/bin/index.html)</sup>
 
 #### [Marching Squares (Contour Tracing)](https://en.wikipedia.org/w/index.php?title=Marching_squares&oldid=342542650)
 
