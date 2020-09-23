@@ -22,14 +22,10 @@ using hxGeomAlgo.PolyTools;
 class Chaikin
 {
 
-  static function cut(a:HxPoint, b:HxPoint, ratio:Float):Poly
+  static inline function cut(a:HxPoint, b:HxPoint, ratio:Float, newAB:Poly):Void
   {
-    var res = new Poly();
-
-    res.push(PolyTools.lerpPoints(a, b, ratio));
-    res.push(PolyTools.lerpPoints(b, a, ratio));
-
-    return res;
+    newAB[0] = PolyTools.lerpPoints(a, b, ratio);
+    newAB[1] = PolyTools.lerpPoints(b, a, ratio);
   }
 
   static public function smooth(poly:Poly, iterations:Int = 3, close:Bool = false, ratio:Float = .25):Poly
@@ -39,6 +35,8 @@ class Chaikin
     }
 
     var smoothedPoints = new Poly();
+    var newAB = new Poly();
+    newAB.resize(2);
 
     if (ratio > 0.5) ratio = 1.0 - ratio;
 
@@ -62,7 +60,7 @@ class Chaikin
       var b = poly.at(i + 1);
 
       // Step 3: Break it using our cut() function
-      var n = cut(a, b, ratio);
+      cut(a, b, ratio, newAB);
 
       /*
        * Now we have to deal with one corner case. In the case
@@ -73,17 +71,17 @@ class Chaikin
       if (!close && i == 0) {
         // For the first point of open shapes, ignore vertex A
         smoothedPoints.push(a.clone());
-        smoothedPoints.push(n[1]);
+        smoothedPoints.push(newAB[1]);
       } else if (!close && i == numCorners - 1) {
         // For the last point of open shapes, ignore vertex B
-        smoothedPoints.push(n[0]);
+        smoothedPoints.push(newAB[0]);
         smoothedPoints.push(b.clone());
       } else {
         // For all other cases (i.e. interior edges of open
         // shapes or edges of closed shapes), add both vertices
         // returned by our cut() method
-        smoothedPoints.push(n[0]);
-        smoothedPoints.push(n[1]);
+        smoothedPoints.push(newAB[0]);
+        smoothedPoints.push(newAB[1]);
       }
     }
 
