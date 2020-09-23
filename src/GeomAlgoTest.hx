@@ -229,17 +229,19 @@ class GeomAlgoTest extends Sprite {
 
     // CHAIKIN (CONTROL POLY)
     var curveToRefine = simplifiedPolyRDP.slice(0, -1); // remove last point
+    /*
     setSlot(1, 1);
     g.lineStyle(THICKNESS, color = COLOR, ALPHA);
     drawPaths([curveToRefine], X + clipRect.x, Y + clipRect.y, set({fill:false}));
     drawPoints(curveToRefine, X + clipRect.x, Y + clipRect.y, 2);
     addChild(getTextField("Chaikin\nControl Poly\n" + curveToRefine.length + " pts", X, Y));
+    */
 
     // CHAIKIN (CURVE SMOOTHING)
     setSlot(1, 0);
     startTime = Timer.stamp();
-    var smoothIterations = 3;
-    var closeCurve = false;
+    var smoothIterations = 2;
+    var closeCurve = true;
     trace(curveToRefine);
     var smoothedCurveChaikin = Chaikin.smooth(curveToRefine, smoothIterations, closeCurve);
     trace('Chaikin       : ${Timer.stamp() - startTime}');
@@ -250,13 +252,9 @@ class GeomAlgoTest extends Sprite {
       drawPaths([smoothedCurveChaikin], X + clipRect.x, Y + clipRect.y, set({fill:false}));
       drawPoints(smoothedCurveChaikin, X + clipRect.x, Y + clipRect.y, 2);
     }
-    addChild(getTextField('Chaikin\nSmooth [' + (closeCurve ? "clsd" : "open") + ']\n k:${smoothIterations} ' + smoothedCurveChaikin.length + " pts", X, Y));
+    addChild(getTextField('Chaikin/WuYongZhang\nSmooth [' + (closeCurve ? "clsd" : "open") + ']\n k:${smoothIterations} ' + smoothedCurveChaikin.length + " pts", X, Y));
 
     // WU-YONG-ZHANG (CHAIKIN CURVE SMOOTHING)
-    //var testPoly = PolyTools.parsePoints("[0 0; 1 0; 2 1; 3 1]");
-    //var smoothed = WuYongZhang.smooth(testPoly, 2);
-    //dumpPoly(smoothed);
-
     setSlot(1, 0);
     startTime = Timer.stamp();
     var smoothedCurveWYZ = WuYongZhang.smooth(curveToRefine, smoothIterations, closeCurve);
@@ -270,17 +268,12 @@ class GeomAlgoTest extends Sprite {
       g.lineStyle(THICKNESS, color = 0xFFFF00, .7);
       drawPoints(smoothedCurveWYZ, X + clipRect.x + offsetCurveWYZ.x, Y + clipRect.y + offsetCurveWYZ.y, 2);
     }
-    addChild(getTextField('WuYongZhang\nSmooth [' + (closeCurve ? "clsd" : "open") + ']\n k:${smoothIterations} ' + smoothedCurveWYZ.length + " pts", X, Y));
+    addChild(getTextField('Chaikin/WuYongZhang\nSmooth [' + (closeCurve ? "clsd" : "open") + ']\n k:${smoothIterations} ' + smoothedCurveWYZ.length + " pts", X, Y));
 
-    if (smoothedCurveChaikin.length < 1000) {
-      trace("smoothedCurveWYZ    :", smoothedCurveWYZ.toString());
-      trace("smoothedCurveChaikin:", smoothedCurveChaikin.toString());
-    }
-    trace(smoothedCurveChaikin.toString() == smoothedCurveWYZ.toString());
-    return;
+    Debug.assert(smoothedCurveChaikin.toString() == smoothedCurveWYZ.toString());
 
     // EARCUT TRIANGULATION
-    setSlot(1, 3);
+    setSlot(1, 1);
     startTime = Timer.stamp();
     triangulation = EarCut.triangulate(simplifiedPolyRDP);
     trace('ECTriang      : ${Timer.stamp() - startTime}');

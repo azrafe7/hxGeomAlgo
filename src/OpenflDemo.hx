@@ -29,7 +29,7 @@ class OpenflDemo extends Sprite {
     "assets/9x9_holed_square.png",  // 15
   ];
 
-  static var currAssetIdx:Int = 12;
+  static var currAssetIdx:Int = 0;
   static var asset:String;
   static var geomAlgoTest:GeomAlgoTest;
 
