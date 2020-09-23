@@ -75,14 +75,12 @@ class OpenflDemo extends Sprite {
     }
 
     // screenshot
-  #if sys
     if (e.charCode == "s".code) {
       var bounds = geomAlgoTest.getBounds(geomAlgoTest);
       var bmd = new BitmapData(Math.ceil(bounds.right), Math.ceil(bounds.bottom), true, 0);
       bmd.draw(geomAlgoTest);
       GeomAlgoTest.savePNG(bmd, "capture.png");
     }
-  #end
 
     var deltaIdx = 0;
     var moveDelta = 12;

@@ -568,11 +568,17 @@ class GeomAlgoTest extends Sprite {
   }
 
   static public function savePNG(bmd:BitmapData, fileName:String) {
-  #if (sys && (openfl && !nme))
+    trace('savePNG("${fileName}")...');
     var ba:ByteArray = bmd.encode(bmd.rect, new PNGEncoderOptions());
+  #if (sys && (openfl && !nme))
     var bytes:Bytes = ba;
     sys.io.File.saveBytes(fileName, bytes);
     trace('BitmapData saved as "${fileName}".');
+  #else
+    var bytes:Bytes = Bytes.ofData(ba);
+    var b64Encoded = haxe.crypto.Base64.encode(bytes);
+    var len = b64Encoded.length;
+    trace('BitmapData base64-encoded ($len chars):\ndata:image/png;base64,$b64Encoded');
   #end
   }
 
