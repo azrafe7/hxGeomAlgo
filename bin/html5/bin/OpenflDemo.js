@@ -894,13 +894,13 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "214";
+	app.meta.h["build"] = "215";
 	app.meta.h["company"] = "azrafe7";
 	app.meta.h["file"] = "OpenflDemo";
-	app.meta.h["name"] = "Test";
+	app.meta.h["name"] = "demo";
 	app.meta.h["packageName"] = "net.azrafe7.geomAlgo";
 	app.meta.h["version"] = "1.0.0";
-	var attributes = { allowHighDPI : false, alwaysOnTop : false, borderless : false, element : null, frameRate : 60, height : 650, hidden : false, maximized : false, minimized : false, parameters : { }, resizable : true, title : "Test", width : 900, x : null, y : null};
+	var attributes = { allowHighDPI : false, alwaysOnTop : false, borderless : false, element : null, frameRate : 60, height : 650, hidden : false, maximized : false, minimized : false, parameters : { }, resizable : true, title : "demo", width : 900, x : null, y : null};
 	attributes.context = { antialiasing : 0, background : 2236962, colorDepth : 32, depth : true, hardware : true, stencil : true, type : null, vsync : false};
 	if(app.__window == null) {
 		if(config != null) {
@@ -32420,7 +32420,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 488367;
+	this.version = 126736;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";
