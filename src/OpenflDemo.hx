@@ -51,7 +51,7 @@ class OpenflDemo extends Sprite {
     flash.Lib.current.stage.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 
     asset = assets[currAssetIdx];
-    geomAlgoTest = new GeomAlgoTest(asset);
+    geomAlgoTest = new GeomAlgoTest('$asset', '$currAssetIdx/${assets.length}:');
 
     flash.Lib.current.addChild(geomAlgoTest);
   }
@@ -118,7 +118,7 @@ class OpenflDemo extends Sprite {
 
       asset = assets[currAssetIdx];
       flash.Lib.current.removeChild(geomAlgoTest);
-      geomAlgoTest = new GeomAlgoTest(asset);
+      geomAlgoTest = new GeomAlgoTest('$asset', '$currAssetIdx/${assets.length}:');
       flash.Lib.current.addChild(geomAlgoTest);
     }
   }

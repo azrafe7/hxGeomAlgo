@@ -112,7 +112,7 @@ class GeomAlgoTest extends Sprite {
   var text:TextField;
   var labelBMP:Bitmap;
 
-  public function new(asset:String) {
+  public function new(asset:String, prefix:String = "") {
     super();
 
     var sprite = new Sprite();
@@ -126,8 +126,8 @@ class GeomAlgoTest extends Sprite {
     if (HEIGHT < 100 + 80) HEIGHT = 100 + 80;
 
     //  ASSET IMAGE
-    var assetTF = getTextField("move: ARROWS/GHJY  |  cycle: CTRL+ARROWS  |  zoom: +/-  |  [" + asset + "]", 0, 5 * TEXT_SIZE);
-    trace("\n\n[" + asset + "]\n");
+    var assetTF = getTextField('move: ARROWS/GHJY  |  cycle: CTRL+ARROWS  |  zoom: +/-  |  [$prefix$asset]', 0, 5 * TEXT_SIZE);
+    trace('\n\n[$asset]\n');
     assetTF.width = flash.Lib.current.stage.stageWidth;
     var fmt = assetTF.getTextFormat();
     fmt.align = TextFormatAlign.LEFT;
