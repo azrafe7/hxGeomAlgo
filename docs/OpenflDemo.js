@@ -894,7 +894,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "225";
+	app.meta.h["build"] = "229";
 	app.meta.h["company"] = "azrafe7";
 	app.meta.h["file"] = "OpenflDemo";
 	app.meta.h["name"] = "demo";
@@ -4545,9 +4545,10 @@ var GeomAlgoTest = function(asset,prefix) {
 	haxe_Log.trace("Chaikin       : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 248, className : "GeomAlgoTest", methodName : "new"});
 	this.g.lineStyle(this.THICKNESS,this.color = this.COLOR,this.ALPHA);
 	if(closeCurve) {
-		this.drawPolys([smoothedCurveChaikin],this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showPoints : false, fill : false}));
+		this.drawPolys([smoothedCurveChaikin],this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showPoints : true, fill : false}));
 	} else {
 		this.drawPaths([smoothedCurveChaikin],this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ fill : false}));
+		this.drawPoints(smoothedCurveChaikin,this.X + this.clipRect.x,this.Y + this.clipRect.y,2);
 	}
 	this.addChild(this.getTextField("Chaikin/WuYongZhang\nSmooth [" + (closeCurve ? "clsd" : "open") + ("]\n k:" + smoothIterations + " ") + smoothedCurveChaikin.length + " pts",this.X,this.Y));
 	this.setSlot(1,0);
@@ -4555,12 +4556,13 @@ var GeomAlgoTest = function(asset,prefix) {
 	var smoothedCurveWYZ = hxGeomAlgo_WuYongZhang.smooth(curveToRefine,smoothIterations,closeCurve);
 	var offsetCurveWYZ = hxGeomAlgo_HxPoint._new(0,0);
 	haxe_Log.trace("WuYongZhang   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 263, className : "GeomAlgoTest", methodName : "new"});
-	this.g.lineStyle(this.THICKNESS,this.color = 16776960,.7);
+	this.g.lineStyle(this.THICKNESS,this.color = 16776960,.5);
 	if(closeCurve) {
-		this.drawPolys([smoothedCurveWYZ],this.X + this.clipRect.x + offsetCurveWYZ.x,this.Y + this.clipRect.y + offsetCurveWYZ.y,this.set({ showPoints : false, fill : false}));
+		this.drawPolys([smoothedCurveWYZ],this.X + this.clipRect.x + offsetCurveWYZ.x,this.Y + this.clipRect.y + offsetCurveWYZ.y,this.set({ showPoints : true, fill : false}));
 	} else {
 		this.drawPaths([smoothedCurveWYZ],this.X + this.clipRect.x + offsetCurveWYZ.x,this.Y + this.clipRect.y + offsetCurveWYZ.y,this.set({ fill : false}));
-		this.g.lineStyle(this.THICKNESS,this.color = 16776960,.7);
+		this.g.lineStyle(this.THICKNESS,this.color = 16776960,.5);
+		this.drawPoints(smoothedCurveWYZ,this.X + this.clipRect.x + offsetCurveWYZ.x,this.Y + this.clipRect.y + offsetCurveWYZ.y,2);
 	}
 	this.addChild(this.getTextField("Chaikin/WuYongZhang\nSmooth [" + (closeCurve ? "clsd" : "open") + ("]\n k:" + smoothIterations + " ") + smoothedCurveWYZ.length + " pts",this.X,this.Y));
 	hxGeomAlgo_Debug.assert(smoothedCurveChaikin.toString() == smoothedCurveWYZ.toString(),null,{ fileName : "src/GeomAlgoTest.hx", lineNumber : 274, className : "GeomAlgoTest", methodName : "new"});
@@ -32577,7 +32579,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 318057;
+	this.version = 837248;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";
