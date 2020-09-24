@@ -894,13 +894,13 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "215";
+	app.meta.h["build"] = "225";
 	app.meta.h["company"] = "azrafe7";
 	app.meta.h["file"] = "OpenflDemo";
 	app.meta.h["name"] = "demo";
 	app.meta.h["packageName"] = "net.azrafe7.geomAlgo";
 	app.meta.h["version"] = "1.0.0";
-	var attributes = { allowHighDPI : false, alwaysOnTop : false, borderless : false, element : null, frameRate : 60, height : 650, hidden : false, maximized : false, minimized : false, parameters : { }, resizable : true, title : "demo", width : 900, x : null, y : null};
+	var attributes = { allowHighDPI : false, alwaysOnTop : false, borderless : false, element : null, frameRate : 60, height : 650, hidden : false, maximized : false, minimized : false, parameters : { }, resizable : true, title : "demo", width : 772, x : null, y : null};
 	attributes.context = { antialiasing : 0, background : 2236962, colorDepth : 32, depth : true, hardware : true, stencil : true, type : null, vsync : false};
 	if(app.__window == null) {
 		if(config != null) {
@@ -1340,6 +1340,7 @@ lime_utils_ObjectPool.prototype = {
 		if(!this.__pool.exists(object)) {
 			this.__pool.set(object,false);
 			this.clean(object);
+			this.__pool.set(object,false);
 			if(this.__inactiveObject0 == null) {
 				this.__inactiveObject0 = object;
 			} else if(this.__inactiveObject1 == null) {
@@ -1382,6 +1383,7 @@ lime_utils_ObjectPool.prototype = {
 					this.__inactiveObject1 = this.__inactiveObjectList.pop();
 				}
 			}
+			this.__pool.set(object1,true);
 			this.inactiveObjects--;
 			this.activeObjects++;
 			object = object1;
@@ -1395,9 +1397,15 @@ lime_utils_ObjectPool.prototype = {
 		return object;
 	}
 	,release: function(object) {
+		if(!this.__pool.exists(object)) {
+			lime_utils_Log.error("Object is not a member of the pool",{ fileName : "lime/utils/ObjectPool.hx", lineNumber : 102, className : "lime.utils.ObjectPool", methodName : "release"});
+		} else if(!this.__pool.get(object)) {
+			lime_utils_Log.error("Object has already been released",{ fileName : "lime/utils/ObjectPool.hx", lineNumber : 106, className : "lime.utils.ObjectPool", methodName : "release"});
+		}
 		this.activeObjects--;
 		if(this.__size == null || this.activeObjects + this.inactiveObjects < this.__size) {
 			this.clean(object);
+			this.__pool.set(object,false);
 			if(this.__inactiveObject0 == null) {
 				this.__inactiveObject0 = object;
 			} else if(this.__inactiveObject1 == null) {
@@ -1427,6 +1435,7 @@ lime_utils_ObjectPool.prototype = {
 		}
 	}
 	,__addInactive: function(object) {
+		this.__pool.set(object,false);
 		if(this.__inactiveObject0 == null) {
 			this.__inactiveObject0 = object;
 		} else if(this.__inactiveObject1 == null) {
@@ -1453,6 +1462,7 @@ lime_utils_ObjectPool.prototype = {
 				this.__inactiveObject1 = this.__inactiveObjectList.pop();
 			}
 		}
+		this.__pool.set(object,true);
 		this.inactiveObjects--;
 		this.activeObjects++;
 		return object;
@@ -1530,7 +1540,8 @@ $hxClasses["haxe.IMap"] = haxe_IMap;
 haxe_IMap.__name__ = "haxe.IMap";
 haxe_IMap.__isInterface__ = true;
 haxe_IMap.prototype = {
-	set: null
+	get: null
+	,set: null
 	,exists: null
 	,remove: null
 	,__class__: haxe_IMap
@@ -1550,6 +1561,9 @@ haxe_ds_ObjectMap.prototype = {
 		}
 		this.h[id] = value;
 		this.h.__keys__[id] = key;
+	}
+	,get: function(key) {
+		return this.h[key.__id__];
 	}
 	,exists: function(key) {
 		return this.h.__keys__[key.__id__] != null;
@@ -4167,7 +4181,7 @@ var OpenflDemo = function() {
 	openfl_Lib.get_current().stage.addEventListener("mouseWheel",$bind(this,this.onMouseWheel));
 	openfl_Lib.get_current().stage.addEventListener("enterFrame",$bind(this,this.onEnterFrame));
 	OpenflDemo.asset = OpenflDemo.assets[OpenflDemo.currAssetIdx];
-	OpenflDemo.geomAlgoTest = new GeomAlgoTest(OpenflDemo.asset);
+	OpenflDemo.geomAlgoTest = new GeomAlgoTest("" + OpenflDemo.asset,"" + OpenflDemo.currAssetIdx + "/" + OpenflDemo.assets.length + ":");
 	openfl_Lib.get_current().addChild(OpenflDemo.geomAlgoTest);
 };
 $hxClasses["OpenflDemo"] = OpenflDemo;
@@ -4203,6 +4217,12 @@ OpenflDemo.prototype = $extend(openfl_display_Sprite.prototype,{
 			_g.set_scaleX(_g.get_scaleX() * .8);
 			var _g = openfl_Lib.get_current();
 			_g.set_scaleY(_g.get_scaleY() * .8);
+		}
+		if(e.charCode == 115) {
+			var bounds = OpenflDemo.geomAlgoTest.getBounds(OpenflDemo.geomAlgoTest);
+			var bmd = new openfl_display_BitmapData(Math.ceil(bounds.get_right()),Math.ceil(bounds.get_bottom()),true,0);
+			bmd.draw(OpenflDemo.geomAlgoTest);
+			GeomAlgoTest.savePNG(bmd,"capture.png");
 		}
 		var deltaIdx = 0;
 		var moveDelta = 12;
@@ -4244,7 +4264,7 @@ OpenflDemo.prototype = $extend(openfl_display_Sprite.prototype,{
 			OpenflDemo.currAssetIdx = (OpenflDemo.currAssetIdx + deltaIdx + OpenflDemo.assets.length) % OpenflDemo.assets.length;
 			OpenflDemo.asset = OpenflDemo.assets[OpenflDemo.currAssetIdx];
 			openfl_Lib.get_current().removeChild(OpenflDemo.geomAlgoTest);
-			OpenflDemo.geomAlgoTest = new GeomAlgoTest(OpenflDemo.asset);
+			OpenflDemo.geomAlgoTest = new GeomAlgoTest("" + OpenflDemo.asset,"" + OpenflDemo.currAssetIdx + "/" + OpenflDemo.assets.length + ":");
 			openfl_Lib.get_current().addChild(OpenflDemo.geomAlgoTest);
 		}
 	}
@@ -4382,7 +4402,10 @@ EReg.prototype = {
 	}
 	,__class__: EReg
 };
-var GeomAlgoTest = function(asset) {
+var GeomAlgoTest = function(asset,prefix) {
+	if(prefix == null) {
+		prefix = "";
+	}
 	this.DEFAULT_DRAW_SETTINGS = { showPoints : false, showLabels : false, showCentroids : false, showSteinerPoints : true, showReflexPoints : false, showArrows : false, showPIA : false, fill : true};
 	this.START_POINT = hxGeomAlgo_HxPoint._new(20,90);
 	this.TEXT_OUTLINE = new openfl_filters_GlowFilter(-16777216,1,2,2,6);
@@ -4410,8 +4433,8 @@ var GeomAlgoTest = function(asset) {
 	if(this.HEIGHT < 180) {
 		this.HEIGHT = 180;
 	}
-	var assetTF = this.getTextField("move: ARROWS/GHJY  |  cycle: CTRL+ARROWS  |  zoom: +/-  |  [" + asset + "]",0,5 * this.TEXT_SIZE);
-	haxe_Log.trace("\n\n[" + asset + "]\n",{ fileName : "src/GeomAlgoTest.hx", lineNumber : 129, className : "GeomAlgoTest", methodName : "new"});
+	var assetTF = this.getTextField("move: ARROWS/GHJY  |  cycle: CTRL+ARROWS  |  zoom: +/-  |  [" + prefix + asset + "]",0,5 * this.TEXT_SIZE);
+	haxe_Log.trace("\n\n[" + asset + "]\n",{ fileName : "src/GeomAlgoTest.hx", lineNumber : 130, className : "GeomAlgoTest", methodName : "new"});
 	assetTF.set_width(openfl_Lib.get_current().stage.stageWidth);
 	var fmt = assetTF.getTextFormat();
 	fmt.align = 3;
@@ -4419,7 +4442,7 @@ var GeomAlgoTest = function(asset) {
 	this.addChild(assetTF);
 	var versionTF = this.getTextField("hxGeomAlgo v" + hxGeomAlgo_Version.toString(),0,5 * this.TEXT_SIZE);
 	versionTF.set_autoSize(1);
-	versionTF.set_x(openfl_Lib.get_current().stage.stageWidth - 140);
+	versionTF.set_x(openfl_Lib.get_current().stage.stageWidth - 130);
 	this.addChild(versionTF);
 	this.setSlot(0,0);
 	this.addChildAt(this.originalBitmap = new openfl_display_Bitmap(this.originalBMD),0);
@@ -4432,19 +4455,19 @@ var GeomAlgoTest = function(asset) {
 	var startTime = new Date().getTime() / 1000;
 	this.marchingSquares = new hxGeomAlgo_MarchingSquares(Pixels.fromBitmapData(this.originalBMD),1);
 	this.perimeter = this.marchingSquares.march();
-	haxe_Log.trace("MarchSqrs     : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 156, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("MarchSqrs     : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 157, className : "GeomAlgoTest", methodName : "new"});
 	this.drawPoly(this.perimeter,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ fill : false}));
 	this.addChild(this.getTextField("MarchSqrs\n" + this.perimeter.length + " pts",this.X,this.Y));
 	this.setSlot(0,4);
 	startTime = new Date().getTime() / 1000;
 	this.simplifiedPolyRDP = hxGeomAlgo_RamerDouglasPeucker.simplify(this.perimeter,1.5);
-	haxe_Log.trace("Doug-Peuck    : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 173, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("Doug-Peuck    : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 174, className : "GeomAlgoTest", methodName : "new"});
 	this.drawPoly(this.simplifiedPolyRDP,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showPoints : true, fill : false}));
 	this.addChild(this.getTextField("Doug-Peuck\n" + this.simplifiedPolyRDP.length + " pts",this.X,this.Y));
 	this.setSlot(0,5);
 	startTime = new Date().getTime() / 1000;
 	var simplifiedPolyVW = hxGeomAlgo_VisvalingamWhyatt.simplify(this.perimeter,hxGeomAlgo_SimplificationMethod.MaxPoints(this.simplifiedPolyRDP.length));
-	haxe_Log.trace("Visv-Whyatt   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 181, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("Visv-Whyatt   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 182, className : "GeomAlgoTest", methodName : "new"});
 	this.drawPoly(simplifiedPolyVW,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showPoints : true, fill : false}));
 	this.addChild(this.getTextField("Visv-Whyatt\n" + simplifiedPolyVW.length + " pts",this.X,this.Y));
 	this.setSlot(0,2);
@@ -4475,14 +4498,14 @@ var GeomAlgoTest = function(asset) {
 		++_g;
 		pts += c.length;
 	}
-	haxe_Log.trace("IsoContours   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 205, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("IsoContours   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 206, className : "GeomAlgoTest", methodName : "new"});
 	this.drawPaths(contours,this.X,this.Y,this.DEFAULT_DRAW_SETTINGS);
 	this.addChild(this.getTextField("IsoContours\n" + pts + " pts\n" + contours.length + " cntrs",this.X,this.Y));
 	this.setSlot(0,3);
 	startTime = new Date().getTime() / 1000;
 	var labeler = new CustomLabeler(Pixels.fromBitmapData(this.originalBMD),1,true,hxGeomAlgo_Connectivity.EIGHT_CONNECTED,true);
 	labeler.run();
-	haxe_Log.trace("CCLabeler     : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 214, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("CCLabeler     : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 215, className : "GeomAlgoTest", methodName : "new"});
 	this.labelBMP = new openfl_display_Bitmap(new openfl_display_BitmapData(labeler.labelMap.width,labeler.labelMap.height,true,0));
 	this.addChildAt(this.labelBMP,0);
 	this.labelBMP.set_x(this.X + this.clipRect.x);
@@ -4517,65 +4540,63 @@ var GeomAlgoTest = function(asset) {
 	startTime = new Date().getTime() / 1000;
 	var smoothIterations = 2;
 	var closeCurve = true;
-	haxe_Log.trace(curveToRefine,{ fileName : "src/GeomAlgoTest.hx", lineNumber : 245, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace(curveToRefine,{ fileName : "src/GeomAlgoTest.hx", lineNumber : 246, className : "GeomAlgoTest", methodName : "new"});
 	var smoothedCurveChaikin = hxGeomAlgo_Chaikin.smooth(curveToRefine,smoothIterations,closeCurve);
-	haxe_Log.trace("Chaikin       : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 247, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("Chaikin       : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 248, className : "GeomAlgoTest", methodName : "new"});
 	this.g.lineStyle(this.THICKNESS,this.color = this.COLOR,this.ALPHA);
 	if(closeCurve) {
-		this.drawPolys([smoothedCurveChaikin],this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showPoints : true, fill : false}));
+		this.drawPolys([smoothedCurveChaikin],this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showPoints : false, fill : false}));
 	} else {
 		this.drawPaths([smoothedCurveChaikin],this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ fill : false}));
-		this.drawPoints(smoothedCurveChaikin,this.X + this.clipRect.x,this.Y + this.clipRect.y,2);
 	}
 	this.addChild(this.getTextField("Chaikin/WuYongZhang\nSmooth [" + (closeCurve ? "clsd" : "open") + ("]\n k:" + smoothIterations + " ") + smoothedCurveChaikin.length + " pts",this.X,this.Y));
 	this.setSlot(1,0);
 	startTime = new Date().getTime() / 1000;
 	var smoothedCurveWYZ = hxGeomAlgo_WuYongZhang.smooth(curveToRefine,smoothIterations,closeCurve);
 	var offsetCurveWYZ = hxGeomAlgo_HxPoint._new(0,0);
-	haxe_Log.trace("WuYongZhang   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 262, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("WuYongZhang   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 263, className : "GeomAlgoTest", methodName : "new"});
 	this.g.lineStyle(this.THICKNESS,this.color = 16776960,.7);
 	if(closeCurve) {
-		this.drawPolys([smoothedCurveWYZ],this.X + this.clipRect.x + offsetCurveWYZ.x,this.Y + this.clipRect.y + offsetCurveWYZ.y,this.set({ showPoints : true, fill : false}));
+		this.drawPolys([smoothedCurveWYZ],this.X + this.clipRect.x + offsetCurveWYZ.x,this.Y + this.clipRect.y + offsetCurveWYZ.y,this.set({ showPoints : false, fill : false}));
 	} else {
 		this.drawPaths([smoothedCurveWYZ],this.X + this.clipRect.x + offsetCurveWYZ.x,this.Y + this.clipRect.y + offsetCurveWYZ.y,this.set({ fill : false}));
 		this.g.lineStyle(this.THICKNESS,this.color = 16776960,.7);
-		this.drawPoints(smoothedCurveWYZ,this.X + this.clipRect.x + offsetCurveWYZ.x,this.Y + this.clipRect.y + offsetCurveWYZ.y,2);
 	}
 	this.addChild(this.getTextField("Chaikin/WuYongZhang\nSmooth [" + (closeCurve ? "clsd" : "open") + ("]\n k:" + smoothIterations + " ") + smoothedCurveWYZ.length + " pts",this.X,this.Y));
-	var cond = smoothedCurveChaikin.toString() == smoothedCurveWYZ.toString();
+	hxGeomAlgo_Debug.assert(smoothedCurveChaikin.toString() == smoothedCurveWYZ.toString(),null,{ fileName : "src/GeomAlgoTest.hx", lineNumber : 274, className : "GeomAlgoTest", methodName : "new"});
 	this.setSlot(1,1);
 	startTime = new Date().getTime() / 1000;
 	this.triangulation = hxGeomAlgo_EarCut.triangulate(this.simplifiedPolyRDP);
-	haxe_Log.trace("ECTriang      : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 279, className : "GeomAlgoTest", methodName : "new"});
-	haxe_Log.trace("  " + this.testOrientation(this.triangulation),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 280, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.triangulation),this.testConvex(this.triangulation)]});
+	haxe_Log.trace("ECTriang      : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 280, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("  " + this.testOrientation(this.triangulation),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 281, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.triangulation),this.testConvex(this.triangulation)]});
 	this.drawPolys(this.triangulation,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.DEFAULT_DRAW_SETTINGS);
 	this.addChild(this.getTextField("EarCut\nTriang\n" + this.triangulation.length + " tris",this.X,this.Y));
 	this.setSlot(1,2);
 	startTime = new Date().getTime() / 1000;
 	this.decomposition = hxGeomAlgo_EarCut.polygonize(this.triangulation);
-	haxe_Log.trace("ECDecomp      : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 288, className : "GeomAlgoTest", methodName : "new"});
-	haxe_Log.trace("  " + this.testOrientation(this.decomposition),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 289, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.decomposition),this.testConvex(this.decomposition)]});
+	haxe_Log.trace("ECDecomp      : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 289, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("  " + this.testOrientation(this.decomposition),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 290, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.decomposition),this.testConvex(this.decomposition)]});
 	this.drawPolys(this.decomposition,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showCentroids : true}));
 	this.addChild(this.getTextField("EarCut\nDecomp\n" + this.decomposition.length + " polys",this.X,this.Y));
 	this.setSlot(3,1);
 	startTime = new Date().getTime() / 1000;
 	this.decomposition = hxGeomAlgo_HertelMehlhorn.polygonize(this.triangulation);
-	haxe_Log.trace("HMEarCut      : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 297, className : "GeomAlgoTest", methodName : "new"});
-	haxe_Log.trace("  " + this.testOrientation(this.decomposition),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 298, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.decomposition),this.testConvex(this.decomposition)]});
+	haxe_Log.trace("HMEarCut      : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 298, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("  " + this.testOrientation(this.decomposition),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 299, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.decomposition),this.testConvex(this.decomposition)]});
 	this.drawPolys(this.decomposition,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showCentroids : true}));
 	this.addChild(this.getTextField("Hert-Mehl\n(EarCut)\n" + this.decomposition.length + " polys",this.X,this.Y));
 	this.setSlot(1,3);
 	startTime = new Date().getTime() / 1000;
 	this.decomposition = hxGeomAlgo_Bayazit.decomposePoly(this.simplifiedPolyRDP);
-	haxe_Log.trace("BayazDecomp   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 306, className : "GeomAlgoTest", methodName : "new"});
-	haxe_Log.trace("  " + this.testOrientation(this.decomposition),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 307, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.decomposition),this.testConvex(this.decomposition)]});
+	haxe_Log.trace("BayazDecomp   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 307, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("  " + this.testOrientation(this.decomposition),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 308, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.decomposition),this.testConvex(this.decomposition)]});
 	this.drawDecompositionBayazit(this.decomposition,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showCentroids : true}));
 	this.addChild(this.getTextField("Bayazit\nDecomp\n" + this.decomposition.length + " polys",this.X,this.Y));
 	this.setSlot(1,4);
 	startTime = new Date().getTime() / 1000;
 	this.decomposition = hxGeomAlgo_SnoeyinkKeil.decomposePoly(this.simplifiedPolyRDP);
-	haxe_Log.trace("SnoeKeilDecomp: " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 315, className : "GeomAlgoTest", methodName : "new"});
-	haxe_Log.trace("  " + this.testOrientation(this.decomposition),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 316, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.decomposition),this.testConvex(this.decomposition)]});
+	haxe_Log.trace("SnoeKeilDecomp: " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 316, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("  " + this.testOrientation(this.decomposition),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 317, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.decomposition),this.testConvex(this.decomposition)]});
 	this.drawPolys(this.decomposition,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showCentroids : true}));
 	this.addChild(this.getTextField("Snoeyink-Keil\nMin Decomp\n" + this.decomposition.length + " polys",this.X,this.Y));
 	this.setSlot(1,5);
@@ -4595,7 +4616,7 @@ var GeomAlgoTest = function(asset) {
 		_g.push(this.simplifiedPolyRDP[visIndices[i]]);
 	}
 	var visVertices = _g;
-	haxe_Log.trace("Visisibility  : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 341, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("Visisibility  : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 342, className : "GeomAlgoTest", methodName : "new"});
 	this.g.lineStyle(this.THICKNESS,this.color = 65280);
 	this.drawPoints(visVertices,this.X + this.clipRect.x,this.Y + this.clipRect.y);
 	this.g.lineStyle(this.THICKNESS,this.color = 255);
@@ -4617,9 +4638,9 @@ var GeomAlgoTest = function(asset) {
 	var flatContours = _g;
 	startTime = new Date().getTime() / 1000;
 	var res = hxGeomAlgo_Tess2.tesselate(flatContours,null,resultType,polySize);
-	haxe_Log.trace("Tess2Triang   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 357, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("Tess2Triang   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 358, className : "GeomAlgoTest", methodName : "new"});
 	var polys = hxGeomAlgo_Tess2.convertResult(res.vertices,res.elements,resultType,polySize);
-	haxe_Log.trace("  " + this.testOrientation(polys),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 359, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(polys),this.testConvex(polys)]});
+	haxe_Log.trace("  " + this.testOrientation(polys),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 360, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(polys),this.testConvex(polys)]});
 	var _g = 0;
 	while(_g < polys.length) {
 		var p = polys[_g];
@@ -4630,8 +4651,8 @@ var GeomAlgoTest = function(asset) {
 	this.setSlot(3,2);
 	startTime = new Date().getTime() / 1000;
 	this.decomposition = hxGeomAlgo_HertelMehlhorn.polygonize(polys);
-	haxe_Log.trace("HMTess2      : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 367, className : "GeomAlgoTest", methodName : "new"});
-	haxe_Log.trace("  " + this.testOrientation(this.decomposition),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 368, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.decomposition),this.testConvex(this.decomposition)]});
+	haxe_Log.trace("HMTess2      : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 368, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("  " + this.testOrientation(this.decomposition),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 369, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.decomposition),this.testConvex(this.decomposition)]});
 	this.drawPolys(this.decomposition,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showCentroids : true}));
 	this.addChild(this.getTextField("Hert-Mehl\n(Tess2)\n" + this.decomposition.length + " polys",this.X,this.Y));
 	this.setSlot(2,0);
@@ -4639,23 +4660,23 @@ var GeomAlgoTest = function(asset) {
 	resultType = hxGeomAlgo_ResultType.EXPERIMENTAL_DELAUNAY;
 	startTime = new Date().getTime() / 1000;
 	res = hxGeomAlgo_Tess2.tesselate(flatContours,null,resultType,polySize);
-	haxe_Log.trace("Tess2Delaunay : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 378, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("Tess2Delaunay : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 379, className : "GeomAlgoTest", methodName : "new"});
 	polys = hxGeomAlgo_Tess2.convertResult(res.vertices,res.elements,resultType,polySize);
-	haxe_Log.trace("  " + this.testOrientation(polys),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 380, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(polys),this.testConvex(polys)]});
+	haxe_Log.trace("  " + this.testOrientation(polys),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 381, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(polys),this.testConvex(polys)]});
 	this.drawPolys(polys,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.DEFAULT_DRAW_SETTINGS);
 	this.addChild(this.getTextField("Tess2\nExp. Delaunay\n" + res.elementCount + " tris",this.X,this.Y));
 	this.setSlot(3,0);
 	startTime = new Date().getTime() / 1000;
 	var polygonized = hxGeomAlgo_EarCut.polygonize(polys);
-	haxe_Log.trace("ECTess2Del   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 388, className : "GeomAlgoTest", methodName : "new"});
-	haxe_Log.trace("  " + this.testOrientation(polys),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 389, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(polys),this.testConvex(polys)]});
+	haxe_Log.trace("ECTess2Del   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 389, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("  " + this.testOrientation(polys),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 390, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(polys),this.testConvex(polys)]});
 	this.drawPolys(polygonized,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showCentroids : true}));
 	this.addChild(this.getTextField("EC Decomp\n(Tess2Del)\n" + polygonized.length + " polys",this.X,this.Y));
 	this.setSlot(3,3);
 	startTime = new Date().getTime() / 1000;
 	this.decomposition = hxGeomAlgo_HertelMehlhorn.polygonize(polys);
-	haxe_Log.trace("HMTess2Del   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 397, className : "GeomAlgoTest", methodName : "new"});
-	haxe_Log.trace("  " + this.testOrientation(this.decomposition),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 398, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.decomposition),this.testConvex(this.decomposition)]});
+	haxe_Log.trace("HMTess2Del   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 398, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("  " + this.testOrientation(this.decomposition),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 399, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(this.decomposition),this.testConvex(this.decomposition)]});
 	this.drawPolys(this.decomposition,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showCentroids : true}));
 	this.addChild(this.getTextField("Hert-Mehl\n(Tess2Del)\n" + this.decomposition.length + " polys",this.X,this.Y));
 	this.setSlot(2,2);
@@ -4664,8 +4685,8 @@ var GeomAlgoTest = function(asset) {
 	startTime = new Date().getTime() / 1000;
 	res = hxGeomAlgo_Tess2.tesselate(flatContours,null,resultType,polySize);
 	polys = hxGeomAlgo_Tess2.convertResult(res.vertices,res.elements,resultType,polySize);
-	haxe_Log.trace("Tess2Decomp   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 409, className : "GeomAlgoTest", methodName : "new"});
-	haxe_Log.trace("  " + this.testOrientation(polys),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 410, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(polys),this.testConvex(polys)]});
+	haxe_Log.trace("Tess2Decomp   : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 410, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("  " + this.testOrientation(polys),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 411, className : "GeomAlgoTest", methodName : "new", customParams : [this.testSimple(polys),this.testConvex(polys)]});
 	this.drawPolys(polys,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.set({ showCentroids : true}));
 	this.addChild(this.getTextField("Tess2\nDecomp\n" + res.elementCount + " polys",this.X,this.Y));
 	var radius = this.originalBMD.width / 2;
@@ -4692,13 +4713,13 @@ var GeomAlgoTest = function(asset) {
 	startTime = new Date().getTime() / 1000;
 	res = hxGeomAlgo_Tess2.union(flatContours,flatRing,resultType,polySize,2);
 	polys = hxGeomAlgo_Tess2.convertResult(res.vertices,res.elements,resultType,polySize);
-	haxe_Log.trace("Tess2Union    : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 450, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("Tess2Union    : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 451, className : "GeomAlgoTest", methodName : "new"});
 	this.drawPaths(polys,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.DEFAULT_DRAW_SETTINGS);
 	this.addChild(this.getTextField("Tess2\nUnion\n" + res.elementCount + " polys",this.X,this.Y));
 	this.setSlot(3,4);
 	startTime = new Date().getTime() / 1000;
 	var pia = hxGeomAlgo_PoleOfInaccessibility.calculate(polys,1.0,true);
-	haxe_Log.trace("PoleOfInaccess: " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 458, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("PoleOfInaccess: " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 459, className : "GeomAlgoTest", methodName : "new"});
 	var r = hxGeomAlgo_PoleOfInaccessibility.pointToPolygonDist(pia.x,pia.y,polys);
 	this.drawPaths(polys,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.DEFAULT_DRAW_SETTINGS);
 	this.drawCircle(pia,this.X + this.clipRect.x,this.Y + this.clipRect.y,r);
@@ -4707,17 +4728,17 @@ var GeomAlgoTest = function(asset) {
 	startTime = new Date().getTime() / 1000;
 	res = hxGeomAlgo_Tess2.intersection(flatContours,flatRing,resultType,polySize,2);
 	polys = hxGeomAlgo_Tess2.convertResult(res.vertices,res.elements,resultType,polySize);
-	haxe_Log.trace("Tess2Intersect: " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 469, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("Tess2Intersect: " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 470, className : "GeomAlgoTest", methodName : "new"});
 	this.drawPaths(polys,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.DEFAULT_DRAW_SETTINGS);
 	this.addChild(this.getTextField("Tess2\nIntersection\n" + res.elementCount + " polys",this.X,this.Y));
 	this.setSlot(2,5);
 	startTime = new Date().getTime() / 1000;
 	res = hxGeomAlgo_Tess2.difference(flatContours,flatRing,resultType,polySize,2);
 	polys = hxGeomAlgo_Tess2.convertResult(res.vertices,res.elements,resultType,polySize);
-	haxe_Log.trace("Tess2Diff     : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 478, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("Tess2Diff     : " + (new Date().getTime() / 1000 - startTime),{ fileName : "src/GeomAlgoTest.hx", lineNumber : 479, className : "GeomAlgoTest", methodName : "new"});
 	this.drawPaths(polys,this.X + this.clipRect.x,this.Y + this.clipRect.y,this.DEFAULT_DRAW_SETTINGS);
 	this.addChild(this.getTextField("Tess2\nDifference\n" + res.elementCount + " polys",this.X,this.Y));
-	haxe_Log.trace("\n",{ fileName : "src/GeomAlgoTest.hx", lineNumber : 490, className : "GeomAlgoTest", methodName : "new"});
+	haxe_Log.trace("\n",{ fileName : "src/GeomAlgoTest.hx", lineNumber : 491, className : "GeomAlgoTest", methodName : "new"});
 	polys = [this.perimeter,this.simplifiedPolyRDP,simplifiedPolyVW,visPoints].concat(labeler.contours).concat(contours);
 	var _g = [];
 	var _g1 = 0;
@@ -4744,12 +4765,19 @@ var GeomAlgoTest = function(asset) {
 		var name = headers[i];
 		var orientation = this.testOrientation([poly]);
 		var hasDups = hxGeomAlgo_PolyTools.findDuplicatePoints(poly).length > 0;
-		haxe_Log.trace("" + name + " (orientation:" + orientation + ", hasDups:" + (hasDups == null ? "null" : "" + hasDups) + ")",{ fileName : "src/GeomAlgoTest.hx", lineNumber : 500, className : "GeomAlgoTest", methodName : "new"});
+		haxe_Log.trace("" + name + " (orientation:" + orientation + ", hasDups:" + (hasDups == null ? "null" : "" + hasDups) + ")",{ fileName : "src/GeomAlgoTest.hx", lineNumber : 501, className : "GeomAlgoTest", methodName : "new"});
 	}
 };
 $hxClasses["GeomAlgoTest"] = GeomAlgoTest;
 GeomAlgoTest.__name__ = "GeomAlgoTest";
 GeomAlgoTest.savePNG = function(bmd,fileName) {
+	haxe_Log.trace("savePNG(\"" + fileName + "\")...",{ fileName : "src/GeomAlgoTest.hx", lineNumber : 571, className : "GeomAlgoTest", methodName : "savePNG"});
+	var ba = bmd.encode(bmd.rect,new openfl_display_PNGEncoderOptions());
+	var bytes = haxe_io_Bytes.ofData(openfl_utils_ByteArray.toArrayBuffer(ba));
+	var b64Encoded = haxe_crypto_Base64.encode(bytes);
+	var len = b64Encoded.length;
+	haxe_Log.trace("BitmapData base64-encoded (" + len + " chars):",{ fileName : "src/GeomAlgoTest.hx", lineNumber : 576, className : "GeomAlgoTest", methodName : "savePNG"});
+	haxe_Log.trace("data:image/png;base64," + b64Encoded,{ fileName : "src/GeomAlgoTest.hx", lineNumber : 577, className : "GeomAlgoTest", methodName : "savePNG"});
 };
 GeomAlgoTest.__super__ = openfl_display_Sprite;
 GeomAlgoTest.prototype = $extend(openfl_display_Sprite.prototype,{
@@ -4869,7 +4897,7 @@ GeomAlgoTest.prototype = $extend(openfl_display_Sprite.prototype,{
 			}
 			str += "\n";
 		}
-		haxe_Log.trace(str,{ fileName : "src/GeomAlgoTest.hx", lineNumber : 593, className : "GeomAlgoTest", methodName : "dumpTess2Polys"});
+		haxe_Log.trace(str,{ fileName : "src/GeomAlgoTest.hx", lineNumber : 599, className : "GeomAlgoTest", methodName : "dumpTess2Polys"});
 	}
 	,dumpPoly: function(poly,reverse) {
 		if(reverse == null) {
@@ -4884,7 +4912,7 @@ GeomAlgoTest.prototype = $extend(openfl_display_Sprite.prototype,{
 			var p = poly[reverse ? len - i - 1 : i];
 			str += p.x + "," + p.y + ",";
 		}
-		haxe_Log.trace(str,{ fileName : "src/GeomAlgoTest.hx", lineNumber : 603, className : "GeomAlgoTest", methodName : "dumpPoly"});
+		haxe_Log.trace(str,{ fileName : "src/GeomAlgoTest.hx", lineNumber : 609, className : "GeomAlgoTest", methodName : "dumpPoly"});
 	}
 	,drawPoints: function(points,x,y,radius) {
 		if(radius == null) {
@@ -5658,6 +5686,7 @@ hxGeomAlgo_PolyTools.parsePoints = function(str) {
 	var floats = result;
 	var pts = [];
 	var n = floats.length;
+	hxGeomAlgo_Debug.assert(n % 2 == 0,"Parsed string must contain an even number of parseable floats (" + n + " found).",{ fileName : "src/hxGeomAlgo/PolyTools.hx", lineNumber : 447, className : "hxGeomAlgo.PolyTools", methodName : "parsePoints"});
 	var _g = 0;
 	var _g1 = n / 2 | 0;
 	while(_g < _g1) {
@@ -5676,7 +5705,7 @@ hxGeomAlgo_PolyTools.inflateLine = function(start,end,thickness) {
 	return [hxGeomAlgo_HxPoint._new(start.x - ny,start.y + nx),hxGeomAlgo_HxPoint._new(end.x - ny,end.y + nx),hxGeomAlgo_HxPoint._new(end.x + ny,end.y - nx),hxGeomAlgo_HxPoint._new(start.x + ny,start.y - nx)];
 };
 hxGeomAlgo_PolyTools.clip = function(subjPoly,clipPoly) {
-	var cond = clipPoly.length >= 3 && hxGeomAlgo_PolyTools.isConvex(clipPoly);
+	hxGeomAlgo_Debug.assert(clipPoly.length >= 3 && hxGeomAlgo_PolyTools.isConvex(clipPoly),"`clipPoly` must be a valid convex poly",{ fileName : "src/hxGeomAlgo/PolyTools.hx", lineNumber : 476, className : "hxGeomAlgo.PolyTools", methodName : "clip"});
 	var res = [];
 	var output = subjPoly;
 	var isInside = hxGeomAlgo_PolyTools.isCCW(clipPoly) ? hxGeomAlgo_PolyTools.isRight : hxGeomAlgo_PolyTools.isLeft;
@@ -7902,6 +7931,24 @@ haxe_io_Bytes.prototype = {
 var haxe_crypto_Base64 = function() { };
 $hxClasses["haxe.crypto.Base64"] = haxe_crypto_Base64;
 haxe_crypto_Base64.__name__ = "haxe.crypto.Base64";
+haxe_crypto_Base64.encode = function(bytes,complement) {
+	if(complement == null) {
+		complement = true;
+	}
+	var str = new haxe_crypto_BaseCode(haxe_crypto_Base64.BYTES).encodeBytes(bytes).toString();
+	if(complement) {
+		switch(bytes.length % 3) {
+		case 1:
+			str += "==";
+			break;
+		case 2:
+			str += "=";
+			break;
+		default:
+		}
+	}
+	return str;
+};
 haxe_crypto_Base64.decode = function(str,complement) {
 	if(complement == null) {
 		complement = true;
@@ -7927,6 +7974,30 @@ haxe_crypto_BaseCode.prototype = {
 	base: null
 	,nbits: null
 	,tbl: null
+	,encodeBytes: function(b) {
+		var nbits = this.nbits;
+		var base = this.base;
+		var size = b.length * 8 / nbits | 0;
+		var out = new haxe_io_Bytes(new ArrayBuffer(size + (b.length * 8 % nbits == 0 ? 0 : 1)));
+		var buf = 0;
+		var curbits = 0;
+		var mask = (1 << nbits) - 1;
+		var pin = 0;
+		var pout = 0;
+		while(pout < size) {
+			while(curbits < nbits) {
+				curbits += 8;
+				buf <<= 8;
+				buf |= b.b[pin++];
+			}
+			curbits -= nbits;
+			out.b[pout++] = base.b[buf >> curbits & mask] & 255;
+		}
+		if(curbits > 0) {
+			out.b[pout++] = base.b[buf << nbits - curbits & mask] & 255;
+		}
+		return out;
+	}
 	,initTable: function() {
 		var tbl = [];
 		var _g = 0;
@@ -8112,6 +8183,9 @@ haxe_ds_IntMap.prototype = {
 	,set: function(key,value) {
 		this.h[key] = value;
 	}
+	,get: function(key) {
+		return this.h[key];
+	}
 	,exists: function(key) {
 		return this.h.hasOwnProperty(key);
 	}
@@ -8197,6 +8271,9 @@ haxe_ds_StringMap.prototype = {
 	h: null
 	,exists: function(key) {
 		return Object.prototype.hasOwnProperty.call(this.h,key);
+	}
+	,get: function(key) {
+		return this.h[key];
 	}
 	,set: function(key,value) {
 		this.h[key] = value;
@@ -9781,7 +9858,9 @@ var hxGeomAlgo_Debug = function() { };
 $hxClasses["hxGeomAlgo.Debug"] = hxGeomAlgo_Debug;
 hxGeomAlgo_Debug.__name__ = "hxGeomAlgo.Debug";
 hxGeomAlgo_Debug.assert = function(cond,message,pos) {
-	return;
+	if(!cond) {
+		throw haxe_Exception.thrown(pos.fileName + ":" + pos.lineNumber + ": ASSERT FAILED! " + (message != null ? message : ""));
+	}
 };
 var hxGeomAlgo_EarCut = $hx_exports["hxGeomAlgo"]["EarCut"] = function() { };
 $hxClasses["hxGeomAlgo.EarCut"] = hxGeomAlgo_EarCut;
@@ -10665,6 +10744,8 @@ hxGeomAlgo_Heap.prototype = {
 	}
 	,remove: function(obj) {
 		var pos = obj.position;
+		hxGeomAlgo_Debug.assert(pos >= 0 && pos < this.length,"Object not found.",{ fileName : "src/hxGeomAlgo/Heap.hx", lineNumber : 91, className : "hxGeomAlgo.Heap", methodName : "remove"});
+		hxGeomAlgo_Debug.assert(this.data[pos] == obj,"`obj` and retrieved object at " + pos + " don't match.",{ fileName : "src/hxGeomAlgo/Heap.hx", lineNumber : 92, className : "hxGeomAlgo.Heap", methodName : "remove"});
 		var len = this.length;
 		var lastObj = this.data[len - 1];
 		this.data[len - 1] = null;
@@ -10722,11 +10803,11 @@ hxGeomAlgo_Heap.prototype = {
 		var left = 2 * i + 1;
 		var right = 2 * i + 2;
 		if(left < len) {
-			var cond = this.data[i].compare(this.data[left]) <= 0;
+			hxGeomAlgo_Debug.assert(this.data[i].compare(this.data[left]) <= 0,"Broken heap invariant (parent@" + i + " > leftChild@" + left + ").",{ fileName : "src/hxGeomAlgo/Heap.hx", lineNumber : 154, className : "hxGeomAlgo.Heap", methodName : "_validate"});
 			this._validate(2 * i + 1);
 		}
 		if(right < len) {
-			var cond = this.data[i].compare(this.data[right]) <= 0;
+			hxGeomAlgo_Debug.assert(this.data[i].compare(this.data[right]) <= 0,"Broken heap invariant (parent@" + i + " > rightChild@" + right + ").",{ fileName : "src/hxGeomAlgo/Heap.hx", lineNumber : 158, className : "hxGeomAlgo.Heap", methodName : "_validate"});
 			this._validate(2 * i + 2);
 		}
 	}
@@ -11452,6 +11533,7 @@ hxGeomAlgo_MarchingSquares.prototype = {
 				++x;
 				break;
 			default:
+				hxGeomAlgo_Debug.assert(false,"Illegal state at point (x: " + x + ", y: " + y + ").",{ fileName : "src/hxGeomAlgo/MarchingSquares.hx", lineNumber : 143, className : "hxGeomAlgo.MarchingSquares", methodName : "walkPerimeter"});
 			}
 			done = x == startX && y == startY;
 		}
@@ -11476,6 +11558,7 @@ hxGeomAlgo_MarchingSquares.prototype = {
 		if(downRight) {
 			state |= 8;
 		}
+		hxGeomAlgo_Debug.assert(state != 0 && state != 15,"Error: point (x: " + x + ", y: " + y + ") doesn't lie on perimeter.",{ fileName : "src/hxGeomAlgo/MarchingSquares.hx", lineNumber : 171, className : "hxGeomAlgo.MarchingSquares", methodName : "step"});
 		switch(state) {
 		case 1:case 5:case 13:
 			this.nextStep = hxGeomAlgo_StepDirection.UP;
@@ -11496,6 +11579,7 @@ hxGeomAlgo_MarchingSquares.prototype = {
 			this.nextStep = hxGeomAlgo_StepDirection.LEFT;
 			break;
 		default:
+			hxGeomAlgo_Debug.assert(false,"Illegal state at point (x: " + x + ", y: " + y + ").",{ fileName : "src/hxGeomAlgo/MarchingSquares.hx", lineNumber : 188, className : "hxGeomAlgo.MarchingSquares", methodName : "step"});
 		}
 	}
 	,isPixelSolid: function(x,y) {
@@ -12040,14 +12124,14 @@ hxGeomAlgo_DecompPoly.prototype = {
 		}
 	}
 	,setAfter: function(i) {
-		var cond = this.isReflex(i);
+		hxGeomAlgo_Debug.assert(this.isReflex(i),"Non reflex i in setAfter(" + i + ")",{ fileName : "src/hxGeomAlgo/SnoeyinkKeil.hx", lineNumber : 227, className : "hxGeomAlgo.DecompPoly", methodName : "setAfter"});
 		this.subDecomp.setWeight(i,i + 1,0);
 		if(this.visible(i,i + 2)) {
 			this.subDecomp.initWithWeight(i,i + 2,0,i + 1,i + 1);
 		}
 	}
 	,setBefore: function(i) {
-		var cond = this.isReflex(i);
+		hxGeomAlgo_Debug.assert(this.isReflex(i),"Non reflex i in setBefore(" + i + ")",{ fileName : "src/hxGeomAlgo/SnoeyinkKeil.hx", lineNumber : 233, className : "hxGeomAlgo.DecompPoly", methodName : "setBefore"});
 		this.subDecomp.setWeight(i - 1,i,0);
 		if(this.visible(i - 2,i)) {
 			this.subDecomp.initWithWeight(i - 2,i,0,i - 1,i - 1);
@@ -12084,6 +12168,7 @@ hxGeomAlgo_DecompPoly.prototype = {
 	,recoverSolution: function(i,k) {
 		var j;
 		this.guard--;
+		hxGeomAlgo_Debug.assert(this.guard >= 0,"Can't recover " + i + "," + k,{ fileName : "src/hxGeomAlgo/SnoeyinkKeil.hx", lineNumber : 256, className : "hxGeomAlgo.DecompPoly", methodName : "recoverSolution"});
 		if(k - i <= 1) {
 			return;
 		}
@@ -12409,6 +12494,7 @@ hxGeomAlgo_DecompPoly.prototype = {
 			++nDiags;
 		}
 		this.guard--;
+		hxGeomAlgo_Debug.assert(this.guard >= 0,"Infinite loop diag " + i + "," + k,{ fileName : "src/hxGeomAlgo/SnoeyinkKeil.hx", lineNumber : 398, className : "hxGeomAlgo.DecompPoly", methodName : "_decompByDiags"});
 		if(nDiags > 1) {
 			var _g = [];
 			var k1 = this._indicesSet.keys();
@@ -12593,7 +12679,9 @@ hxGeomAlgo_Tess2.convertResult = function(vertices,elements,resultType,polySize,
 	if(out == null) {
 		out = [];
 	}
-	var tmp = resultType._hx_index != 2;
+	if(resultType._hx_index != 2) {
+		hxGeomAlgo_Debug.assert(polySize >= 3 && elements.length % polySize == 0,"Invalid size",{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 194, className : "hxGeomAlgo.Tess2", methodName : "convertResult"});
+	}
 	var i = 0;
 	switch(resultType._hx_index) {
 	case 0:case 3:
@@ -12819,7 +12907,9 @@ hxGeomAlgo__$Tess2_TessMesh.flipEdge = function(mesh,edge) {
 	var bOpp = b2.Org;
 	var fa = a0.Lface;
 	var fb = b0.Lface;
-	var cond = hxGeomAlgo__$Tess2_Geom.edgeIsInternal(edge);
+	hxGeomAlgo_Debug.assert(hxGeomAlgo__$Tess2_Geom.edgeIsInternal(edge),null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 796, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(a2.Lnext == a0,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 797, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(b2.Lnext == b0,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 798, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
 	a0.Org = bOpp;
 	a0.Onext = b1.Sym;
 	b0.Org = aOpp;
@@ -12844,7 +12934,27 @@ hxGeomAlgo__$Tess2_TessMesh.flipEdge = function(mesh,edge) {
 	if(bOrg.anEdge == b0) {
 		bOrg.anEdge = a1;
 	}
-	var cond = a0.get_Oprev().Onext.Org == a0.Org;
+	hxGeomAlgo_Debug.assert(a0.Lnext.Onext.Sym == a0,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 826, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(a0.Onext.Sym.Lnext == a0,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 827, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(a0.Org.anEdge.Org == a0.Org,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 828, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(a1.Lnext.Onext.Sym == a1,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 831, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(a1.Onext.Sym.Lnext == a1,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 832, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(a1.Org.anEdge.Org == a1.Org,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 833, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(a2.Lnext.Onext.Sym == a2,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 835, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(a2.Onext.Sym.Lnext == a2,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 836, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(a2.Org.anEdge.Org == a2.Org,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 837, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(b0.Lnext.Onext.Sym == b0,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 839, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(b0.Onext.Sym.Lnext == b0,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 840, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(b0.Org.anEdge.Org == b0.Org,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 841, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(b1.Lnext.Onext.Sym == b1,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 843, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(b1.Onext.Sym.Lnext == b1,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 844, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(b1.Org.anEdge.Org == b1.Org,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 845, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(b2.Lnext.Onext.Sym == b2,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 847, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(b2.Onext.Sym.Lnext == b2,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 848, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(b2.Org.anEdge.Org == b2.Org,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 849, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(aOrg.anEdge.Org == aOrg,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 851, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(bOrg.anEdge.Org == bOrg,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 852, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
+	hxGeomAlgo_Debug.assert(a0.get_Oprev().Onext.Org == a0.Org,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 854, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "flipEdge"});
 };
 hxGeomAlgo__$Tess2_TessMesh.prototype = {
 	v: null
@@ -12892,6 +13002,7 @@ hxGeomAlgo__$Tess2_TessMesh.prototype = {
 	}
 	,makeVertex_: function(newVertex,eOrig,vNext) {
 		var vNew = newVertex;
+		hxGeomAlgo_Debug.assert(vNew != null,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 586, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "makeVertex_"});
 		var vPrev = vNext.prev;
 		vNew.prev = vPrev;
 		vPrev.next = vNew;
@@ -12909,6 +13020,7 @@ hxGeomAlgo__$Tess2_TessMesh.prototype = {
 	}
 	,makeFace_: function(newFace,eOrig,fNext) {
 		var fNew = newFace;
+		hxGeomAlgo_Debug.assert(fNew != null,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 615, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "makeFace_"});
 		var fPrev = fNext.prev;
 		fNew.prev = fPrev;
 		fPrev.next = fNew;
@@ -13170,8 +13282,14 @@ hxGeomAlgo__$Tess2_TessMesh.prototype = {
 			if(!(f != fHead)) {
 				break;
 			}
+			hxGeomAlgo_Debug.assert(f.prev == fPrev,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1138, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
 			e = f.anEdge;
 			while(true) {
+				hxGeomAlgo_Debug.assert(e.Sym != e,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1141, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+				hxGeomAlgo_Debug.assert(e.Sym.Sym == e,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1142, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+				hxGeomAlgo_Debug.assert(e.Lnext.Onext.Sym == e,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1143, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+				hxGeomAlgo_Debug.assert(e.Onext.Sym.Lnext == e,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1144, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+				hxGeomAlgo_Debug.assert(e.Lface == f,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1145, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
 				e = e.Lnext;
 				if(!(e != f.anEdge)) {
 					break;
@@ -13179,14 +13297,21 @@ hxGeomAlgo__$Tess2_TessMesh.prototype = {
 			}
 			fPrev = f;
 		}
+		hxGeomAlgo_Debug.assert(f.prev == fPrev && f.anEdge == null,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1150, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
 		var vPrev = vHead;
 		while(true) {
 			v = vPrev.next;
 			if(!(v != vHead)) {
 				break;
 			}
+			hxGeomAlgo_Debug.assert(v.prev == vPrev,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1154, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
 			e = v.anEdge;
 			while(true) {
+				hxGeomAlgo_Debug.assert(e.Sym != e,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1157, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+				hxGeomAlgo_Debug.assert(e.Sym.Sym == e,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1158, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+				hxGeomAlgo_Debug.assert(e.Lnext.Onext.Sym == e,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1159, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+				hxGeomAlgo_Debug.assert(e.Onext.Sym.Lnext == e,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1160, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+				hxGeomAlgo_Debug.assert(e.Org == v,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1161, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
 				e = e.Onext;
 				if(!(e != v.anEdge)) {
 					break;
@@ -13194,16 +13319,23 @@ hxGeomAlgo__$Tess2_TessMesh.prototype = {
 			}
 			vPrev = v;
 		}
+		hxGeomAlgo_Debug.assert(v.prev == vPrev && v.anEdge == null,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1166, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
 		var ePrev = eHead;
 		while(true) {
 			e = ePrev.next;
 			if(!(e != eHead)) {
 				break;
 			}
-			var cond = e.get_Dst() != null;
+			hxGeomAlgo_Debug.assert(e.Sym.next == ePrev.Sym,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1170, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+			hxGeomAlgo_Debug.assert(e.Sym != e,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1171, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+			hxGeomAlgo_Debug.assert(e.Sym.Sym == e,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1172, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+			hxGeomAlgo_Debug.assert(e.Org != null,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1173, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+			hxGeomAlgo_Debug.assert(e.get_Dst() != null,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1174, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+			hxGeomAlgo_Debug.assert(e.Lnext.Onext.Sym == e,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1175, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
+			hxGeomAlgo_Debug.assert(e.Onext.Sym.Lnext == e,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1176, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
 			ePrev = e;
 		}
-		var cond = e.Sym.next == ePrev.Sym && e.Sym == this.eHeadSym && e.Sym.Sym == e && e.Org == null && e.get_Dst() == null && e.Lface == null && e.get_Rface() == null;
+		hxGeomAlgo_Debug.assert(e.Sym.next == ePrev.Sym && e.Sym == this.eHeadSym && e.Sym.Sym == e && e.Org == null && e.get_Dst() == null && e.Lface == null && e.get_Rface() == null,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1179, className : "hxGeomAlgo._Tess2.TessMesh", methodName : "check"});
 	}
 	,__class__: hxGeomAlgo__$Tess2_TessMesh
 };
@@ -13256,7 +13388,7 @@ hxGeomAlgo__$Tess2_Geom.vertL1dist = function(u,v) {
 	return Math.abs(u.s - v.s) + Math.abs(u.t - v.t);
 };
 hxGeomAlgo__$Tess2_Geom.edgeEval = function(u,v,w) {
-	var cond = hxGeomAlgo__$Tess2_Geom.vertLeq(u,v) && hxGeomAlgo__$Tess2_Geom.vertLeq(v,w);
+	hxGeomAlgo_Debug.assert(hxGeomAlgo__$Tess2_Geom.vertLeq(u,v) && hxGeomAlgo__$Tess2_Geom.vertLeq(v,w),null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1231, className : "hxGeomAlgo._Tess2.Geom", methodName : "edgeEval"});
 	var gapL = v.s - u.s;
 	var gapR = w.s - v.s;
 	if(gapL + gapR > 0.0) {
@@ -13269,7 +13401,7 @@ hxGeomAlgo__$Tess2_Geom.edgeEval = function(u,v,w) {
 	return 0.0;
 };
 hxGeomAlgo__$Tess2_Geom.edgeSign = function(u,v,w) {
-	var cond = hxGeomAlgo__$Tess2_Geom.vertLeq(u,v) && hxGeomAlgo__$Tess2_Geom.vertLeq(v,w);
+	hxGeomAlgo_Debug.assert(hxGeomAlgo__$Tess2_Geom.vertLeq(u,v) && hxGeomAlgo__$Tess2_Geom.vertLeq(v,w),null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1253, className : "hxGeomAlgo._Tess2.Geom", methodName : "edgeSign"});
 	var gapL = v.s - u.s;
 	var gapR = w.s - v.s;
 	if(gapL + gapR > 0.0) {
@@ -13278,7 +13410,7 @@ hxGeomAlgo__$Tess2_Geom.edgeSign = function(u,v,w) {
 	return 0.0;
 };
 hxGeomAlgo__$Tess2_Geom.transEval = function(u,v,w) {
-	var cond = hxGeomAlgo__$Tess2_Geom.transLeq(u,v) && hxGeomAlgo__$Tess2_Geom.transLeq(v,w);
+	hxGeomAlgo_Debug.assert(hxGeomAlgo__$Tess2_Geom.transLeq(u,v) && hxGeomAlgo__$Tess2_Geom.transLeq(v,w),null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1282, className : "hxGeomAlgo._Tess2.Geom", methodName : "transEval"});
 	var gapL = v.t - u.t;
 	var gapR = w.t - v.t;
 	if(gapL + gapR > 0.0) {
@@ -13291,7 +13423,7 @@ hxGeomAlgo__$Tess2_Geom.transEval = function(u,v,w) {
 	return 0.0;
 };
 hxGeomAlgo__$Tess2_Geom.transSign = function(u,v,w) {
-	var cond = hxGeomAlgo__$Tess2_Geom.transLeq(u,v) && hxGeomAlgo__$Tess2_Geom.transLeq(v,w);
+	hxGeomAlgo_Debug.assert(hxGeomAlgo__$Tess2_Geom.transLeq(u,v) && hxGeomAlgo__$Tess2_Geom.transLeq(v,w),null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1304, className : "hxGeomAlgo._Tess2.Geom", methodName : "transSign"});
 	var gapL = v.t - u.t;
 	var gapR = w.t - v.t;
 	if(gapL + gapR > 0.0) {
@@ -13549,6 +13681,7 @@ hxGeomAlgo__$Tess2_PriorityQ.prototype = {
 			if(child < this.size && this.leq(h[n[child + 1].handle].key,h[n[child].handle].key)) {
 				++child;
 			}
+			hxGeomAlgo_Debug.assert(child <= this.max,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1586, className : "hxGeomAlgo._Tess2.PriorityQ", methodName : "floatDown_"});
 			hChild = n[child].handle;
 			if(child > this.size || this.leq(h[hCurr].key,h[hChild].key)) {
 				n[curr].handle = hCurr;
@@ -13648,6 +13781,7 @@ hxGeomAlgo__$Tess2_PriorityQ.prototype = {
 	,'delete': function(hCurr) {
 		var n = this.nodes;
 		var h = this.handles;
+		hxGeomAlgo_Debug.assert(hCurr >= 1 && hCurr <= this.max && h[hCurr].key != null,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1705, className : "hxGeomAlgo._Tess2.PriorityQ", methodName : "delete"});
 		var curr = h[hCurr].node;
 		n[curr].handle = n[this.size].handle;
 		h[n[curr].handle].node = curr;
@@ -13724,11 +13858,14 @@ hxGeomAlgo__$Tess2_Sweep.edgeLeq = function(tess,reg1,reg2) {
 	return t1 >= t2;
 };
 hxGeomAlgo__$Tess2_Sweep.deleteRegion = function(tess,reg) {
-	var reg1 = reg.fixUpperEdge;
+	if(reg.fixUpperEdge) {
+		hxGeomAlgo_Debug.assert(reg.eUp.winding == 0,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1849, className : "hxGeomAlgo._Tess2.Sweep", methodName : "deleteRegion"});
+	}
 	reg.eUp.activeRegion = null;
 	tess.dict.delete(reg.nodeUp);
 };
 hxGeomAlgo__$Tess2_Sweep.fixUpperEdge = function(tess,reg,newEdge) {
+	hxGeomAlgo_Debug.assert(reg.fixUpperEdge,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 1860, className : "hxGeomAlgo._Tess2.Sweep", methodName : "fixUpperEdge"});
 	tess.mesh.delete(reg.eUp);
 	reg.fixUpperEdge = false;
 	reg.eUp = newEdge;
@@ -13836,7 +13973,7 @@ hxGeomAlgo__$Tess2_Sweep.addRightEdges = function(tess,regUp,eFirst,eLast,eTopLe
 	var firstTime = true;
 	var e = eFirst;
 	while(true) {
-		var cond = hxGeomAlgo__$Tess2_Geom.vertLeq(e.Org,e.get_Dst());
+		hxGeomAlgo_Debug.assert(hxGeomAlgo__$Tess2_Geom.vertLeq(e.Org,e.get_Dst()),null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2035, className : "hxGeomAlgo._Tess2.Sweep", methodName : "addRightEdges"});
 		hxGeomAlgo__$Tess2_Sweep.addRegionBelow(tess,regUp,e.Sym);
 		e = e.Onext;
 		if(!(e != eLast)) {
@@ -13871,6 +14008,7 @@ hxGeomAlgo__$Tess2_Sweep.addRightEdges = function(tess,regUp,eFirst,eLast,eTopLe
 		ePrev = e;
 	}
 	regPrev.dirty = true;
+	hxGeomAlgo_Debug.assert(regPrev.windingNumber - e.winding == reg.windingNumber,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2077, className : "hxGeomAlgo._Tess2.Sweep", methodName : "addRightEdges"});
 	if(cleanUp) {
 		hxGeomAlgo__$Tess2_Sweep.walkDirtyRegions(tess,regPrev);
 	}
@@ -13925,7 +14063,7 @@ hxGeomAlgo__$Tess2_Sweep.checkForLeftSplice = function(tess,regUp) {
 	var eUp = regUp.eUp;
 	var eLo = regLo.eUp;
 	var e;
-	var cond = !hxGeomAlgo__$Tess2_Geom.vertEq(eUp.get_Dst(),eLo.get_Dst());
+	hxGeomAlgo_Debug.assert(!hxGeomAlgo__$Tess2_Geom.vertEq(eUp.get_Dst(),eLo.get_Dst()),null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2207, className : "hxGeomAlgo._Tess2.Sweep", methodName : "checkForLeftSplice"});
 	if(hxGeomAlgo__$Tess2_Geom.vertLeq(eUp.get_Dst(),eLo.get_Dst())) {
 		if(hxGeomAlgo__$Tess2_Geom.edgeSign(eUp.get_Dst(),eLo.get_Dst(),eUp.Org) < 0) {
 			return false;
@@ -13955,9 +14093,11 @@ hxGeomAlgo__$Tess2_Sweep.checkForIntersect = function(tess,regUp) {
 	var dstLo = eLo.get_Dst();
 	var isect = new hxGeomAlgo__$Tess2_TessVertex();
 	var e;
-	var cond = !hxGeomAlgo__$Tess2_Geom.vertEq(dstLo,dstUp);
-	var cond = hxGeomAlgo__$Tess2_Geom.edgeSign(dstUp,tess.event,orgUp) <= 0;
-	var cond = hxGeomAlgo__$Tess2_Geom.edgeSign(dstLo,tess.event,orgLo) >= 0;
+	hxGeomAlgo_Debug.assert(!hxGeomAlgo__$Tess2_Geom.vertEq(dstLo,dstUp),null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2252, className : "hxGeomAlgo._Tess2.Sweep", methodName : "checkForIntersect"});
+	hxGeomAlgo_Debug.assert(hxGeomAlgo__$Tess2_Geom.edgeSign(dstUp,tess.event,orgUp) <= 0,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2253, className : "hxGeomAlgo._Tess2.Sweep", methodName : "checkForIntersect"});
+	hxGeomAlgo_Debug.assert(hxGeomAlgo__$Tess2_Geom.edgeSign(dstLo,tess.event,orgLo) >= 0,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2254, className : "hxGeomAlgo._Tess2.Sweep", methodName : "checkForIntersect"});
+	hxGeomAlgo_Debug.assert(orgUp != tess.event && orgLo != tess.event,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2255, className : "hxGeomAlgo._Tess2.Sweep", methodName : "checkForIntersect"});
+	hxGeomAlgo_Debug.assert(!regUp.fixUpperEdge && !regLo.fixUpperEdge,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2256, className : "hxGeomAlgo._Tess2.Sweep", methodName : "checkForIntersect"});
 	if(orgUp == orgLo) {
 		return false;
 	}
@@ -13975,6 +14115,10 @@ hxGeomAlgo__$Tess2_Sweep.checkForIntersect = function(tess,regUp) {
 	}
 	hxGeomAlgo__$Tess2_Sweep.debugEvent(tess);
 	hxGeomAlgo__$Tess2_Geom.intersect(dstUp,orgUp,dstLo,orgLo,isect);
+	hxGeomAlgo_Debug.assert(Math.min(orgUp.t,dstUp.t) <= isect.t,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2275, className : "hxGeomAlgo._Tess2.Sweep", methodName : "checkForIntersect"});
+	hxGeomAlgo_Debug.assert(isect.t <= Math.max(orgLo.t,dstLo.t),null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2276, className : "hxGeomAlgo._Tess2.Sweep", methodName : "checkForIntersect"});
+	hxGeomAlgo_Debug.assert(Math.min(dstLo.s,dstUp.s) <= isect.s,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2277, className : "hxGeomAlgo._Tess2.Sweep", methodName : "checkForIntersect"});
+	hxGeomAlgo_Debug.assert(isect.s <= Math.max(orgLo.s,orgUp.s),null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2278, className : "hxGeomAlgo._Tess2.Sweep", methodName : "checkForIntersect"});
 	if(hxGeomAlgo__$Tess2_Geom.vertLeq(isect,tess.event)) {
 		isect.s = tess.event.s;
 		isect.t = tess.event.t;
@@ -14123,6 +14267,7 @@ hxGeomAlgo__$Tess2_Sweep.connectRightVertex = function(tess,regUp,eBottomLeft) {
 hxGeomAlgo__$Tess2_Sweep.connectLeftDegenerate = function(tess,regUp,vEvent) {
 	var e = regUp.eUp;
 	if(hxGeomAlgo__$Tess2_Geom.vertEq(e.Org,vEvent)) {
+		hxGeomAlgo_Debug.assert(false,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2571, className : "hxGeomAlgo._Tess2.Sweep", methodName : "connectLeftDegenerate"});
 		hxGeomAlgo__$Tess2_Sweep.spliceMergeVertices(tess,e,vEvent.anEdge);
 		return;
 	}
@@ -14136,12 +14281,14 @@ hxGeomAlgo__$Tess2_Sweep.connectLeftDegenerate = function(tess,regUp,vEvent) {
 		hxGeomAlgo__$Tess2_Sweep.sweepEvent(tess,vEvent);
 		return;
 	}
+	hxGeomAlgo_Debug.assert(false,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2592, className : "hxGeomAlgo._Tess2.Sweep", methodName : "connectLeftDegenerate"});
 	regUp = hxGeomAlgo__$Tess2_Sweep.topRightRegion(regUp);
 	var reg = hxGeomAlgo__$Tess2_Sweep.regionBelow(regUp);
 	var eTopRight = reg.eUp.Sym;
 	var eLast = eTopRight.Onext;
 	var eTopLeft = eLast;
 	if(reg.fixUpperEdge) {
+		hxGeomAlgo_Debug.assert(eTopLeft != eTopRight,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2601, className : "hxGeomAlgo._Tess2.Sweep", methodName : "connectLeftDegenerate"});
 		hxGeomAlgo__$Tess2_Sweep.deleteRegion(tess,reg);
 		tess.mesh.delete(eTopRight);
 		eTopRight = eTopLeft.get_Oprev();
@@ -14197,6 +14344,7 @@ hxGeomAlgo__$Tess2_Sweep.sweepEvent = function(tess,vEvent) {
 		}
 	}
 	var regUp = hxGeomAlgo__$Tess2_Sweep.topLeftRegion(tess,e.activeRegion);
+	hxGeomAlgo_Debug.assert(regUp != null,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2714, className : "hxGeomAlgo._Tess2.Sweep", methodName : "sweepEvent"});
 	var reg = hxGeomAlgo__$Tess2_Sweep.regionBelow(regUp);
 	var eTopLeft = reg.eUp;
 	var eBottomLeft = hxGeomAlgo__$Tess2_Sweep.finishLeftRegions(tess,reg,null);
@@ -14242,8 +14390,10 @@ hxGeomAlgo__$Tess2_Sweep.doneEdgeDict = function(tess) {
 			break;
 		}
 		if(!reg.sentinel) {
-			var cond = ++fixedEdges == 1;
+			hxGeomAlgo_Debug.assert(reg.fixUpperEdge,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2796, className : "hxGeomAlgo._Tess2.Sweep", methodName : "doneEdgeDict"});
+			hxGeomAlgo_Debug.assert(++fixedEdges == 1,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2797, className : "hxGeomAlgo._Tess2.Sweep", methodName : "doneEdgeDict"});
 		}
+		hxGeomAlgo_Debug.assert(reg.windingNumber == 0,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2799, className : "hxGeomAlgo._Tess2.Sweep", methodName : "doneEdgeDict"});
 		hxGeomAlgo__$Tess2_Sweep.deleteRegion(tess,reg);
 	}
 };
@@ -14308,6 +14458,7 @@ hxGeomAlgo__$Tess2_Sweep.removeDegenerateFaces = function(tess,mesh) {
 	while(f != mesh.fHead) {
 		fNext = f.next;
 		e = f.anEdge;
+		hxGeomAlgo_Debug.assert(e.Lnext != e,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 2905, className : "hxGeomAlgo._Tess2.Sweep", methodName : "removeDegenerateFaces"});
 		if(e.Lnext.Lnext == e) {
 			hxGeomAlgo__$Tess2_Sweep.addWinding(e.Onext,e);
 			tess.mesh.delete(e);
@@ -14392,6 +14543,7 @@ hxGeomAlgo_Tesselator.prototype = {
 	}
 	,normalize_: function(v) {
 		var len = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
+		hxGeomAlgo_Debug.assert(len > 0.0,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 3031, className : "hxGeomAlgo.Tesselator", methodName : "normalize_"});
 		len = Math.sqrt(len);
 		v[0] /= len;
 		v[1] /= len;
@@ -14604,6 +14756,7 @@ hxGeomAlgo_Tesselator.prototype = {
 	}
 	,tessellateMonoRegion_: function(mesh,face) {
 		var up = face.anEdge;
+		hxGeomAlgo_Debug.assert(up.Lnext != up && up.Lnext.Lnext != up,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 3303, className : "hxGeomAlgo.Tesselator", methodName : "tessellateMonoRegion_"});
 		while(hxGeomAlgo__$Tess2_Geom.vertLeq(up.get_Dst(),up.Org)) up = up.get_Lprev();
 		while(hxGeomAlgo__$Tess2_Geom.vertLeq(up.Org,up.get_Dst())) up = up.Lnext;
 		var lo = up.get_Lprev();
@@ -14620,6 +14773,7 @@ hxGeomAlgo_Tesselator.prototype = {
 			}
 			up = up.Lnext;
 		}
+		hxGeomAlgo_Debug.assert(lo.Lnext != up,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 3340, className : "hxGeomAlgo.Tesselator", methodName : "tessellateMonoRegion_"});
 		while(lo.Lnext.Lnext != up) {
 			var tempHalfEdge = mesh.connect(lo.Lnext,lo);
 			lo = tempHalfEdge.Sym;
@@ -14767,6 +14921,7 @@ hxGeomAlgo_Tesselator.prototype = {
 					break;
 				}
 			}
+			hxGeomAlgo_Debug.assert(faceVerts <= polySize,null,{ fileName : "src/hxGeomAlgo/Tess2.hx", lineNumber : 3544, className : "hxGeomAlgo.Tesselator", methodName : "outputPolymesh_"});
 			f.n = maxFaceCount;
 			++maxFaceCount;
 			f = f.next;
@@ -15374,6 +15529,7 @@ hxGeomAlgo_Visibility.exitRightBay = function(poly,j,bot,lid) {
 			}
 		}
 	}
+	hxGeomAlgo_Debug.assert(false,"ERROR: We never exited RBay " + (bot == null ? "null" : "(" + bot.x + ", " + bot.y + ")") + " " + Std.string(lid) + " " + windingNum,{ fileName : "src/hxGeomAlgo/Visibility.hx", lineNumber : 208, className : "hxGeomAlgo.Visibility", methodName : "exitRightBay"});
 	return j;
 };
 hxGeomAlgo_Visibility.exitLeftBay = function(poly,j,bot,lid) {
@@ -15439,6 +15595,7 @@ hxGeomAlgo_Visibility.exitLeftBay = function(poly,j,bot,lid) {
 			}
 		}
 	}
+	hxGeomAlgo_Debug.assert(false,"ERROR: We never exited LBay " + (bot == null ? "null" : "(" + bot.x + ", " + bot.y + ")") + " " + Std.string(lid) + " " + windingNum,{ fileName : "src/hxGeomAlgo/Visibility.hx", lineNumber : 239, className : "hxGeomAlgo.Visibility", methodName : "exitLeftBay"});
 	return j;
 };
 hxGeomAlgo_Visibility.push = function(idx,vType) {
@@ -32420,7 +32577,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 126736;
+	this.version = 318057;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";
@@ -64846,13 +65003,7 @@ openfl_display_Stage.prototype = $extend(openfl_display_DisplayObjectContainer.p
 				var dispatcher = dispatchers[_g];
 				++_g;
 				if(dispatcher.stage == this || dispatcher.stage == null) {
-					try {
-						dispatcher.__dispatch(event);
-					} catch( _g1 ) {
-						haxe_NativeStackTrace.lastError = _g1;
-						var e = haxe_Exception.caught(_g1).unwrap();
-						this.__handleError(e);
-					}
+					dispatcher.__dispatch(event);
 				}
 			}
 		}
@@ -64892,14 +65043,7 @@ openfl_display_Stage.prototype = $extend(openfl_display_DisplayObjectContainer.p
 		}
 	}
 	,__dispatchEvent: function(event) {
-		try {
-			return openfl_display_DisplayObjectContainer.prototype.__dispatchEvent.call(this,event);
-		} catch( _g ) {
-			haxe_NativeStackTrace.lastError = _g;
-			var e = haxe_Exception.caught(_g).unwrap();
-			this.__handleError(e);
-			return false;
-		}
+		return openfl_display_DisplayObjectContainer.prototype.__dispatchEvent.call(this,event);
 	}
 	,__dispatchPendingMouseEvent: function() {
 		if(this.__pendingMouseEvent) {
@@ -64908,58 +65052,45 @@ openfl_display_Stage.prototype = $extend(openfl_display_DisplayObjectContainer.p
 		}
 	}
 	,__dispatchStack: function(event,stack) {
-		try {
-			var target;
-			var length = stack.length;
-			if(length == 0) {
-				event.eventPhase = 2;
-				target = event.target;
-				target.__dispatch(event);
-			} else {
-				event.eventPhase = 1;
-				event.target = stack[stack.length - 1];
-				var _g = 0;
-				var _g1 = length - 1;
-				while(_g < _g1) {
-					var i = _g++;
+		var target;
+		var length = stack.length;
+		if(length == 0) {
+			event.eventPhase = 2;
+			target = event.target;
+			target.__dispatch(event);
+		} else {
+			event.eventPhase = 1;
+			event.target = stack[stack.length - 1];
+			var _g = 0;
+			var _g1 = length - 1;
+			while(_g < _g1) {
+				var i = _g++;
+				stack[i].__dispatch(event);
+				if(event.__isCanceled) {
+					return;
+				}
+			}
+			event.eventPhase = 2;
+			target = event.target;
+			target.__dispatch(event);
+			if(event.__isCanceled) {
+				return;
+			}
+			if(event.bubbles) {
+				event.eventPhase = 3;
+				var i = length - 2;
+				while(i >= 0) {
 					stack[i].__dispatch(event);
 					if(event.__isCanceled) {
 						return;
 					}
-				}
-				event.eventPhase = 2;
-				target = event.target;
-				target.__dispatch(event);
-				if(event.__isCanceled) {
-					return;
-				}
-				if(event.bubbles) {
-					event.eventPhase = 3;
-					var i = length - 2;
-					while(i >= 0) {
-						stack[i].__dispatch(event);
-						if(event.__isCanceled) {
-							return;
-						}
-						--i;
-					}
+					--i;
 				}
 			}
-		} catch( _g ) {
-			haxe_NativeStackTrace.lastError = _g;
-			var e = haxe_Exception.caught(_g).unwrap();
-			this.__handleError(e);
 		}
 	}
 	,__dispatchTarget: function(target,event) {
-		try {
-			return target.__dispatchEvent(event);
-		} catch( _g ) {
-			haxe_NativeStackTrace.lastError = _g;
-			var e = haxe_Exception.caught(_g).unwrap();
-			this.__handleError(e);
-			return false;
-		}
+		return target.__dispatchEvent(event);
 	}
 	,__drag: function(mouse) {
 		var parent = this.__dragObject.parent;
@@ -65716,40 +65847,16 @@ openfl_display_Stage.prototype = $extend(openfl_display_DisplayObjectContainer.p
 		this.__onLimeWindowCreate($window);
 	}
 	,__onLimeGamepadAxisMove: function(gamepad,axis,value) {
-		try {
-			openfl_ui_GameInput.__onGamepadAxisMove(gamepad,axis,value);
-		} catch( _g ) {
-			haxe_NativeStackTrace.lastError = _g;
-			var e = haxe_Exception.caught(_g).unwrap();
-			this.__handleError(e);
-		}
+		openfl_ui_GameInput.__onGamepadAxisMove(gamepad,axis,value);
 	}
 	,__onLimeGamepadButtonDown: function(gamepad,button) {
-		try {
-			openfl_ui_GameInput.__onGamepadButtonDown(gamepad,button);
-		} catch( _g ) {
-			haxe_NativeStackTrace.lastError = _g;
-			var e = haxe_Exception.caught(_g).unwrap();
-			this.__handleError(e);
-		}
+		openfl_ui_GameInput.__onGamepadButtonDown(gamepad,button);
 	}
 	,__onLimeGamepadButtonUp: function(gamepad,button) {
-		try {
-			openfl_ui_GameInput.__onGamepadButtonUp(gamepad,button);
-		} catch( _g ) {
-			haxe_NativeStackTrace.lastError = _g;
-			var e = haxe_Exception.caught(_g).unwrap();
-			this.__handleError(e);
-		}
+		openfl_ui_GameInput.__onGamepadButtonUp(gamepad,button);
 	}
 	,__onLimeGamepadConnect: function(gamepad) {
-		try {
-			openfl_ui_GameInput.__onGamepadConnect(gamepad);
-		} catch( _g ) {
-			haxe_NativeStackTrace.lastError = _g;
-			var e = haxe_Exception.caught(_g).unwrap();
-			this.__handleError(e);
-		}
+		openfl_ui_GameInput.__onGamepadConnect(gamepad);
 		var _g = $bind(this,this.__onLimeGamepadAxisMove);
 		var gamepad1 = gamepad;
 		var tmp = function(axis,value) {
@@ -65776,13 +65883,7 @@ openfl_display_Stage.prototype = $extend(openfl_display_DisplayObjectContainer.p
 		gamepad.onDisconnect.add(tmp);
 	}
 	,__onLimeGamepadDisconnect: function(gamepad) {
-		try {
-			openfl_ui_GameInput.__onGamepadDisconnect(gamepad);
-		} catch( _g ) {
-			haxe_NativeStackTrace.lastError = _g;
-			var e = haxe_Exception.caught(_g).unwrap();
-			this.__handleError(e);
-		}
+		openfl_ui_GameInput.__onGamepadDisconnect(gamepad);
 	}
 	,__onLimeKeyDown: function($window,keyCode,modifier) {
 		if(this.window == null || this.window != $window) {
@@ -80915,7 +81016,7 @@ while(_g < _g1) {
 }
 lime_system_CFFI.available = false;
 lime_system_CFFI.enabled = false;
-lime_utils_Log.level = 3;
+lime_utils_Log.level = 4;
 if(typeof console == "undefined") {
 	console = {}
 }
@@ -83301,6 +83402,7 @@ haxe_lang_Iterable.__meta__ = { obj : { SuppressWarnings : ["checkstyle:FieldDoc
 ApplicationMain.main();
 })(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this, typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
 
+//# sourceMappingURL=OpenflDemo.js.map
 });
 $hx_exports.lime = $hx_exports.lime || {};
 $hx_exports.lime.$scripts = $hx_exports.lime.$scripts || {};
