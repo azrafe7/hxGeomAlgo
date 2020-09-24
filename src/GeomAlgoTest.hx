@@ -248,10 +248,10 @@ class GeomAlgoTest extends Sprite {
     trace('Chaikin       : ${Timer.stamp() - startTime}');
     g.lineStyle(THICKNESS, color = COLOR, ALPHA);
     if (closeCurve) {
-      drawPolys([smoothedCurveChaikin], X + clipRect.x, Y + clipRect.y, set({showPoints:true, fill:false}));
+      drawPolys([smoothedCurveChaikin], X + clipRect.x, Y + clipRect.y, set({showPoints:false, fill:false}));
     } else {
       drawPaths([smoothedCurveChaikin], X + clipRect.x, Y + clipRect.y, set({fill:false}));
-      drawPoints(smoothedCurveChaikin, X + clipRect.x, Y + clipRect.y, 2);
+      //drawPoints(smoothedCurveChaikin, X + clipRect.x, Y + clipRect.y, 2);
     }
     addChild(getTextField('Chaikin/WuYongZhang\nSmooth [' + (closeCurve ? "clsd" : "open") + ']\n k:${smoothIterations} ' + smoothedCurveChaikin.length + " pts", X, Y));
 
@@ -263,11 +263,11 @@ class GeomAlgoTest extends Sprite {
     trace('WuYongZhang   : ${Timer.stamp() - startTime}');
     g.lineStyle(THICKNESS, color = 0xFFFF00, .7);
     if (closeCurve) {
-      drawPolys([smoothedCurveWYZ], X + clipRect.x + offsetCurveWYZ.x, Y + clipRect.y + offsetCurveWYZ.y, set({showPoints:true, fill:false}));
+      drawPolys([smoothedCurveWYZ], X + clipRect.x + offsetCurveWYZ.x, Y + clipRect.y + offsetCurveWYZ.y, set({showPoints:false, fill:false}));
     } else {
       drawPaths([smoothedCurveWYZ], X + clipRect.x + offsetCurveWYZ.x, Y + clipRect.y + offsetCurveWYZ.y, set({fill:false}));
       g.lineStyle(THICKNESS, color = 0xFFFF00, .7);
-      drawPoints(smoothedCurveWYZ, X + clipRect.x + offsetCurveWYZ.x, Y + clipRect.y + offsetCurveWYZ.y, 2);
+      //drawPoints(smoothedCurveWYZ, X + clipRect.x + offsetCurveWYZ.x, Y + clipRect.y + offsetCurveWYZ.y, 2);
     }
     addChild(getTextField('Chaikin/WuYongZhang\nSmooth [' + (closeCurve ? "clsd" : "open") + ']\n k:${smoothIterations} ' + smoothedCurveWYZ.length + " pts", X, Y));
 
