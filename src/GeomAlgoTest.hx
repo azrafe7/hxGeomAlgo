@@ -137,7 +137,7 @@ class GeomAlgoTest extends Sprite {
     //  VERSION
     var versionTF = getTextField("hxGeomAlgo v" + Version.toString(), 0, 5 * TEXT_SIZE);
     versionTF.autoSize = TextFieldAutoSize.LEFT;
-    versionTF.x = flash.Lib.current.stage.stageWidth - 140;
+    versionTF.x = flash.Lib.current.stage.stageWidth - 130;
     addChild(versionTF);
 
     // ORIGINAL IMAGE
