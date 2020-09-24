@@ -1,7 +1,7 @@
 hxGeomAlgo
 ==========
 
-Small collection of computational geometry algorithms in Haxe 3.3.
+Small collection of computational geometry algorithms in Haxe.
 
 ![](screenshot.png)
 
