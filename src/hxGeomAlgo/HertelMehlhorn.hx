@@ -4,7 +4,7 @@
  * Based on:
  *
  * @see https://github.com/ivanfratric/polypartition				(C - by Ivan Fratric)
- * @see http://www.philvaz.com/compgeom								(by Phil Porvaznik)
+ * @see https://web.archive.org/web/20140102033642/http://www.philvaz.com/compgeom/								(by Phil Porvaznik)
  *
  * @author azrafe7
  */

@@ -3,7 +3,7 @@
  *
  * Based on:
  *
- * @see http://devblog.phillipspiess.com/2010/02/23/better-know-an-algorithm-1-marching-squares/	(C# - by Phil Spiess)
+ * @see https://web.archive.org/web/20180316055432/http://devblog.phillipspiess.com/better%20know%20an%20algorithm/2010/02/23/better-know-marching-squares.html	(C# - by Phil Spiess)
  * @see http://www.tomgibara.com/computer-vision/marching-squares									(Java - by Tom Gibara)
  *
  * @author azrafe7

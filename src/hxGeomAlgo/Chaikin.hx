@@ -8,7 +8,7 @@
  * Other credits should go to papers/work of:
  *
  * Chaikin, G. M. (1974). An algorithm for high-speed curve generation. Computer Graphics and Image Processing, 3(4), 346–349
- * @see https://sci-hub.tw/10.1016/0146-664X(74)90028-8	(George Merrill Chaikin)
+ * @see https://sci-hub.st/10.1016/0146-664X(74)90028-8	(George Merrill Chaikin)
  *
  * @author azrafe7
  */

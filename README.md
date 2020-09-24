@@ -11,7 +11,7 @@ Small collection of computational geometry algorithms in Haxe.
 
 Based on:
 
- - http://devblog.phillipspiess.com/2010/02/23/better-know-an-algorithm-1-marching-squares/ (C# - by Phil Spiess)
+ - https://web.archive.org/web/20180316055432/http://devblog.phillipspiess.com/better%20know%20an%20algorithm/2010/02/23/better-know-marching-squares.html (C# - by Phil Spiess)
  - http://www.tomgibara.com/computer-vision/marching-squares (Java - by Tom Gibara)
 
 #### [Ramer-Douglas-Peucker (Polyline Simplification)](http://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm)
@@ -28,11 +28,11 @@ Based on:
  - https://github.com/mapbox/earcut (JS - by Vladimir Agafonkin)
  - http://www.ewjordan.com/earClip/ (Java - by Eric Jordan)
 
-#### [Bayazit (Poly Decomposition)](http://mnbayazit.com/406/overview)
+#### [Bayazit (Poly Decomposition)](https://web.archive.org/web/20140810120355/http://mnbayazit.com/406/overview)
 
 Based on:
 
- - http://mnbayazit.com/406/bayazit (C - by Mark Bayazit)
+ - https://web.archive.org/web/20140701210122/http://mnbayazit.com/406/bayazit (C - by Mark Bayazit)
  - http://www.dyn4j.org/ (Java - by William Bittle)
 
 #### [Visibility Polygon](http://en.wikipedia.org/wiki/Visibility_polygon) and [Homogeneous Coords (2D)](http://en.wikipedia.org/wiki/Homogeneous_coordinates)
@@ -63,7 +63,7 @@ Based on:
  - https://github.com/jonasmalacofilho/dheap (Haxe - by Jonas Malaco Filho)
  - http://en.wikipedia.org/wiki/Binary_heap (Binary (Min)Heap)
 
-#### [Tess2 (Tesselation to Triangles and Convex Polygons, Poly Boolean Ops)](https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html)
+#### [Tess2 (Tesselation to Triangles and Convex Polygons, Poly Boolean Ops)](https://rawgit.com/azrafe7/tess2.js/master/test/index.html)
 
 Based on:
 
@@ -83,20 +83,20 @@ Based on:
 Based on:
 
  - https://github.com/ivanfratric/polypartition (CPP - by Ivan Fratric)
- - http://www.philvaz.com/compgeom (by Phil Porvaznik)
+ - https://web.archive.org/web/20140102033642/http://www.philvaz.com/compgeom/ (by Phil Porvaznik)
 
 #### [Chaikin (Recursive Curve Smoothing)](https://observablehq.com/@pamacha/chaikins-algorithm)
 
 Based on:
 
- - George Merrill Chaikin: [An algorithm for high-speed curve generation](https://sci-hub.tw/10.1016/0146-664X(74)90028-8) (1974)
+ - George Merrill Chaikin: [An algorithm for high-speed curve generation](https://sci-hub.st/10.1016/0146-664X(74)90028-8) (1974)
  - https://sighack.com/post/chaikin-curves (Java - by Manohar Vanga)
 
 #### [Wu-Yong-Zhang-Zhang (Multi-step Chaikin Curve Smoothing)](https://observablehq.com/@pamacha/chaikins-algorithm)
 
 Based on:
 
- - Ling Wu, Jun-Hai Yong, You-Wei Zhang, and Li Zhang: [Multi-step Subdivision Algorithm for Chaikin Curves](https://sci-hub.tw/10.1007/978-3-540-30497-5_188) (2004)
+ - Ling Wu, Jun-Hai Yong, You-Wei Zhang, and Li Zhang: [Multi-step Subdivision Algorithm for Chaikin Curves](https://sci-hub.st/10.1007/978-3-540-30497-5_188) (2004)
  - http://win.doomitalia.it/varie/chaikin.pdf (Matlab - by Fabio Roman, 2009)
 
 ## Dependencies

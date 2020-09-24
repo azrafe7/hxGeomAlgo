@@ -4,7 +4,7 @@
  * Based on:
  *
  * Wu, L., Yong, J.-H., Zhang, Y.-W., & Zhang, L. (2004). Multi-step Subdivision Algorithm for Chaikin Curves. Lecture Notes in Computer Science, 1232–1238. doi:10.1007/978-3-540-30497-5_188
- * @see https://sci-hub.tw/10.1007/978-3-540-30497-5_188		(Ling Wu, Jun-Hai Yong, You-Wei Zhang, and Li Zhang)
+ * @see https://sci-hub.st/10.1007/978-3-540-30497-5_188		(Ling Wu, Jun-Hai Yong, You-Wei Zhang, and Li Zhang)
  *
  * Fabio Roman (2009). Algoritmo di Chaikin e sue evoluzioni.
  * @see http://win.doomitalia.it/varie/chaikin.pdf		(Matlab - Fabio Roman)

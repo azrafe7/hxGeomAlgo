@@ -4,8 +4,8 @@
  *
  * Based on:
  *
- * @see http://mnbayazit.com/406/bayazit							(C - by Mark Bayazit)
- * @see http://mnbayazit.com/406/credit
+ * @see https://web.archive.org/web/20140701210122/http://mnbayazit.com/406/bayazit							(C - by Mark Bayazit)
+ * @see https://web.archive.org/web/20140701210122/http://mnbayazit.com/406/credit
  * @see http://www.dyn4j.org/										(Java - by William Bittle)
  *
  * Other credits should go to papers/work of:
