@@ -86,7 +86,7 @@ typedef TessResult = {
  * Class offering a quick wrapper around Tesselator functions.
  *
  * For more info about how to use this class see the demo by Mikko Mononen on (https://github.com/memononen/tess2.js).
- * Live version rehosted here (https://dl.dropboxusercontent.com/u/32864004/dev/FPDemo/tess2.js-demo/index.html).
+ * Live demo re-hosted here (https://rawgit.com/azrafe7/tess2.js/master/test/index.html).
  *
  * Further reading: http://www.glprogramming.com/red/chapter11.html
  */
